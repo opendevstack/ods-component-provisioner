@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoleTeamAssignmentsApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">RoleTeamAssignmentsApi.java</span></div><h1>RoleTeamAssignmentsApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiV2RoleDefinitionsTeamAssignmentsList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.RoleTeamAssignment;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.RoleTeamAssignmentsApi&quot;)
+public class RoleTeamAssignmentsApi extends BaseApi {
+
+    public RoleTeamAssignmentsApi() {
+<span class="nc" id="L35">        super(new ApiClient());</span>
+<span class="nc" id="L36">    }</span>
+
+    @Autowired
+    public RoleTeamAssignmentsApi(ApiClient apiClient) {
+<span class="nc" id="L40">        super(apiClient);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Starting from the detail URL
+     * GET /:id/team_assignments/ to show role team assignments currently in the relationship
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiV2RoleDefinitionsTeamAssignmentsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiV2RoleDefinitionsTeamAssignmentsList200Response apiV2RoleDefinitionsTeamAssignmentsList(String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L55">        return apiV2RoleDefinitionsTeamAssignmentsListWithHttpInfo(id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Starting from the detail URL
+     * GET /:id/team_assignments/ to show role team assignments currently in the relationship
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt; apiV2RoleDefinitionsTeamAssignmentsListWithHttpInfo(String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L70">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L74">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiV2RoleDefinitionsTeamAssignmentsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L78">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L79">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L81">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L82">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L83">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L84">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L86">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L87">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L88">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L91">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L94">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L95">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L96">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L98">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L100">        ParameterizedTypeReference&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt;() {};</span>
+<span class="nc" id="L101">        return apiClient.invokeAPI(&quot;/api/v2/role_definitions/{id}/team_assignments/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param data  (required)
+     * @return RoleTeamAssignment
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public RoleTeamAssignment apiV2RoleTeamAssignmentsCreate(RoleTeamAssignment data) throws RestClientException {
+<span class="nc" id="L112">        return apiV2RoleTeamAssignmentsCreateWithHttpInfo(data).getBody();</span>
+    }
+
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;RoleTeamAssignment&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;RoleTeamAssignment&gt; apiV2RoleTeamAssignmentsCreateWithHttpInfo(RoleTeamAssignment data) throws RestClientException {
+<span class="nc" id="L124">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L128">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiV2RoleTeamAssignmentsCreate&quot;);</span>
+        }
+        
+
+<span class="nc" id="L132">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L133">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L134">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L135">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L137">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L140">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L141">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L144">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L146">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L148">        ParameterizedTypeReference&lt;RoleTeamAssignment&gt; localReturnType = new ParameterizedTypeReference&lt;RoleTeamAssignment&gt;() {};</span>
+<span class="nc" id="L149">        return apiClient.invokeAPI(&quot;/api/v2/role_team_assignments/&quot;, HttpMethod.POST, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param id  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiV2RoleTeamAssignmentsDelete(String id) throws RestClientException {
+<span class="nc" id="L159">        apiV2RoleTeamAssignmentsDeleteWithHttpInfo(id);</span>
+<span class="nc" id="L160">    }</span>
+
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiV2RoleTeamAssignmentsDeleteWithHttpInfo(String id) throws RestClientException {
+<span class="nc" id="L171">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L175">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiV2RoleTeamAssignmentsDelete&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L179">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L180">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L182">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L183">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L184">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L185">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L187">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L188">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L189">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L190">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L192">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L194">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L195">        return apiClient.invokeAPI(&quot;/api/v2/role_team_assignments/{id}/&quot;, HttpMethod.DELETE, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiV2RoleDefinitionsTeamAssignmentsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiV2RoleDefinitionsTeamAssignmentsList200Response apiV2RoleTeamAssignmentsList(String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L208">        return apiV2RoleTeamAssignmentsListWithHttpInfo(search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt; apiV2RoleTeamAssignmentsListWithHttpInfo(String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L222">        Object localVarPostBody = null;</span>
+        
+
+<span class="nc" id="L225">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L226">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L227">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L228">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L230">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L231">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L232">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L235">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L238">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L239">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L240">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L242">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L244">        ParameterizedTypeReference&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiV2RoleDefinitionsTeamAssignmentsList200Response&gt;() {};</span>
+<span class="nc" id="L245">        return apiClient.invokeAPI(&quot;/api/v2/role_team_assignments/&quot;, HttpMethod.GET, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param id  (required)
+     * @return RoleTeamAssignment
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public RoleTeamAssignment apiV2RoleTeamAssignmentsRead(String id) throws RestClientException {
+<span class="nc" id="L256">        return apiV2RoleTeamAssignmentsReadWithHttpInfo(id).getBody();</span>
+    }
+
+    /**
+     * Use this endpoint to give a team permission to a resource or an organization.
+     * The needed data is the team, the role definition, and the object id. The object must be of the type specified in the role definition. The type given in the role definition and the provided object_id are used to look up the resource.  After creation, the assignment cannot be edited, but can be deleted to remove those permissions.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;RoleTeamAssignment&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;RoleTeamAssignment&gt; apiV2RoleTeamAssignmentsReadWithHttpInfo(String id) throws RestClientException {
+<span class="nc" id="L268">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L271" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L272">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiV2RoleTeamAssignmentsRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L276">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L277">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L279">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L280">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L281">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L282">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L284">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L287">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L288">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L289">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L291">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L293">        ParameterizedTypeReference&lt;RoleTeamAssignment&gt; localReturnType = new ParameterizedTypeReference&lt;RoleTeamAssignment&gt;() {};</span>
+<span class="nc" id="L294">        return apiClient.invokeAPI(&quot;/api/v2/role_team_assignments/{id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L299">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L300">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L302">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L303">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L304">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L305">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L306">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L308">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L311">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L312">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L313">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L315">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L317">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

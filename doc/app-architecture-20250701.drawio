@@ -1,0 +1,67 @@
+<mxfile host="Electron" modified="2025-07-01T15:42:27.416Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.4.8 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="gDS9IZ-az69DUQcYcDAx" version="24.4.8" type="device">
+  <diagram name="Página-1" id="A8gYENYugR8jyl-FU08s">
+    <mxGraphModel dx="2252" dy="894" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s06VvENarmjy0_CIEPev-20" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=default;" parent="1" vertex="1">
+          <mxGeometry x="15" y="463" width="718" height="563" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-11" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=1.02;exitY=0.459;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="s06VvENarmjy0_CIEPev-2" target="s06VvENarmjy0_CIEPev-4" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="430" y="790" as="sourcePoint" />
+            <mxPoint x="530" y="690" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-14" value="" style="group" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="514" y="770" width="120" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-7" value="AAP&lt;br&gt;Provisioner" style="rounded=1;whiteSpace=wrap;html=1;" parent="s06VvENarmjy0_CIEPev-14" vertex="1">
+          <mxGeometry y="45" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-9" value="AWX&lt;div&gt;REST API&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="s06VvENarmjy0_CIEPev-14" vertex="1">
+          <mxGeometry width="120" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-15" value="" style="group;shadow=0;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="410" y="520" width="222.5" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-4" value="CP REST API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;" parent="s06VvENarmjy0_CIEPev-15" vertex="1">
+          <mxGeometry width="100" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-3" value="Component Provisioner&lt;div&gt;&amp;nbsp;Backend&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;" parent="s06VvENarmjy0_CIEPev-15" vertex="1">
+          <mxGeometry x="100" width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-6" value="AWX REST Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;shadow=1;" parent="s06VvENarmjy0_CIEPev-15" vertex="1">
+          <mxGeometry x="97.5" y="120" width="125" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-12" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.517;exitY=-0.067;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.562;entryY=1.035;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=default;" parent="1" source="s06VvENarmjy0_CIEPev-9" target="s06VvENarmjy0_CIEPev-6" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="660" y="820" as="sourcePoint" />
+            <mxPoint x="760" y="720" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-16" value="" style="group;rounded=0;" parent="1" vertex="1" connectable="0">
+          <mxGeometry x="90" y="525" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-1" value="Component Catalog&lt;div&gt;&amp;nbsp;Frontend&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="s06VvENarmjy0_CIEPev-16" vertex="1">
+          <mxGeometry width="120" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-2" value="CP REST Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;glass=0;shadow=1;" parent="s06VvENarmjy0_CIEPev-16" vertex="1">
+          <mxGeometry x="120" width="100" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-19" value="" style="shape=flexArrow;endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.974;exitY=0.742;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.004;entryY=0.417;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" target="s06VvENarmjy0_CIEPev-7" edge="1">
+          <mxGeometry width="100" height="100" relative="1" as="geometry">
+            <mxPoint x="368.6999999999998" y="864.5999999999999" as="sourcePoint" />
+            <mxPoint x="680" y="910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="s06VvENarmjy0_CIEPev-21" value="yellow - auto-generated from OpenAPI v3.0 spec files" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=2;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="246.5" y="486" width="255" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="SBVpH4kIdMMpwriU0-8o-1" value="Provisioning&amp;nbsp;&lt;div&gt;Process&lt;/div&gt;" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="213" y="805" width="159" height="110" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ControllerExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.config</a> &gt; <span class="el_source">ControllerExceptionHandler.java</span></div><h1>ControllerExceptionHandler.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.config;
+
+import com.boehringer.componentprovisioner.server.controllers.exceptions.BadRequestException;
+import com.boehringer.componentprovisioner.server.controllers.exceptions.InvalidRestEntityException;
+import com.boehringer.componentprovisioner.server.controllers.exceptions.RestEntityNotFoundException;
+import com.boehringer.componentprovisioner.server.model.RestErrorMessage;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+@ControllerAdvice
+<span class="nc" id="L17">@Slf4j</span>
+<span class="nc" id="L18">public class ControllerExceptionHandler {</span>
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;RestErrorMessage&gt; handleAllExceptions(Exception ex) {
+<span class="nc" id="L22">        log.error(&quot;Unhandled exception&quot;, ex);</span>
+<span class="nc" id="L23">        return defaultErrResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);</span>
+    }
+
+    @ExceptionHandler({ MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class })
+    public ResponseEntity&lt;RestErrorMessage&gt; handleRequestParamsExceptions(Exception ex) {
+<span class="nc" id="L28">        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);</span>
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity&lt;RestErrorMessage&gt; handleBadRequestException(BadRequestException ex) {
+<span class="nc" id="L33">        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);</span>
+    }
+
+    @ExceptionHandler(RestEntityNotFoundException.class)
+    public ResponseEntity&lt;RestErrorMessage&gt; handleEntityNotFoundException(RestEntityNotFoundException ex) {
+<span class="nc" id="L38">        return defaultErrResponse(ex, HttpStatus.NOT_FOUND);</span>
+    }
+
+    @ExceptionHandler(InvalidRestEntityException.class)
+    public ResponseEntity&lt;RestErrorMessage&gt; handleInvalidEntityException(InvalidRestEntityException ex) {
+<span class="nc" id="L43">        return defaultErrResponse(ex, HttpStatus.UNPROCESSABLE_ENTITY);</span>
+    }
+
+    private static ResponseEntity&lt;RestErrorMessage&gt; defaultErrResponse(Exception ex, HttpStatus errStatus) {
+        // Explicitly setting MediaType.APPLICATION_JSON contentType is required, 
+        // due to clients sending miscellaneous Accept headers on the request, 
+        // but error messages are always in JSON format
+<span class="nc" id="L50">        return ResponseEntity</span>
+<span class="nc" id="L51">                .status(errStatus)</span>
+<span class="nc" id="L52">                .contentType(MediaType.APPLICATION_PROBLEM_JSON)</span>
+<span class="nc" id="L53">                .body(defaultErrMsg(ex));</span>
+    }
+
+    private static RestErrorMessage defaultErrMsg(Exception ex) {
+<span class="nc" id="L57">        return new RestErrorMessage(ex.getMessage());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

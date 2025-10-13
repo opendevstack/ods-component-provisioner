@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResourceTypesApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">ResourceTypesApi.java</span></div><h1>ResourceTypesApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiV2ServiceIndexResourceTypesList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.ResourceType;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.ResourceTypesApi&quot;)
+public class ResourceTypesApi extends BaseApi {
+
+    public ResourceTypesApi() {
+<span class="nc" id="L35">        super(new ApiClient());</span>
+<span class="nc" id="L36">    }</span>
+
+    @Autowired
+    public ResourceTypesApi(ApiClient apiClient) {
+<span class="nc" id="L40">        super(apiClient);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Index of the resource types that are configured in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param page A page number within the paginated result set. (optional)
+     * @return ApiV2ServiceIndexResourceTypesList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiV2ServiceIndexResourceTypesList200Response apiV2ServiceIndexResourceTypesList(Integer page) throws RestClientException {
+<span class="nc" id="L52">        return apiV2ServiceIndexResourceTypesListWithHttpInfo(page).getBody();</span>
+    }
+
+    /**
+     * Index of the resource types that are configured in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param page A page number within the paginated result set. (optional)
+     * @return ResponseEntity&amp;lt;ApiV2ServiceIndexResourceTypesList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiV2ServiceIndexResourceTypesList200Response&gt; apiV2ServiceIndexResourceTypesListWithHttpInfo(Integer page) throws RestClientException {
+<span class="nc" id="L64">        Object localVarPostBody = null;</span>
+        
+
+<span class="nc" id="L67">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L68">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L69">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L70">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L72">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+        
+
+<span class="nc" id="L75">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L78">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L79">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L80">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L82">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L84">        ParameterizedTypeReference&lt;ApiV2ServiceIndexResourceTypesList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiV2ServiceIndexResourceTypesList200Response&gt;() {};</span>
+<span class="nc" id="L85">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resource-types/&quot;, HttpMethod.GET, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Returns the as a stream the csv of resource_id,hash for a given resource type.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param name The name of this resource type. (required)
+     * @return ResourceType
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResourceType apiV2ServiceIndexResourceTypesManifest(String name) throws RestClientException {
+<span class="nc" id="L96">        return apiV2ServiceIndexResourceTypesManifestWithHttpInfo(name).getBody();</span>
+    }
+
+    /**
+     * Returns the as a stream the csv of resource_id,hash for a given resource type.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param name The name of this resource type. (required)
+     * @return ResponseEntity&amp;lt;ResourceType&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ResourceType&gt; apiV2ServiceIndexResourceTypesManifestWithHttpInfo(String name) throws RestClientException {
+<span class="nc" id="L108">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'name' is set
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (name == null) {</span>
+<span class="nc" id="L112">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'name' when calling apiV2ServiceIndexResourceTypesManifest&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L116">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L117">        uriVariables.put(&quot;name&quot;, name);</span>
+
+<span class="nc" id="L119">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L120">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L121">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L122">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L124">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L127">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L128">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L129">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L131">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L133">        ParameterizedTypeReference&lt;ResourceType&gt; localReturnType = new ParameterizedTypeReference&lt;ResourceType&gt;() {};</span>
+<span class="nc" id="L134">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resource-types/{name}/manifest/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of the resource types that are configured in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param name The name of this resource type. (required)
+     * @return ResourceType
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResourceType apiV2ServiceIndexResourceTypesRead(String name) throws RestClientException {
+<span class="nc" id="L145">        return apiV2ServiceIndexResourceTypesReadWithHttpInfo(name).getBody();</span>
+    }
+
+    /**
+     * Index of the resource types that are configured in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param name The name of this resource type. (required)
+     * @return ResponseEntity&amp;lt;ResourceType&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ResourceType&gt; apiV2ServiceIndexResourceTypesReadWithHttpInfo(String name) throws RestClientException {
+<span class="nc" id="L157">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'name' is set
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (name == null) {</span>
+<span class="nc" id="L161">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'name' when calling apiV2ServiceIndexResourceTypesRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L165">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L166">        uriVariables.put(&quot;name&quot;, name);</span>
+
+<span class="nc" id="L168">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L169">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L170">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L171">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L173">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L176">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L177">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L178">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L180">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L182">        ParameterizedTypeReference&lt;ResourceType&gt; localReturnType = new ParameterizedTypeReference&lt;ResourceType&gt;() {};</span>
+<span class="nc" id="L183">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resource-types/{name}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L188">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L189">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L191">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L192">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L193">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L194">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L195">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L197">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L200">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L201">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L202">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L204">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L206">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

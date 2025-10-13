@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JobsApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">JobsApi.java</span></div><h1>JobsApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiJobTemplatesJobsList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.JobCancel;
+import com.boehringer.componentprovisioner.client.awx.v2.model.JobCreateSchedule;
+import com.boehringer.componentprovisioner.client.awx.v2.model.JobDetail;
+import com.boehringer.componentprovisioner.client.awx.v2.model.JobRelaunch;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.JobsApi&quot;)
+public class JobsApi extends BaseApi {
+
+    public JobsApi() {
+<span class="nc" id="L38">        super(new ApiClient());</span>
+<span class="nc" id="L39">    }</span>
+
+    @Autowired
+    public JobsApi(ApiClient apiClient) {
+<span class="nc" id="L43">        super(apiClient);</span>
+<span class="nc" id="L44">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve aggregate statistics about job runs suitable for graphing.
+     *  ## Parameters and Filtering  The &amp;#x60;period&amp;#x60; of the data can be adjusted with:      ?period&amp;#x3D;month  Where &amp;#x60;month&amp;#x60; can be replaced with &amp;#x60;week&amp;#x60;, &amp;#x60;two_weeks&amp;#x60;, or &amp;#x60;day&amp;#x60;.  &amp;#x60;month&amp;#x60; is the default.  The type of job can be filtered with:      ?job_type&amp;#x3D;all  Where &amp;#x60;all&amp;#x60; can be replaced with &amp;#x60;inv_sync&amp;#x60;, &amp;#x60;playbook_run&amp;#x60; or &amp;#x60;scm_update&amp;#x60;.  &amp;#x60;all&amp;#x60; is the default.  ## Results  Data will be returned in the following format:      \&amp;quot;jobs\&amp;quot;: {             \&amp;quot;successful\&amp;quot;: [                 [                     1402808400.0,                      9                 ], ... ],             \&amp;quot;failed\&amp;quot;: [              [                     1402808400.0,                      3                 ], ... ]     }  Each element contains an epoch timestamp represented in seconds and a numerical value indicating the number of events during that time period
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiDashboardGraphsJobsList(String version) throws RestClientException {
+<span class="nc" id="L54">        apiDashboardGraphsJobsListWithHttpInfo(version);</span>
+<span class="nc" id="L55">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve aggregate statistics about job runs suitable for graphing.
+     *  ## Parameters and Filtering  The &amp;#x60;period&amp;#x60; of the data can be adjusted with:      ?period&amp;#x3D;month  Where &amp;#x60;month&amp;#x60; can be replaced with &amp;#x60;week&amp;#x60;, &amp;#x60;two_weeks&amp;#x60;, or &amp;#x60;day&amp;#x60;.  &amp;#x60;month&amp;#x60; is the default.  The type of job can be filtered with:      ?job_type&amp;#x3D;all  Where &amp;#x60;all&amp;#x60; can be replaced with &amp;#x60;inv_sync&amp;#x60;, &amp;#x60;playbook_run&amp;#x60; or &amp;#x60;scm_update&amp;#x60;.  &amp;#x60;all&amp;#x60; is the default.  ## Results  Data will be returned in the following format:      \&amp;quot;jobs\&amp;quot;: {             \&amp;quot;successful\&amp;quot;: [                 [                     1402808400.0,                      9                 ], ... ],             \&amp;quot;failed\&amp;quot;: [              [                     1402808400.0,                      3                 ], ... ]     }  Each element contains an epoch timestamp represented in seconds and a numerical value indicating the number of events during that time period
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiDashboardGraphsJobsListWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L66">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L70">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiDashboardGraphsJobsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L74">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L75">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L77">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L78">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L79">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L80">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L82">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L83">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L84">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L85">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L87">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L89">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L90">        return apiClient.invokeAPI(&quot;/api/v2/dashboard/graphs/jobs/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * jobs associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of jobs found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more job records.    ## Results  Each job data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string)    ## Sorting  To specify that jobs are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiJobTemplatesJobsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiJobTemplatesJobsList200Response apiJobTemplatesJobsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L105">        return apiJobTemplatesJobsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * jobs associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of jobs found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more job records.    ## Results  Each job data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string)    ## Sorting  To specify that jobs are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiJobTemplatesJobsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiJobTemplatesJobsList200Response&gt; apiJobTemplatesJobsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L121">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L125">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobTemplatesJobsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L130">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobTemplatesJobsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L134">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L135">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L136">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L138">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L139">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L140">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L141">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L143">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L144">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L145">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L148">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L151">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L152">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L153">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L155">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L157">        ParameterizedTypeReference&lt;ApiJobTemplatesJobsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiJobTemplatesJobsList200Response&gt;() {};</span>
+<span class="nc" id="L158">        return apiClient.invokeAPI(&quot;/api/v2/job_templates/{id}/jobs/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to determine if the job can be canceled.
+     * The response will include the following field:  * &amp;#x60;can_cancel&amp;#x60;: Indicates whether this job can be canceled (boolean, read-only)    # Cancel a Job Make a POST request to this resource to cancel a pending or running job.  The response status code will be 202 if successful, or 405 if the job cannot be canceled.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return JobCancel
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobCancel apiJobsCancelCreate(String version, String id, JobCancel data) throws RestClientException {
+<span class="nc" id="L171">        return apiJobsCancelCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to determine if the job can be canceled.
+     * The response will include the following field:  * &amp;#x60;can_cancel&amp;#x60;: Indicates whether this job can be canceled (boolean, read-only)    # Cancel a Job Make a POST request to this resource to cancel a pending or running job.  The response status code will be 202 if successful, or 405 if the job cannot be canceled.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;JobCancel&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobCancel&gt; apiJobsCancelCreateWithHttpInfo(String version, String id, JobCancel data) throws RestClientException {
+<span class="nc" id="L185">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L189">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsCancelCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L194">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsCancelCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L199">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiJobsCancelCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L203">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L204">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L205">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L207">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L208">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L209">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L210">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L212">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L215">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L216">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L219">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L221">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L223">        ParameterizedTypeReference&lt;JobCancel&gt; localReturnType = new ParameterizedTypeReference&lt;JobCancel&gt;() {};</span>
+<span class="nc" id="L224">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/cancel/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to determine if the job can be canceled.
+     * The response will include the following field:  * &amp;#x60;can_cancel&amp;#x60;: Indicates whether this job can be canceled (boolean, read-only)    # Cancel a Job Make a POST request to this resource to cancel a pending or running job.  The response status code will be 202 if successful, or 405 if the job cannot be canceled.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return JobCancel
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobCancel apiJobsCancelRead(String version, String id) throws RestClientException {
+<span class="nc" id="L236">        return apiJobsCancelReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to determine if the job can be canceled.
+     * The response will include the following field:  * &amp;#x60;can_cancel&amp;#x60;: Indicates whether this job can be canceled (boolean, read-only)    # Cancel a Job Make a POST request to this resource to cancel a pending or running job.  The response status code will be 202 if successful, or 405 if the job cannot be canceled.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;JobCancel&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobCancel&gt; apiJobsCancelReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L249">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L253">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsCancelRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L258">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsCancelRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L262">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L263">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L264">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L266">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L267">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L268">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L269">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L271">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L274">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L275">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L276">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L278">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L280">        ParameterizedTypeReference&lt;JobCancel&gt; localReturnType = new ParameterizedTypeReference&lt;JobCancel&gt;() {};</span>
+<span class="nc" id="L281">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/cancel/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a POST request to this endpoint to create a schedule that launches
+     * the job template that launched this job, and uses the same parameters that the job was launched with. These parameters include all \&amp;quot;prompted\&amp;quot; resources such as &amp;#x60;extra_vars&amp;#x60;, &amp;#x60;inventory&amp;#x60;, &amp;#x60;limit&amp;#x60;, etc.  Jobs that were launched with user-provided passwords cannot have a schedule created from them.  Make a GET request for information about what those prompts are and whether or not a schedule can be created.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return JobCreateSchedule
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobCreateSchedule apiJobsCreateScheduleCreate(String version, String id, JobCreateSchedule data) throws RestClientException {
+<span class="nc" id="L294">        return apiJobsCreateScheduleCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a POST request to this endpoint to create a schedule that launches
+     * the job template that launched this job, and uses the same parameters that the job was launched with. These parameters include all \&amp;quot;prompted\&amp;quot; resources such as &amp;#x60;extra_vars&amp;#x60;, &amp;#x60;inventory&amp;#x60;, &amp;#x60;limit&amp;#x60;, etc.  Jobs that were launched with user-provided passwords cannot have a schedule created from them.  Make a GET request for information about what those prompts are and whether or not a schedule can be created.
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;JobCreateSchedule&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobCreateSchedule&gt; apiJobsCreateScheduleCreateWithHttpInfo(String version, String id, JobCreateSchedule data) throws RestClientException {
+<span class="nc" id="L308">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L311" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L312">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsCreateScheduleCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L317">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsCreateScheduleCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L321" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L322">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiJobsCreateScheduleCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L326">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L327">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L328">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L330">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L331">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L332">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L333">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L335">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L338">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L339">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L342">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L344">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L346">        ParameterizedTypeReference&lt;JobCreateSchedule&gt; localReturnType = new ParameterizedTypeReference&lt;JobCreateSchedule&gt;() {};</span>
+<span class="nc" id="L347">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/create_schedule/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a POST request to this endpoint to create a schedule that launches
+     * the job template that launched this job, and uses the same parameters that the job was launched with. These parameters include all \&amp;quot;prompted\&amp;quot; resources such as &amp;#x60;extra_vars&amp;#x60;, &amp;#x60;inventory&amp;#x60;, &amp;#x60;limit&amp;#x60;, etc.  Jobs that were launched with user-provided passwords cannot have a schedule created from them.  Make a GET request for information about what those prompts are and whether or not a schedule can be created.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return JobCreateSchedule
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobCreateSchedule apiJobsCreateScheduleRead(String version, String id) throws RestClientException {
+<span class="nc" id="L359">        return apiJobsCreateScheduleReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make a POST request to this endpoint to create a schedule that launches
+     * the job template that launched this job, and uses the same parameters that the job was launched with. These parameters include all \&amp;quot;prompted\&amp;quot; resources such as &amp;#x60;extra_vars&amp;#x60;, &amp;#x60;inventory&amp;#x60;, &amp;#x60;limit&amp;#x60;, etc.  Jobs that were launched with user-provided passwords cannot have a schedule created from them.  Make a GET request for information about what those prompts are and whether or not a schedule can be created.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;JobCreateSchedule&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobCreateSchedule&gt; apiJobsCreateScheduleReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L372">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L375" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L376">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsCreateScheduleRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L381">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsCreateScheduleRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L385">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L386">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L387">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L389">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L390">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L391">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L392">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L394">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L397">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L398">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L399">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L401">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L403">        ParameterizedTypeReference&lt;JobCreateSchedule&gt; localReturnType = new ParameterizedTypeReference&lt;JobCreateSchedule&gt;() {};</span>
+<span class="nc" id="L404">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/create_schedule/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single job
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_args&amp;#x60;:  (string) * &amp;#x60;job_cwd&amp;#x60;:  (string) * &amp;#x60;job_env&amp;#x60;:  (json) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;result_traceback&amp;#x60;:  (string) * &amp;#x60;event_processing_finished&amp;#x60;: Indicates whether all of the events generated by this unified job have been saved to the database. (boolean) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string) * &amp;#x60;host_status_counts&amp;#x60;: Playbook stats from the Ansible playbook_on_stats event. (json) * &amp;#x60;playbook_counts&amp;#x60;: A count of all plays and tasks for the job run. (field) * &amp;#x60;custom_virtualenv&amp;#x60;:  (string)      # Delete a Job:  Make a DELETE request to this resource to delete this job.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiJobsDelete(String version, String id) throws RestClientException {
+<span class="nc" id="L416">        apiJobsDeleteWithHttpInfo(version, id);</span>
+<span class="nc" id="L417">    }</span>
+
+    /**
+     * Make GET request to this resource to retrieve a single job
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_args&amp;#x60;:  (string) * &amp;#x60;job_cwd&amp;#x60;:  (string) * &amp;#x60;job_env&amp;#x60;:  (json) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;result_traceback&amp;#x60;:  (string) * &amp;#x60;event_processing_finished&amp;#x60;: Indicates whether all of the events generated by this unified job have been saved to the database. (boolean) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string) * &amp;#x60;host_status_counts&amp;#x60;: Playbook stats from the Ansible playbook_on_stats event. (json) * &amp;#x60;playbook_counts&amp;#x60;: A count of all plays and tasks for the job run. (field) * &amp;#x60;custom_virtualenv&amp;#x60;:  (string)      # Delete a Job:  Make a DELETE request to this resource to delete this job.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiJobsDeleteWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L430">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L433" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L434">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsDelete&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L438" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L439">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsDelete&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L443">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L444">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L445">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L447">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L448">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L449">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L450">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L452">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L455">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L456">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L457">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L459">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L461">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L462">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/&quot;, HttpMethod.DELETE, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * jobs.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of jobs found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more job records.    ## Results  Each job data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string)    ## Sorting  To specify that jobs are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiJobTemplatesJobsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiJobTemplatesJobsList200Response apiJobsList(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L477">        return apiJobsListWithHttpInfo(version, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * jobs.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of jobs found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more job records.    ## Results  Each job data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string)    ## Sorting  To specify that jobs are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiJobTemplatesJobsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiJobTemplatesJobsList200Response&gt; apiJobsListWithHttpInfo(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L493">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L496" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L497">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L501">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L502">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L504">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L505">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L506">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L507">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L509">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L510">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L511">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L514">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L517">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L518">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L519">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L521">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L523">        ParameterizedTypeReference&lt;ApiJobTemplatesJobsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiJobTemplatesJobsList200Response&gt;() {};</span>
+<span class="nc" id="L524">        return apiClient.invokeAPI(&quot;/api/v2/jobs/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single job
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_args&amp;#x60;:  (string) * &amp;#x60;job_cwd&amp;#x60;:  (string) * &amp;#x60;job_env&amp;#x60;:  (json) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;result_traceback&amp;#x60;:  (string) * &amp;#x60;event_processing_finished&amp;#x60;: Indicates whether all of the events generated by this unified job have been saved to the database. (boolean) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string) * &amp;#x60;host_status_counts&amp;#x60;: Playbook stats from the Ansible playbook_on_stats event. (json) * &amp;#x60;playbook_counts&amp;#x60;: A count of all plays and tasks for the job run. (field) * &amp;#x60;custom_virtualenv&amp;#x60;:  (string)      # Delete a Job:  Make a DELETE request to this resource to delete this job.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return JobDetail
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobDetail apiJobsRead(String version, String id) throws RestClientException {
+<span class="nc" id="L536">        return apiJobsReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single job
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this job. (integer) * &amp;#x60;type&amp;#x60;: Data type for this job. (choice) * &amp;#x60;url&amp;#x60;: URL for this job. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this job was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this job was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this job. (string) * &amp;#x60;description&amp;#x60;: Optional description of this job. (string) * &amp;#x60;job_type&amp;#x60;:  (choice)     - &amp;#x60;run&amp;#x60;: Run     - &amp;#x60;check&amp;#x60;: Check     - &amp;#x60;scan&amp;#x60;: Scan * &amp;#x60;inventory&amp;#x60;:  (id) * &amp;#x60;project&amp;#x60;:  (id) * &amp;#x60;playbook&amp;#x60;:  (string) * &amp;#x60;scm_branch&amp;#x60;: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true. (string) * &amp;#x60;forks&amp;#x60;:  (integer) * &amp;#x60;limit&amp;#x60;:  (string) * &amp;#x60;verbosity&amp;#x60;:  (choice)     - &amp;#x60;0&amp;#x60;: 0 (Normal)     - &amp;#x60;1&amp;#x60;: 1 (Verbose)     - &amp;#x60;2&amp;#x60;: 2 (More Verbose)     - &amp;#x60;3&amp;#x60;: 3 (Debug)     - &amp;#x60;4&amp;#x60;: 4 (Connection Debug)     - &amp;#x60;5&amp;#x60;: 5 (WinRM Debug) * &amp;#x60;extra_vars&amp;#x60;:  (json) * &amp;#x60;job_tags&amp;#x60;:  (string) * &amp;#x60;force_handlers&amp;#x60;:  (boolean) * &amp;#x60;skip_tags&amp;#x60;:  (string) * &amp;#x60;start_at_task&amp;#x60;:  (string) * &amp;#x60;timeout&amp;#x60;: The amount of time (in seconds) to run before the task is canceled. (integer) * &amp;#x60;use_fact_cache&amp;#x60;: If enabled, the service will act as an Ansible Fact Cache Plugin; persisting facts at the end of a playbook run to the database and caching facts for use by Ansible. (boolean) * &amp;#x60;organization&amp;#x60;: The organization used to determine access to this unified job. (id) * &amp;#x60;unified_job_template&amp;#x60;:  (id) * &amp;#x60;launch_type&amp;#x60;:  (choice)     - &amp;#x60;manual&amp;#x60;: Manual     - &amp;#x60;relaunch&amp;#x60;: Relaunch     - &amp;#x60;callback&amp;#x60;: Callback     - &amp;#x60;scheduled&amp;#x60;: Scheduled     - &amp;#x60;dependency&amp;#x60;: Dependency     - &amp;#x60;workflow&amp;#x60;: Workflow     - &amp;#x60;webhook&amp;#x60;: Webhook     - &amp;#x60;sync&amp;#x60;: Sync     - &amp;#x60;scm&amp;#x60;: SCM Update * &amp;#x60;status&amp;#x60;:  (choice)     - &amp;#x60;new&amp;#x60;: New     - &amp;#x60;pending&amp;#x60;: Pending     - &amp;#x60;waiting&amp;#x60;: Waiting     - &amp;#x60;running&amp;#x60;: Running     - &amp;#x60;successful&amp;#x60;: Successful     - &amp;#x60;failed&amp;#x60;: Failed     - &amp;#x60;error&amp;#x60;: Error     - &amp;#x60;canceled&amp;#x60;: Canceled * &amp;#x60;execution_environment&amp;#x60;: The container image to be used for execution. (id) * &amp;#x60;failed&amp;#x60;:  (boolean) * &amp;#x60;started&amp;#x60;: The date and time the job was queued for starting. (datetime) * &amp;#x60;finished&amp;#x60;: The date and time the job finished execution. (datetime) * &amp;#x60;canceled_on&amp;#x60;: The date and time when the cancel request was sent. (datetime) * &amp;#x60;elapsed&amp;#x60;: Elapsed time in seconds that the job ran. (decimal) * &amp;#x60;job_args&amp;#x60;:  (string) * &amp;#x60;job_cwd&amp;#x60;:  (string) * &amp;#x60;job_env&amp;#x60;:  (json) * &amp;#x60;job_explanation&amp;#x60;: A status field to indicate the state of the job if it wasn&amp;amp;#x27;t able to run and capture stdout (string) * &amp;#x60;execution_node&amp;#x60;: The node the job executed on. (string) * &amp;#x60;controller_node&amp;#x60;: The instance that managed the execution environment. (string) * &amp;#x60;result_traceback&amp;#x60;:  (string) * &amp;#x60;event_processing_finished&amp;#x60;: Indicates whether all of the events generated by this unified job have been saved to the database. (boolean) * &amp;#x60;launched_by&amp;#x60;:  (field) * &amp;#x60;work_unit_id&amp;#x60;: The Receptor work unit ID associated with this job. (string) * &amp;#x60;job_template&amp;#x60;:  (id) * &amp;#x60;passwords_needed_to_start&amp;#x60;:  (field) * &amp;#x60;allow_simultaneous&amp;#x60;:  (boolean) * &amp;#x60;artifacts&amp;#x60;:  (json) * &amp;#x60;scm_revision&amp;#x60;: The SCM Revision from the Project used for this job, if available (string) * &amp;#x60;instance_group&amp;#x60;: The Instance group the job was run under (id) * &amp;#x60;diff_mode&amp;#x60;: If enabled, textual changes made to any templated files on the host are shown in the standard output (boolean) * &amp;#x60;job_slice_number&amp;#x60;: If part of a sliced job, the ID of the inventory slice operated on. If not part of sliced job, parameter is not used. (integer) * &amp;#x60;job_slice_count&amp;#x60;: If ran as part of sliced jobs, the total number of slices. If 1, job is not part of a sliced job. (integer) * &amp;#x60;webhook_service&amp;#x60;: Service that webhook requests will be accepted from (choice)     - &amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;: ---------     - &amp;#x60;github&amp;#x60;: GitHub     - &amp;#x60;gitlab&amp;#x60;: GitLab     - &amp;#x60;bitbucket_dc&amp;#x60;: BitBucket DataCenter * &amp;#x60;webhook_credential&amp;#x60;: Personal Access Token for posting back the status to the service API (id) * &amp;#x60;webhook_guid&amp;#x60;: Unique identifier of the event that triggered this webhook (string) * &amp;#x60;host_status_counts&amp;#x60;: Playbook stats from the Ansible playbook_on_stats event. (json) * &amp;#x60;playbook_counts&amp;#x60;: A count of all plays and tasks for the job run. (field) * &amp;#x60;custom_virtualenv&amp;#x60;:  (string)      # Delete a Job:  Make a DELETE request to this resource to delete this job.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;JobDetail&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobDetail&gt; apiJobsReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L549">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L552" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L553">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L557" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L558">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L562">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L563">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L564">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L566">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L567">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L568">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L569">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L571">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L574">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L575">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L576">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L578">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L580">        ParameterizedTypeReference&lt;JobDetail&gt; localReturnType = new ParameterizedTypeReference&lt;JobDetail&gt;() {};</span>
+<span class="nc" id="L581">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a POST request to this resource to launch a job. If any passwords or variables are required then they should be passed in via POST data.   In order to determine what values are required in order to launch a job based on this job template you may make a GET request to this endpoint.
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return JobRelaunch
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobRelaunch apiJobsRelaunchCreate(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L595">        return apiJobsRelaunchCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a POST request to this resource to launch a job. If any passwords or variables are required then they should be passed in via POST data.   In order to determine what values are required in order to launch a job based on this job template you may make a GET request to this endpoint.
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;JobRelaunch&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobRelaunch&gt; apiJobsRelaunchCreateWithHttpInfo(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L610">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L613" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L614">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsRelaunchCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L618" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L619">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsRelaunchCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L623">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L624">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L625">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L627">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L628">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L629">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L630">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L632">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L635">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L636">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L639">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L641">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L643">        ParameterizedTypeReference&lt;JobRelaunch&gt; localReturnType = new ParameterizedTypeReference&lt;JobRelaunch&gt;() {};</span>
+<span class="nc" id="L644">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/relaunch/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a POST request to this resource to launch a job. If any passwords or variables are required then they should be passed in via POST data.   In order to determine what values are required in order to launch a job based on this job template you may make a GET request to this endpoint.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return JobRelaunch
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public JobRelaunch apiJobsRelaunchRead(String version, String id) throws RestClientException {
+<span class="nc" id="L656">        return apiJobsRelaunchReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make a POST request to this resource to launch a job. If any passwords or variables are required then they should be passed in via POST data.   In order to determine what values are required in order to launch a job based on this job template you may make a GET request to this endpoint.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;JobRelaunch&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;JobRelaunch&gt; apiJobsRelaunchReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L669">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L672" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L673">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsRelaunchRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L677" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L678">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsRelaunchRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L682">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L683">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L684">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L686">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L687">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L688">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L689">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L691">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L694">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L695">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L696">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L698">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L700">        ParameterizedTypeReference&lt;JobRelaunch&gt; localReturnType = new ParameterizedTypeReference&lt;JobRelaunch&gt;() {};</span>
+<span class="nc" id="L701">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/relaunch/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L706">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L707">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L709">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L710">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L711">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L712">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L713">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L715">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L718">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L719">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L720">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L722">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L724">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

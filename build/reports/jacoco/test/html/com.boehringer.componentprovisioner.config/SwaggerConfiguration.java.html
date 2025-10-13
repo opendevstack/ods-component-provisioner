@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SwaggerConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.config</a> &gt; <span class="el_source">SwaggerConfiguration.java</span></div><h1>SwaggerConfiguration.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.config;
+
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+<span class="nc" id="L13">public class SwaggerConfiguration {</span>
+
+    @Bean(name = &quot;apiInfo&quot;)
+    OpenAPI apiInfo() {
+<span class="nc" id="L17">        final String securitySchemeName = &quot;bearerAuth&quot;;</span>
+
+        // Copied from: openapi-componentprovisioner-vx.x.x.yaml
+<span class="nc" id="L20">        var edpCoreContact = new Contact()</span>
+<span class="nc" id="L21">                .name(&quot;EDPCore Team&quot;)</span>
+<span class="nc" id="L22">                .url(&quot;https://confluence.biscrum.com/pages/viewpage.action?spaceKey=EDP&amp;title=Welcome&quot;);</span>
+
+<span class="nc" id="L24">        var info = new Info()</span>
+<span class="nc" id="L25">                .title(&quot;Component Provisioner REST API&quot;)</span>
+<span class="nc" id="L26">                .description(&quot;&quot;&quot;</span>
+                        The Component Provisioner API allows clients to trigger Ansible Automation Platform (AWX) workflows.
+                            
+                        **NOTES**:
+                        - The OpenAPI specification file is also used to [generate](https://openapi-generator.tech/) REST client(s) and a server REST API.
+                        - Clients and servers generated from the same OpenAPI specification version are guaranteed to be **compatible**.
+                        &quot;&quot;&quot;)
+<span class="nc" id="L33">                .contact(edpCoreContact)</span>
+<span class="nc" id="L34">                .version(&quot;1.0.0&quot;);</span>
+
+<span class="nc" id="L36">        SecurityScheme securityScheme = new SecurityScheme()</span>
+<span class="nc" id="L37">                .name(securitySchemeName)</span>
+<span class="nc" id="L38">                .type(SecurityScheme.Type.HTTP)</span>
+<span class="nc" id="L39">                .scheme(&quot;bearer&quot;)</span>
+<span class="nc" id="L40">                .bearerFormat(&quot;JWT&quot;);</span>
+
+<span class="nc" id="L42">        Components securityComponents = new Components()</span>
+<span class="nc" id="L43">                .addSecuritySchemes(securitySchemeName,securityScheme);</span>
+
+<span class="nc" id="L45">        return new OpenAPI()</span>
+<span class="nc" id="L46">                .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))</span>
+<span class="nc" id="L47">                .components(securityComponents)</span>
+<span class="nc" id="L48">                .info(info);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

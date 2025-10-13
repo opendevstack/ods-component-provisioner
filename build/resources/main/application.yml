@@ -1,0 +1,42 @@
+server:
+  port: 8080
+logging:
+  level:
+    org.springframework: INFO
+    com.boehringer.componentprovisioner.server.controllers: INFO
+spring:
+  profiles:
+    active: dev
+  http:
+    client:
+      factory: jdk
+  jackson:
+    date-format: com.boehringer.componentprovisioner.util.RFC3339DateFormat
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  cloud:
+    azure:
+      active-directory:
+        enabled: true
+        session-stateless: true
+        credential:
+          client-id: ${SPRING_CLOUD_AZURE_ACTIVE_DIRECTORY_CREDENTIAL_CLIENT_ID}
+        app-id-uri: ${SPRING_CLOUD_AZURE_ACTIVE_DIRECTORY_APP_ID_URI}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+catalog-collection:
+  id: ${CATALOG_COLLECTION_ID}
+user-actions:
+  id: ${USER_ACTIONS_ID}
+component-provisioner:
+  awx:
+    service:
+      base-rest-url: ${AWX_SERVICE_BASE_REST_URL}
+      username: ${AWX_SERVICE_USERNAME}
+      password: ${AWX_SERVICE_PASSWORD}
+  component-catalog:
+    service:
+      base-rest-url: ${COMPONENT_CATALOG_SERVICE_BASE_REST_URL}

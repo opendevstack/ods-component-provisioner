@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CatalogDescriptorsApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.componentcatalog.v1.api</a> &gt; <span class="el_source">CatalogDescriptorsApi.java</span></div><h1>CatalogDescriptorsApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.componentcatalog.v1.api;
+
+import com.boehringer.componentprovisioner.client.componentcatalog.v1.ApiClient;
+import com.boehringer.componentprovisioner.client.componentcatalog.v1.BaseApi;
+
+import com.boehringer.componentprovisioner.client.componentcatalog.v1.model.CatalogDescriptor;
+import com.boehringer.componentprovisioner.client.componentcatalog.v1.model.RestErrorMessage;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.componentcatalog.v1.api.CatalogDescriptorsApi&quot;)
+public class CatalogDescriptorsApi extends BaseApi {
+
+    public CatalogDescriptorsApi() {
+<span class="nc" id="L35">        super(new ApiClient());</span>
+<span class="nc" id="L36">    }</span>
+
+    @Autowired
+    public CatalogDescriptorsApi(ApiClient apiClient) {
+<span class="nc" id="L40">        super(apiClient);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * List of all available Catalog Descriptors.
+     * Returns a list of all available Catalog Descriptors.&amp;lt;br/&amp;gt; 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - A list of Catalog Descriptors.
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt; - Invalid client token on the request.
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt; - Insufficient permissions for the client to access the resource.
+     * &lt;p&gt;&lt;b&gt;500&lt;/b&gt; - Server error.
+     * @return List&amp;lt;CatalogDescriptor&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public List&lt;CatalogDescriptor&gt; getCatalogDescriptors() throws RestClientException {
+<span class="nc" id="L54">        return getCatalogDescriptorsWithHttpInfo().getBody();</span>
+    }
+
+    /**
+     * List of all available Catalog Descriptors.
+     * Returns a list of all available Catalog Descriptors.&amp;lt;br/&amp;gt; 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - A list of Catalog Descriptors.
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt; - Invalid client token on the request.
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt; - Insufficient permissions for the client to access the resource.
+     * &lt;p&gt;&lt;b&gt;500&lt;/b&gt; - Server error.
+     * @return ResponseEntity&amp;lt;List&amp;lt;CatalogDescriptor&amp;gt;&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;List&lt;CatalogDescriptor&gt;&gt; getCatalogDescriptorsWithHttpInfo() throws RestClientException {
+<span class="nc" id="L68">        Object localVarPostBody = null;</span>
+        
+
+<span class="nc" id="L71">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L72">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L73">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L74">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L76">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L79">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L80">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L81">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L83">        String[] localVarAuthNames = new String[] { &quot;bearerAuth&quot; };</span>
+
+<span class="nc" id="L85">        ParameterizedTypeReference&lt;List&lt;CatalogDescriptor&gt;&gt; localReturnType = new ParameterizedTypeReference&lt;List&lt;CatalogDescriptor&gt;&gt;() {};</span>
+<span class="nc" id="L86">        return apiClient.invokeAPI(&quot;/catalog-descriptors&quot;, HttpMethod.GET, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L91">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L92">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L94">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L95">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L96">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L97">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L98">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L100">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L103">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L104">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L105">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L107">        String[] localVarAuthNames = new String[] { &quot;bearerAuth&quot; };</span>
+
+<span class="nc" id="L109">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InstancesApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">InstancesApi.java</span></div><h1>InstancesApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiInstanceGroupsInstancesList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiInstancesHealthCheckList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.Instance;
+import com.boehringer.componentprovisioner.client.awx.v2.model.InstanceHealthCheck;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.InstancesApi&quot;)
+public class InstancesApi extends BaseApi {
+
+    public InstancesApi() {
+<span class="nc" id="L37">        super(new ApiClient());</span>
+<span class="nc" id="L38">    }</span>
+
+    @Autowired
+    public InstancesApi(ApiClient apiClient) {
+<span class="nc" id="L42">        super(apiClient);</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * instances associated with the selected instance group.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return Instance
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Instance apiInstanceGroupsInstancesCreate(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L57">        return apiInstanceGroupsInstancesCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * instances associated with the selected instance group.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Instance&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Instance&gt; apiInstanceGroupsInstancesCreateWithHttpInfo(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L72">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L76">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstanceGroupsInstancesCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L81">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstanceGroupsInstancesCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L85">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L86">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L87">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L89">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L90">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L91">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L92">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L94">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L97">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L98">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L101">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L103">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L105">        ParameterizedTypeReference&lt;Instance&gt; localReturnType = new ParameterizedTypeReference&lt;Instance&gt;() {};</span>
+<span class="nc" id="L106">        return apiClient.invokeAPI(&quot;/api/v2/instance_groups/{id}/instances/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * instances associated with the selected instance group.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInstanceGroupsInstancesList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInstanceGroupsInstancesList200Response apiInstanceGroupsInstancesList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L121">        return apiInstanceGroupsInstancesListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * instances associated with the selected instance group.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInstanceGroupsInstancesList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInstanceGroupsInstancesList200Response&gt; apiInstanceGroupsInstancesListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L137">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L141">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstanceGroupsInstancesList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L146">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstanceGroupsInstancesList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L150">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L151">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L152">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L154">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L155">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L156">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L157">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L159">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L160">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L161">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L164">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L167">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L168">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L169">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L171">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L173">        ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt;() {};</span>
+<span class="nc" id="L174">        return apiClient.invokeAPI(&quot;/api/v2/instance_groups/{id}/instances/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * instances.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param data  (optional)
+     * @return Instance
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Instance apiInstancesCreate(String version, Object data) throws RestClientException {
+<span class="nc" id="L187">        return apiInstancesCreateWithHttpInfo(version, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * instances.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Instance&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Instance&gt; apiInstancesCreateWithHttpInfo(String version, Object data) throws RestClientException {
+<span class="nc" id="L201">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L204" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L205">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L209">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L210">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L212">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L213">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L214">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L215">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L217">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L220">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L221">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L224">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L226">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L228">        ParameterizedTypeReference&lt;Instance&gt; localReturnType = new ParameterizedTypeReference&lt;Instance&gt;() {};</span>
+<span class="nc" id="L229">        return apiClient.invokeAPI(&quot;/api/v2/instances/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Health checks are used to obtain important data about an instance.
+     * Instance fields affected by the health check are shown in this view. Fundamentally, health checks require running code on the machine in question.   - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;control\&amp;quot; or \&amp;quot;hybrid\&amp;quot;, health checks are performed as part of a periodic task that runs in the background.  - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;execution\&amp;quot;, health checks are done by submitting a work unit through the receptor mesh.  If ran through the receptor mesh, the invoked command is:  &amp;#x60;&amp;#x60;&amp;#x60; ansible-runner worker --worker-info &amp;#x60;&amp;#x60;&amp;#x60;  For execution nodes, these checks are _not_ performed on a regular basis. Health checks against functional nodes will be ran when the node is first discovered. Health checks against nodes with errors will be repeated at a reduced frequency.     # Manually Initiate a Health Check For purposes of error remediation or debugging, a health check can be manually initiated by making a POST request to this endpoint.  This will submit the work unit to the target node through the receptor mesh and wait for it to finish. The model will be updated with the result. Up-to-date values of the fields will be returned in the response data.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiInstancesHealthCheckCreate(String version, String id, InstanceHealthCheck data) throws RestClientException {
+<span class="nc" id="L243">        apiInstancesHealthCheckCreateWithHttpInfo(version, id, data);</span>
+<span class="nc" id="L244">    }</span>
+
+    /**
+     * Health checks are used to obtain important data about an instance.
+     * Instance fields affected by the health check are shown in this view. Fundamentally, health checks require running code on the machine in question.   - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;control\&amp;quot; or \&amp;quot;hybrid\&amp;quot;, health checks are performed as part of a periodic task that runs in the background.  - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;execution\&amp;quot;, health checks are done by submitting a work unit through the receptor mesh.  If ran through the receptor mesh, the invoked command is:  &amp;#x60;&amp;#x60;&amp;#x60; ansible-runner worker --worker-info &amp;#x60;&amp;#x60;&amp;#x60;  For execution nodes, these checks are _not_ performed on a regular basis. Health checks against functional nodes will be ran when the node is first discovered. Health checks against nodes with errors will be repeated at a reduced frequency.     # Manually Initiate a Health Check For purposes of error remediation or debugging, a health check can be manually initiated by making a POST request to this endpoint.  This will submit the work unit to the target node through the receptor mesh and wait for it to finish. The model will be updated with the result. Up-to-date values of the fields will be returned in the response data.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiInstancesHealthCheckCreateWithHttpInfo(String version, String id, InstanceHealthCheck data) throws RestClientException {
+<span class="nc" id="L259">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L262" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L263">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesHealthCheckCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L267" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L268">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesHealthCheckCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L273">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiInstancesHealthCheckCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L277">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L278">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L279">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L281">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L282">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L283">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L284">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L286">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L289">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L290">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L293">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L295">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L297">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L298">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/health_check/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Health checks are used to obtain important data about an instance.
+     * Instance fields affected by the health check are shown in this view. Fundamentally, health checks require running code on the machine in question.   - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;control\&amp;quot; or \&amp;quot;hybrid\&amp;quot;, health checks are performed as part of a periodic task that runs in the background.  - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;execution\&amp;quot;, health checks are done by submitting a work unit through the receptor mesh.  If ran through the receptor mesh, the invoked command is:  &amp;#x60;&amp;#x60;&amp;#x60; ansible-runner worker --worker-info &amp;#x60;&amp;#x60;&amp;#x60;  For execution nodes, these checks are _not_ performed on a regular basis. Health checks against functional nodes will be ran when the node is first discovered. Health checks against nodes with errors will be repeated at a reduced frequency.     # Manually Initiate a Health Check For purposes of error remediation or debugging, a health check can be manually initiated by making a POST request to this endpoint.  This will submit the work unit to the target node through the receptor mesh and wait for it to finish. The model will be updated with the result. Up-to-date values of the fields will be returned in the response data.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInstancesHealthCheckList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInstancesHealthCheckList200Response apiInstancesHealthCheckList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L313">        return apiInstancesHealthCheckListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Health checks are used to obtain important data about an instance.
+     * Instance fields affected by the health check are shown in this view. Fundamentally, health checks require running code on the machine in question.   - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;control\&amp;quot; or \&amp;quot;hybrid\&amp;quot;, health checks are performed as part of a periodic task that runs in the background.  - For instances with &amp;#x60;node_type&amp;#x60; of \&amp;quot;execution\&amp;quot;, health checks are done by submitting a work unit through the receptor mesh.  If ran through the receptor mesh, the invoked command is:  &amp;#x60;&amp;#x60;&amp;#x60; ansible-runner worker --worker-info &amp;#x60;&amp;#x60;&amp;#x60;  For execution nodes, these checks are _not_ performed on a regular basis. Health checks against functional nodes will be ran when the node is first discovered. Health checks against nodes with errors will be repeated at a reduced frequency.     # Manually Initiate a Health Check For purposes of error remediation or debugging, a health check can be manually initiated by making a POST request to this endpoint.  This will submit the work unit to the target node through the receptor mesh and wait for it to finish. The model will be updated with the result. Up-to-date values of the fields will be returned in the response data.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInstancesHealthCheckList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInstancesHealthCheckList200Response&gt; apiInstancesHealthCheckListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L329">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L332" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L333">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesHealthCheckList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L337" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L338">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesHealthCheckList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L342">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L343">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L344">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L346">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L347">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L348">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L349">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L351">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L352">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L353">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L356">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L359">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L360">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L361">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L363">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L365">        ParameterizedTypeReference&lt;ApiInstancesHealthCheckList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInstancesHealthCheckList200Response&gt;() {};</span>
+<span class="nc" id="L366">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/health_check/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * No Description for get on /api/{version}/instances/{id}/install_bundle/
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInstanceGroupsInstancesList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInstanceGroupsInstancesList200Response apiInstancesInstallBundleList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L381">        return apiInstancesInstallBundleListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * No Description for get on /api/{version}/instances/{id}/install_bundle/
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInstanceGroupsInstancesList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInstanceGroupsInstancesList200Response&gt; apiInstancesInstallBundleListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L397">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L400" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L401">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesInstallBundleList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L405" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L406">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesInstallBundleList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L410">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L411">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L412">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L414">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L415">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L416">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L417">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L419">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L420">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L421">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L424">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L427">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L428">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L429">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L431">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L433">        ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt;() {};</span>
+<span class="nc" id="L434">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/install_bundle/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * instances.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInstanceGroupsInstancesList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInstanceGroupsInstancesList200Response apiInstancesList(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L448">        return apiInstancesListWithHttpInfo(version, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * instances.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of instances found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more instance records.    ## Results  Each instance data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)    ## Sorting  To specify that instances are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInstanceGroupsInstancesList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInstanceGroupsInstancesList200Response&gt; apiInstancesListWithHttpInfo(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L463">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L466" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L467">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L471">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L472">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L474">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L475">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L476">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L477">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L479">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L480">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L481">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L484">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L487">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L488">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L489">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L491">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L493">        ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInstanceGroupsInstancesList200Response&gt;() {};</span>
+<span class="nc" id="L494">        return apiClient.invokeAPI(&quot;/api/v2/instances/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return Instance
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Instance apiInstancesPartialUpdate(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L508">        return apiInstancesPartialUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Instance&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Instance&gt; apiInstancesPartialUpdateWithHttpInfo(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L523">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L526" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L527">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesPartialUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L531" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L532">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesPartialUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L536">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L537">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L538">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L540">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L541">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L542">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L543">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L545">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L548">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L549">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L552">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L554">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L556">        ParameterizedTypeReference&lt;Instance&gt; localReturnType = new ParameterizedTypeReference&lt;Instance&gt;() {};</span>
+<span class="nc" id="L557">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/&quot;, HttpMethod.PATCH, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return Instance
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Instance apiInstancesRead(String version, String id) throws RestClientException {
+<span class="nc" id="L569">        return apiInstancesReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Instance&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Instance&gt; apiInstancesReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L582">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L585" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L586">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L590" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L591">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L595">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L596">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L597">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L599">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L600">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L601">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L602">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L604">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L607">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L608">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L609">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L611">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L613">        ParameterizedTypeReference&lt;Instance&gt; localReturnType = new ParameterizedTypeReference&lt;Instance&gt;() {};</span>
+<span class="nc" id="L614">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Instance
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Instance apiInstancesUpdate(String version, String id, Instance data) throws RestClientException {
+<span class="nc" id="L627">        return apiInstancesUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single instance
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this instance. (integer) * &amp;#x60;hostname&amp;#x60;:  (string) * &amp;#x60;type&amp;#x60;: Data type for this instance. (choice) * &amp;#x60;url&amp;#x60;: URL for this instance. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;uuid&amp;#x60;:  (string) * &amp;#x60;created&amp;#x60;: Timestamp when this instance was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this instance was last modified. (datetime) * &amp;#x60;last_seen&amp;#x60;: Last time instance ran its heartbeat task for main cluster nodes. Last known connection to receptor mesh for execution nodes. (datetime) * &amp;#x60;health_check_started&amp;#x60;: The last time a health check was initiated on this instance. (datetime) * &amp;#x60;health_check_pending&amp;#x60;:  (field) * &amp;#x60;last_health_check&amp;#x60;: Last time a health check was ran on this instance to refresh cpu, memory, and capacity. (datetime) * &amp;#x60;errors&amp;#x60;: Any error details from the last health check. (string) * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal) * &amp;#x60;version&amp;#x60;:  (string) * &amp;#x60;capacity&amp;#x60;:  (integer) * &amp;#x60;consumed_capacity&amp;#x60;:  (field) * &amp;#x60;percent_capacity_remaining&amp;#x60;:  (field) * &amp;#x60;jobs_running&amp;#x60;: Count of jobs in the running or waiting state that are targeted for this instance (integer) * &amp;#x60;jobs_total&amp;#x60;: Count of all jobs that target this instance (integer) * &amp;#x60;cpu&amp;#x60;:  (decimal) * &amp;#x60;memory&amp;#x60;: Total system memory of this instance in bytes. (integer) * &amp;#x60;cpu_capacity&amp;#x60;:  (integer) * &amp;#x60;mem_capacity&amp;#x60;:  (integer) * &amp;#x60;enabled&amp;#x60;:  (boolean) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure * &amp;#x60;managed&amp;#x60;: If True, this instance is managed by the control plane. (boolean) * &amp;#x60;ip_address&amp;#x60;:  (string) * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field) * &amp;#x60;reverse_peers&amp;#x60;:  (field) * &amp;#x60;listener_port&amp;#x60;:  (integer) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean) * &amp;#x60;protocol&amp;#x60;:  (field)      # Update an Instance:  Make a PUT or PATCH request to this resource to update this instance.  The following fields may be modified:    * &amp;#x60;hostname&amp;#x60;:  (string, required)             * &amp;#x60;capacity_adjustment&amp;#x60;:  (decimal, default&amp;#x3D;&amp;#x60;1&amp;#x60;)           * &amp;#x60;enabled&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;managed_by_policy&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;True&amp;#x60;) * &amp;#x60;node_type&amp;#x60;: Role that this node plays in the mesh. (choice)     - &amp;#x60;control&amp;#x60;: Control plane node     - &amp;#x60;execution&amp;#x60;: Execution plane node (default)     - &amp;#x60;hybrid&amp;#x60;: Controller and execution     - &amp;#x60;hop&amp;#x60;: Message-passing node, no execution capability * &amp;#x60;node_state&amp;#x60;: Indicates the current life cycle stage of this instance. (choice)     - &amp;#x60;provisioning&amp;#x60;: Provisioning     - &amp;#x60;provision-fail&amp;#x60;: Provisioning Failure     - &amp;#x60;installed&amp;#x60;: Installed (default)     - &amp;#x60;ready&amp;#x60;: Ready     - &amp;#x60;unavailable&amp;#x60;: Unavailable     - &amp;#x60;deprovisioning&amp;#x60;: De-provisioning     - &amp;#x60;deprovision-fail&amp;#x60;: De-provisioning Failure   * &amp;#x60;peers&amp;#x60;: Primary keys of receptor addresses to peer to. (field, default&amp;#x3D;&amp;#x60;None&amp;#x60;)  * &amp;#x60;listener_port&amp;#x60;:  (integer, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;peers_from_control_nodes&amp;#x60;:  (boolean, default&amp;#x3D;&amp;#x60;&amp;#x60;)        For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Instance&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Instance&gt; apiInstancesUpdateWithHttpInfo(String version, String id, Instance data) throws RestClientException {
+<span class="nc" id="L641">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L644" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L645">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInstancesUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L649" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L650">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInstancesUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L654" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L655">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiInstancesUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L659">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L660">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L661">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L663">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L664">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L665">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L666">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L668">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L671">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L672">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L675">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L677">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L679">        ParameterizedTypeReference&lt;Instance&gt; localReturnType = new ParameterizedTypeReference&lt;Instance&gt;() {};</span>
+<span class="nc" id="L680">        return apiClient.invokeAPI(&quot;/api/v2/instances/{id}/&quot;, HttpMethod.PUT, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L685">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L686">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L688">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L689">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L690">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L691">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L692">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L694">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L697">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L698">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L701">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L703">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L705">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

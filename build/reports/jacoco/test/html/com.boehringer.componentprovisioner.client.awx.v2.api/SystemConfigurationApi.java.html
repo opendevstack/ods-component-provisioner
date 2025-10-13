@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemConfigurationApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">SystemConfigurationApi.java</span></div><h1>SystemConfigurationApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.SystemConfigurationApi&quot;)
+public class SystemConfigurationApi extends BaseApi {
+
+    public SystemConfigurationApi() {
+<span class="nc" id="L33">        super(new ApiClient());</span>
+<span class="nc" id="L34">    }</span>
+
+    @Autowired
+    public SystemConfigurationApi(ApiClient apiClient) {
+<span class="nc" id="L38">        super(apiClient);</span>
+<span class="nc" id="L39">    }</span>
+
+    /**
+     * No Description for post on /api/{version}/config/attach/
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiConfigAttachCreate(String version) throws RestClientException {
+<span class="nc" id="L49">        apiConfigAttachCreateWithHttpInfo(version);</span>
+<span class="nc" id="L50">    }</span>
+
+    /**
+     * No Description for post on /api/{version}/config/attach/
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiConfigAttachCreateWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L61">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L65">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiConfigAttachCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L69">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L70">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L72">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L73">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L74">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L75">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L77">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L78">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L79">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L80">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L82">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L84">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L85">        return apiClient.invokeAPI(&quot;/api/v2/config/attach/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the configuration containing
+     * the following fields (some fields may not be visible to all users):  * &amp;#x60;project_base_dir&amp;#x60;: Path on the server where projects and playbooks are \\   stored. * &amp;#x60;project_local_paths&amp;#x60;: List of directories beneath &amp;#x60;project_base_dir&amp;#x60; to   use when creating/editing a manual project. * &amp;#x60;time_zone&amp;#x60;: The configured time zone for the server. * &amp;#x60;license_info&amp;#x60;: Information about the current license. * &amp;#x60;version&amp;#x60;: Version of Ansible Tower package installed. * &amp;#x60;custom_virtualenvs&amp;#x60;: Deprecated venv locations from before migration to   execution environments. Export tooling is in &amp;#x60;awx-manage&amp;#x60; commands. * &amp;#x60;eula&amp;#x60;: The current End-User License Agreement    # Install or update an existing license  (_New in Ansible Tower 2.0.0_) Make a POST request to this resource as a super user to install or update the existing license.  The license data itself can be POSTed as a normal json data structure.  (_New in Ansible Tower 2.1.1_) The POST must include a &amp;#x60;eula_accepted&amp;#x60; boolean element indicating acceptance of the End-User License Agreement.    # Delete an existing license  (_New in Ansible Tower 2.0.0_) Make a DELETE request to this resource as a super user to delete the existing license
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiConfigCreate(String version) throws RestClientException {
+<span class="nc" id="L95">        apiConfigCreateWithHttpInfo(version);</span>
+<span class="nc" id="L96">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve the configuration containing
+     * the following fields (some fields may not be visible to all users):  * &amp;#x60;project_base_dir&amp;#x60;: Path on the server where projects and playbooks are \\   stored. * &amp;#x60;project_local_paths&amp;#x60;: List of directories beneath &amp;#x60;project_base_dir&amp;#x60; to   use when creating/editing a manual project. * &amp;#x60;time_zone&amp;#x60;: The configured time zone for the server. * &amp;#x60;license_info&amp;#x60;: Information about the current license. * &amp;#x60;version&amp;#x60;: Version of Ansible Tower package installed. * &amp;#x60;custom_virtualenvs&amp;#x60;: Deprecated venv locations from before migration to   execution environments. Export tooling is in &amp;#x60;awx-manage&amp;#x60; commands. * &amp;#x60;eula&amp;#x60;: The current End-User License Agreement    # Install or update an existing license  (_New in Ansible Tower 2.0.0_) Make a POST request to this resource as a super user to install or update the existing license.  The license data itself can be POSTed as a normal json data structure.  (_New in Ansible Tower 2.1.1_) The POST must include a &amp;#x60;eula_accepted&amp;#x60; boolean element indicating acceptance of the End-User License Agreement.    # Delete an existing license  (_New in Ansible Tower 2.0.0_) Make a DELETE request to this resource as a super user to delete the existing license
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiConfigCreateWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L107">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L111">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiConfigCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L115">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L116">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L118">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L119">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L120">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L121">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L123">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L124">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L125">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L126">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L128">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L130">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L131">        return apiClient.invokeAPI(&quot;/api/v2/config/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the configuration containing
+     * the following fields (some fields may not be visible to all users):  * &amp;#x60;project_base_dir&amp;#x60;: Path on the server where projects and playbooks are \\   stored. * &amp;#x60;project_local_paths&amp;#x60;: List of directories beneath &amp;#x60;project_base_dir&amp;#x60; to   use when creating/editing a manual project. * &amp;#x60;time_zone&amp;#x60;: The configured time zone for the server. * &amp;#x60;license_info&amp;#x60;: Information about the current license. * &amp;#x60;version&amp;#x60;: Version of Ansible Tower package installed. * &amp;#x60;custom_virtualenvs&amp;#x60;: Deprecated venv locations from before migration to   execution environments. Export tooling is in &amp;#x60;awx-manage&amp;#x60; commands. * &amp;#x60;eula&amp;#x60;: The current End-User License Agreement    # Install or update an existing license  (_New in Ansible Tower 2.0.0_) Make a POST request to this resource as a super user to install or update the existing license.  The license data itself can be POSTed as a normal json data structure.  (_New in Ansible Tower 2.1.1_) The POST must include a &amp;#x60;eula_accepted&amp;#x60; boolean element indicating acceptance of the End-User License Agreement.    # Delete an existing license  (_New in Ansible Tower 2.0.0_) Make a DELETE request to this resource as a super user to delete the existing license
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiConfigDelete(String version) throws RestClientException {
+<span class="nc" id="L141">        apiConfigDeleteWithHttpInfo(version);</span>
+<span class="nc" id="L142">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve the configuration containing
+     * the following fields (some fields may not be visible to all users):  * &amp;#x60;project_base_dir&amp;#x60;: Path on the server where projects and playbooks are \\   stored. * &amp;#x60;project_local_paths&amp;#x60;: List of directories beneath &amp;#x60;project_base_dir&amp;#x60; to   use when creating/editing a manual project. * &amp;#x60;time_zone&amp;#x60;: The configured time zone for the server. * &amp;#x60;license_info&amp;#x60;: Information about the current license. * &amp;#x60;version&amp;#x60;: Version of Ansible Tower package installed. * &amp;#x60;custom_virtualenvs&amp;#x60;: Deprecated venv locations from before migration to   execution environments. Export tooling is in &amp;#x60;awx-manage&amp;#x60; commands. * &amp;#x60;eula&amp;#x60;: The current End-User License Agreement    # Install or update an existing license  (_New in Ansible Tower 2.0.0_) Make a POST request to this resource as a super user to install or update the existing license.  The license data itself can be POSTed as a normal json data structure.  (_New in Ansible Tower 2.1.1_) The POST must include a &amp;#x60;eula_accepted&amp;#x60; boolean element indicating acceptance of the End-User License Agreement.    # Delete an existing license  (_New in Ansible Tower 2.0.0_) Make a DELETE request to this resource as a super user to delete the existing license
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiConfigDeleteWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L153">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L156" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L157">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiConfigDelete&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L161">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L162">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L164">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L165">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L166">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L167">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L169">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L170">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L171">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L172">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L174">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L176">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L177">        return apiClient.invokeAPI(&quot;/api/v2/config/&quot;, HttpMethod.DELETE, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Return various sitewide configuration settings
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiConfigList(String version) throws RestClientException {
+<span class="nc" id="L187">        apiConfigListWithHttpInfo(version);</span>
+<span class="nc" id="L188">    }</span>
+
+    /**
+     * Return various sitewide configuration settings
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiConfigListWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L199">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L203">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiConfigList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L207">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L208">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L210">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L211">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L212">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L213">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L215">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L218">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L219">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L220">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L222">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L224">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L225">        return apiClient.invokeAPI(&quot;/api/v2/config/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * No Description for post on /api/{version}/config/subscriptions/
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiConfigSubscriptionsCreate(String version) throws RestClientException {
+<span class="nc" id="L235">        apiConfigSubscriptionsCreateWithHttpInfo(version);</span>
+<span class="nc" id="L236">    }</span>
+
+    /**
+     * No Description for post on /api/{version}/config/subscriptions/
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiConfigSubscriptionsCreateWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L247">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L250" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L251">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiConfigSubscriptionsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L255">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L256">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L258">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L259">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L260">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L261">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L263">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L264">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L265">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L266">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L268">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L270">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L271">        return apiClient.invokeAPI(&quot;/api/v2/config/subscriptions/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to obtain a list all Receptor Nodes and their links.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiMeshVisualizerList(String version) throws RestClientException {
+<span class="nc" id="L281">        apiMeshVisualizerListWithHttpInfo(version);</span>
+<span class="nc" id="L282">    }</span>
+
+    /**
+     * Make a GET request to this resource to obtain a list all Receptor Nodes and their links.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiMeshVisualizerListWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L293">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L297">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiMeshVisualizerList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L301">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L302">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L304">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L305">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L306">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L307">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L309">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L310">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L311">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L312">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L314">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L316">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L317">        return apiClient.invokeAPI(&quot;/api/v2/mesh_visualizer/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Everything returned here should be considered public / insecure, as
+     * this requires no auth and is intended for use by the installer process.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiPingList(String version) throws RestClientException {
+<span class="nc" id="L327">        apiPingListWithHttpInfo(version);</span>
+<span class="nc" id="L328">    }</span>
+
+    /**
+     * Everything returned here should be considered public / insecure, as
+     * this requires no auth and is intended for use by the installer process.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiPingListWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L339">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L342" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L343">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiPingList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L347">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L348">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L350">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L351">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L352">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L353">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L355">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L358">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L359">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L360">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L362">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L364">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L365">        return apiClient.invokeAPI(&quot;/api/v2/ping/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * No Description for get on /api/{version}/schedules/zoneinfo/
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiSchedulesZoneinfoList(String version) throws RestClientException {
+<span class="nc" id="L375">        apiSchedulesZoneinfoListWithHttpInfo(version);</span>
+<span class="nc" id="L376">    }</span>
+
+    /**
+     * No Description for get on /api/{version}/schedules/zoneinfo/
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiSchedulesZoneinfoListWithHttpInfo(String version) throws RestClientException {
+<span class="nc" id="L387">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L390" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L391">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiSchedulesZoneinfoList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L395">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L396">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L398">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L399">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L400">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L401">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L403">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L406">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L407">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L408">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L410">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L412">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L413">        return apiClient.invokeAPI(&quot;/api/v2/schedules/zoneinfo/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L418">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L419">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L421">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L422">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L423">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L424">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L425">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L427">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L430">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L431">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L432">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L434">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L436">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

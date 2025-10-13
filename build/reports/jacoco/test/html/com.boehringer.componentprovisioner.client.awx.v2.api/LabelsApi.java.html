@@ -1,0 +1,1248 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LabelsApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">LabelsApi.java</span></div><h1>LabelsApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiInventoriesLabelsList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.Label;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.LabelsApi&quot;)
+public class LabelsApi extends BaseApi {
+
+    public LabelsApi() {
+<span class="nc" id="L35">        super(new ApiClient());</span>
+<span class="nc" id="L36">    }</span>
+
+    @Autowired
+    public LabelsApi(ApiClient apiClient) {
+<span class="nc" id="L40">        super(apiClient);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected inventory.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiInventoriesLabelsCreate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L54">        return apiInventoriesLabelsCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected inventory.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiInventoriesLabelsCreateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L68">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L72">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInventoriesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L77">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInventoriesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L82">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiInventoriesLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L86">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L87">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L88">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L90">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L91">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L92">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L93">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L95">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L98">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L99">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L102">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L104">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L106">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L107">        return apiClient.invokeAPI(&quot;/api/v2/inventories/{id}/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected inventory.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiInventoriesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L122">        return apiInventoriesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected inventory.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiInventoriesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L138">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L142">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiInventoriesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L147">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiInventoriesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L151">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L152">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L153">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L155">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L156">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L157">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L158">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L160">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L161">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L162">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L165">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L168">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L169">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L170">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L172">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L174">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L175">        return apiClient.invokeAPI(&quot;/api/v2/inventories/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiJobTemplatesLabelsCreate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L188">        return apiJobTemplatesLabelsCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiJobTemplatesLabelsCreateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L202">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L206">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L211">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L216">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L220">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L221">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L222">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L224">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L225">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L226">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L227">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L229">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L232">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L233">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L236">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L238">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L240">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L241">        return apiClient.invokeAPI(&quot;/api/v2/job_templates/{id}/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiJobTemplatesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L256">        return apiJobTemplatesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiJobTemplatesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L272">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L276">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobTemplatesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L281">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobTemplatesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L285">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L286">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L287">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L289">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L290">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L291">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L292">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L294">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L295">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L296">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L299">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L302">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L303">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L304">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L306">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L308">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L309">        return apiClient.invokeAPI(&quot;/api/v2/job_templates/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiJobsLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L324">        return apiJobsLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected job.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiJobsLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L340">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L344">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiJobsLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L348" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L349">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiJobsLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L353">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L354">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L355">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L357">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L358">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L359">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L360">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L362">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L363">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L364">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L367">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L370">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L371">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L372">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L374">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L376">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L377">        return apiClient.invokeAPI(&quot;/api/v2/jobs/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * labels.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiLabelsCreate(String version, Label data) throws RestClientException {
+<span class="nc" id="L389">        return apiLabelsCreateWithHttpInfo(version, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * labels.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiLabelsCreateWithHttpInfo(String version, Label data) throws RestClientException {
+<span class="nc" id="L402">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L405" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L406">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L410" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L411">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L415">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L416">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L418">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L419">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L420">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L421">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L423">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L426">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L427">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L430">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L432">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L434">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L435">        return apiClient.invokeAPI(&quot;/api/v2/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * labels.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiLabelsList(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L449">        return apiLabelsListWithHttpInfo(version, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * labels.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiLabelsListWithHttpInfo(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L464">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L468">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L472">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L473">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L475">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L476">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L477">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L478">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L480">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L481">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L482">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L485">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L488">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L489">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L490">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L492">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L494">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L495">        return apiClient.invokeAPI(&quot;/api/v2/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiLabelsPartialUpdate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L508">        return apiLabelsPartialUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiLabelsPartialUpdateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L522">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L525" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L526">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiLabelsPartialUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L530" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L531">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiLabelsPartialUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L535" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L536">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiLabelsPartialUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L540">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L541">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L542">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L544">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L545">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L546">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L547">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L549">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L552">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L553">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L556">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L558">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L560">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L561">        return apiClient.invokeAPI(&quot;/api/v2/labels/{id}/&quot;, HttpMethod.PATCH, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiLabelsRead(String version, String id) throws RestClientException {
+<span class="nc" id="L573">        return apiLabelsReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiLabelsReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L586">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L589" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L590">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiLabelsRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L594" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L595">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiLabelsRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L599">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L600">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L601">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L603">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L604">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L605">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L606">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L608">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L611">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L612">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L613">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L615">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L617">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L618">        return apiClient.invokeAPI(&quot;/api/v2/labels/{id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiLabelsUpdate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L631">        return apiLabelsUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single label
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)      # Update a Label:  Make a PUT or PATCH request to this resource to update this label.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this label. (string, required) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id, required)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiLabelsUpdateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L645">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L648" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L649">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiLabelsUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L653" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L654">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiLabelsUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L658" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L659">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiLabelsUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L663">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L664">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L665">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L667">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L668">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L669">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L670">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L672">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L675">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L676">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L679">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L681">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L683">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L684">        return apiClient.invokeAPI(&quot;/api/v2/labels/{id}/&quot;, HttpMethod.PUT, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected schedule.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiSchedulesLabelsCreate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L697">        return apiSchedulesLabelsCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected schedule.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiSchedulesLabelsCreateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L711">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L714" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L715">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiSchedulesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L719" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L720">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiSchedulesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L724" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L725">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiSchedulesLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L729">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L730">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L731">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L733">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L734">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L735">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L736">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L738">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L741">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L742">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L745">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L747">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L749">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L750">        return apiClient.invokeAPI(&quot;/api/v2/schedules/{id}/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected schedule.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiSchedulesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L765">        return apiSchedulesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected schedule.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiSchedulesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L781">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L784" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L785">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiSchedulesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L789" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L790">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiSchedulesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L794">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L795">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L796">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L798">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L799">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L800">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L801">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L803">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L804">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L805">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L808">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L811">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L812">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L813">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L815">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L817">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L818">        return apiClient.invokeAPI(&quot;/api/v2/schedules/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiWorkflowJobNodesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L833">        return apiWorkflowJobNodesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiWorkflowJobNodesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L849">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L852" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L853">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobNodesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L857" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L858">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobNodesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L862">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L863">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L864">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L866">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L867">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L868">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L869">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L871">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L872">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L873">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L876">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L879">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L880">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L881">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L883">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L885">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L886">        return apiClient.invokeAPI(&quot;/api/v2/workflow_job_nodes/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiWorkflowJobTemplateNodesLabelsCreate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L899">        return apiWorkflowJobTemplateNodesLabelsCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiWorkflowJobTemplateNodesLabelsCreateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L913">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L916" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L917">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobTemplateNodesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L921" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L922">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobTemplateNodesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L926" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L927">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiWorkflowJobTemplateNodesLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L931">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L932">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L933">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L935">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L936">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L937">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L938">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L940">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L943">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L944">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L947">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L949">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L951">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L952">        return apiClient.invokeAPI(&quot;/api/v2/workflow_job_template_nodes/{id}/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiWorkflowJobTemplateNodesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L967">        return apiWorkflowJobTemplateNodesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template node.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiWorkflowJobTemplateNodesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L983">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L986" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L987">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobTemplateNodesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L991" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L992">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobTemplateNodesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L996">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L997">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L998">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L1000">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1001">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L1002">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1003">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L1005">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L1006">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L1007">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L1010">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1013">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L1014">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L1015">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L1017">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L1019">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L1020">        return apiClient.invokeAPI(&quot;/api/v2/workflow_job_template_nodes/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return Label
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Label apiWorkflowJobTemplatesLabelsCreate(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L1033">        return apiWorkflowJobTemplatesLabelsCreateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Label&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Label&gt; apiWorkflowJobTemplatesLabelsCreateWithHttpInfo(String version, String id, Label data) throws RestClientException {
+<span class="nc" id="L1047">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L1050" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L1051">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L1055" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L1056">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L1060" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L1061">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiWorkflowJobTemplatesLabelsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L1065">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L1066">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L1067">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L1069">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1070">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L1071">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1072">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L1074">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1077">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L1078">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1081">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L1083">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L1085">        ParameterizedTypeReference&lt;Label&gt; localReturnType = new ParameterizedTypeReference&lt;Label&gt;() {};</span>
+<span class="nc" id="L1086">        return apiClient.invokeAPI(&quot;/api/v2/workflow_job_templates/{id}/labels/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiWorkflowJobTemplatesLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L1101">        return apiWorkflowJobTemplatesLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job template.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiWorkflowJobTemplatesLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L1117">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L1120" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L1121">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobTemplatesLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L1125" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L1126">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobTemplatesLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L1130">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L1131">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L1132">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L1134">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1135">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L1136">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1137">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L1139">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L1140">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L1141">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L1144">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1147">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L1148">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L1149">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L1151">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L1153">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L1154">        return apiClient.invokeAPI(&quot;/api/v2/workflow_job_templates/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiInventoriesLabelsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiInventoriesLabelsList200Response apiWorkflowJobsLabelsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L1169">        return apiWorkflowJobsLabelsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * labels associated with the selected workflow job.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of labels found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more label records.    ## Results  Each label data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this label. (integer) * &amp;#x60;type&amp;#x60;: Data type for this label. (choice) * &amp;#x60;url&amp;#x60;: URL for this label. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this label was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this label was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this label. (string) * &amp;#x60;organization&amp;#x60;: Organization this label belongs to. (id)    ## Sorting  To specify that labels are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiInventoriesLabelsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiInventoriesLabelsList200Response&gt; apiWorkflowJobsLabelsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L1185">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L1188" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L1189">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiWorkflowJobsLabelsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L1193" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L1194">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiWorkflowJobsLabelsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L1198">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L1199">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L1200">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L1202">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1203">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L1204">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1205">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L1207">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L1208">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L1209">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L1212">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1215">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L1216">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L1217">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L1219">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L1221">        ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiInventoriesLabelsList200Response&gt;() {};</span>
+<span class="nc" id="L1222">        return apiClient.invokeAPI(&quot;/api/v2/workflow_jobs/{id}/labels/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L1227">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L1228">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L1230">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L1231">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1232">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L1233">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L1234">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L1236">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L1239">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L1240">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L1241">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L1243">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L1245">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

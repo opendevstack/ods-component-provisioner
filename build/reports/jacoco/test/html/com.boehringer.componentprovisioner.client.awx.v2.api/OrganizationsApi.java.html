@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OrganizationsApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">OrganizationsApi.java</span></div><h1>OrganizationsApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiOrganizationsList200Response;
+import com.boehringer.componentprovisioner.client.awx.v2.model.Organization;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.OrganizationsApi&quot;)
+public class OrganizationsApi extends BaseApi {
+
+    public OrganizationsApi() {
+<span class="nc" id="L35">        super(new ApiClient());</span>
+<span class="nc" id="L36">    }</span>
+
+    @Autowired
+    public OrganizationsApi(ApiClient apiClient) {
+<span class="nc" id="L40">        super(apiClient);</span>
+<span class="nc" id="L41">    }</span>
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * organizations.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param data  (optional)
+     * @return Organization
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Organization apiOrganizationsCreate(String version, Object data) throws RestClientException {
+<span class="nc" id="L55">        return apiOrganizationsCreateWithHttpInfo(version, data).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * organizations.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Organization&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Organization&gt; apiOrganizationsCreateWithHttpInfo(String version, Object data) throws RestClientException {
+<span class="nc" id="L70">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L73" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L74">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsCreate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L78">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L79">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L81">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L82">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L83">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L84">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L86">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L89">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L90">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L93">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L95">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L97">        ParameterizedTypeReference&lt;Organization&gt; localReturnType = new ParameterizedTypeReference&lt;Organization&gt;() {};</span>
+<span class="nc" id="L98">        return apiClient.invokeAPI(&quot;/api/v2/organizations/&quot;, HttpMethod.POST, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;409&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiOrganizationsDelete(String version, String id) throws RestClientException {
+<span class="nc" id="L112">        apiOrganizationsDeleteWithHttpInfo(version, id);</span>
+<span class="nc" id="L113">    }</span>
+
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;409&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiOrganizationsDeleteWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L128">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L132">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsDelete&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L137">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiOrganizationsDelete&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L141">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L142">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L143">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L145">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L146">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L147">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L148">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L150">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L153">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L154">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L155">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L157">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L159">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L160">        return apiClient.invokeAPI(&quot;/api/v2/organizations/{id}/&quot;, HttpMethod.DELETE, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * organizations.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiOrganizationsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiOrganizationsList200Response apiOrganizationsList(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L175">        return apiOrganizationsListWithHttpInfo(version, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve the list of
+     * organizations.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * @param version  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiOrganizationsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiOrganizationsList200Response&gt; apiOrganizationsListWithHttpInfo(String version, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L191">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L195">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L199">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L200">        uriVariables.put(&quot;version&quot;, version);</span>
+
+<span class="nc" id="L202">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L203">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L204">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L205">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L207">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L208">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L209">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L212">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L215">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L216">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L217">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L219">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L221">        ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt;() {};</span>
+<span class="nc" id="L222">        return apiClient.invokeAPI(&quot;/api/v2/organizations/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return Organization
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Organization apiOrganizationsPartialUpdate(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L236">        return apiOrganizationsPartialUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Organization&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Organization&gt; apiOrganizationsPartialUpdateWithHttpInfo(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L251">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L254" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L255">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsPartialUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L260">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiOrganizationsPartialUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L264">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L265">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L266">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L268">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L269">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L270">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L271">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L273">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L276">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L277">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L280">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L282">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L284">        ParameterizedTypeReference&lt;Organization&gt; localReturnType = new ParameterizedTypeReference&lt;Organization&gt;() {};</span>
+<span class="nc" id="L285">        return apiClient.invokeAPI(&quot;/api/v2/organizations/{id}/&quot;, HttpMethod.PATCH, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @return Organization
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Organization apiOrganizationsRead(String version, String id) throws RestClientException {
+<span class="nc" id="L299">        return apiOrganizationsReadWithHttpInfo(version, id).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;401&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @return ResponseEntity&amp;lt;Organization&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Organization&gt; apiOrganizationsReadWithHttpInfo(String version, String id) throws RestClientException {
+<span class="nc" id="L314">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L317" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L318">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsRead&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L322" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L323">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiOrganizationsRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L327">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L328">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L329">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L331">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L332">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L333">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L334">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L336">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L339">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L340">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L341">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L343">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L345">        ParameterizedTypeReference&lt;Organization&gt; localReturnType = new ParameterizedTypeReference&lt;Organization&gt;() {};</span>
+<span class="nc" id="L346">        return apiClient.invokeAPI(&quot;/api/v2/organizations/{id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return Organization
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Organization apiOrganizationsUpdate(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L361">        return apiOrganizationsUpdateWithHttpInfo(version, id, data).getBody();</span>
+    }
+
+    /**
+     * Make GET request to this resource to retrieve a single organization
+     * record containing the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)      # Update an Organization:  Make a PUT or PATCH request to this resource to update this organization.  The following fields may be modified:          * &amp;#x60;name&amp;#x60;: Name of this organization. (string, required) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer, default&amp;#x3D;&amp;#x60;0&amp;#x60;)  * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id, default&amp;#x3D;&amp;#x60;&amp;#x60;) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string, default&amp;#x3D;&amp;#x60;\&amp;quot;\&amp;quot;&amp;#x60;)       For a PUT request, include **all** fields in the request.    For a PATCH request, include only the fields that are being modified.    # Delete an Organization:  Make a DELETE request to this resource to delete this organization.
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * &lt;p&gt;&lt;b&gt;400&lt;/b&gt;
+     * &lt;p&gt;&lt;b&gt;403&lt;/b&gt;
+     * @param version  (required)
+     * @param id  (required)
+     * @param data  (optional)
+     * @return ResponseEntity&amp;lt;Organization&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Organization&gt; apiOrganizationsUpdateWithHttpInfo(String version, String id, Object data) throws RestClientException {
+<span class="nc" id="L377">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L381">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiOrganizationsUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L386">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiOrganizationsUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L390">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L391">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L392">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L394">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L395">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L396">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L397">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L399">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L402">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L403">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L406">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L408">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L410">        ParameterizedTypeReference&lt;Organization&gt; localReturnType = new ParameterizedTypeReference&lt;Organization&gt;() {};</span>
+<span class="nc" id="L411">        return apiClient.invokeAPI(&quot;/api/v2/organizations/{id}/&quot;, HttpMethod.PUT, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * organizations of which the selected user is an admin.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiOrganizationsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiOrganizationsList200Response apiUsersAdminOfOrganizationsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L426">        return apiUsersAdminOfOrganizationsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * organizations of which the selected user is an admin.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiOrganizationsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiOrganizationsList200Response&gt; apiUsersAdminOfOrganizationsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L442">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L445" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L446">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiUsersAdminOfOrganizationsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L451">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiUsersAdminOfOrganizationsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L455">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L456">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L457">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L459">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L460">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L461">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L462">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L464">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L465">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L466">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L469">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L472">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L473">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L474">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L476">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L478">        ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt;() {};</span>
+<span class="nc" id="L479">        return apiClient.invokeAPI(&quot;/api/v2/users/{id}/admin_of_organizations/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * organizations associated with the selected user.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ApiOrganizationsList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiOrganizationsList200Response apiUsersOrganizationsList(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L494">        return apiUsersOrganizationsListWithHttpInfo(version, id, search, page, pageSize).getBody();</span>
+    }
+
+    /**
+     * Make a GET request to this resource to retrieve a list of
+     * organizations associated with the selected user.  The resulting data structure contains:      {         \&amp;quot;count\&amp;quot;: 99,         \&amp;quot;next\&amp;quot;: null,         \&amp;quot;previous\&amp;quot;: null,         \&amp;quot;results\&amp;quot;: [             ...         ]     }  The &amp;#x60;count&amp;#x60; field indicates the total number of organizations found for the given query.  The &amp;#x60;next&amp;#x60; and &amp;#x60;previous&amp;#x60; fields provides links to additional results if there are more than will fit on a single page.  The &amp;#x60;results&amp;#x60; list contains zero or more organization records.    ## Results  Each organization data structure includes the following fields:  * &amp;#x60;id&amp;#x60;: Database ID for this organization. (integer) * &amp;#x60;type&amp;#x60;: Data type for this organization. (choice) * &amp;#x60;url&amp;#x60;: URL for this organization. (string) * &amp;#x60;related&amp;#x60;: Data structure with URLs of related resources. (object) * &amp;#x60;summary_fields&amp;#x60;: Data structure with name/description for related resources.  The output for some objects may be limited for performance reasons. (object) * &amp;#x60;created&amp;#x60;: Timestamp when this organization was created. (datetime) * &amp;#x60;modified&amp;#x60;: Timestamp when this organization was last modified. (datetime) * &amp;#x60;name&amp;#x60;: Name of this organization. (string) * &amp;#x60;description&amp;#x60;: Optional description of this organization. (string) * &amp;#x60;max_hosts&amp;#x60;: Maximum number of hosts allowed to be managed by this organization. (integer) * &amp;#x60;custom_virtualenv&amp;#x60;: Local absolute file path containing a custom Python virtualenv to use (string) * &amp;#x60;default_environment&amp;#x60;: The default execution environment for jobs run by this organization. (id) * &amp;#x60;opa_query_path&amp;#x60;: The query path for the OPA policy to evaluate prior to job execution. The query path should be formatted as package/rule. (string)    ## Sorting  To specify that organizations are returned in a particular order, use the &amp;#x60;order_by&amp;#x60; query string parameter on the GET request.      ?order_by&amp;#x3D;name  Prefix the field name with a dash &amp;#x60;-&amp;#x60; to sort in reverse:      ?order_by&amp;#x3D;-name  Multiple sorting fields may be specified by separating the field names with a comma &amp;#x60;,&amp;#x60;:      ?order_by&amp;#x3D;name,some_other_field  ## Pagination  Use the &amp;#x60;page_size&amp;#x60; query string parameter to change the number of results returned for each request.  Use the &amp;#x60;page&amp;#x60; query string parameter to retrieve a particular page of results.      ?page_size&amp;#x3D;100&amp;amp;page&amp;#x3D;2  The &amp;#x60;previous&amp;#x60; and &amp;#x60;next&amp;#x60; links returned with the results will set these query string parameters automatically.  ## Searching  Use the &amp;#x60;search&amp;#x60; query string parameter to perform a case-insensitive search within all designated text fields of a model.      ?search&amp;#x3D;findme  (_Added in Ansible Tower 3.1.0_) Search across related fields:      ?related__search&amp;#x3D;findme
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param version  (required)
+     * @param id  (required)
+     * @param search A search term. (optional)
+     * @param page A page number within the paginated result set. (optional)
+     * @param pageSize Number of results to return per page. (optional)
+     * @return ResponseEntity&amp;lt;ApiOrganizationsList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiOrganizationsList200Response&gt; apiUsersOrganizationsListWithHttpInfo(String version, String id, String search, Integer page, Integer pageSize) throws RestClientException {
+<span class="nc" id="L510">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'version' is set
+<span class="nc bnc" id="L513" title="All 2 branches missed.">        if (version == null) {</span>
+<span class="nc" id="L514">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'version' when calling apiUsersOrganizationsList&quot;);</span>
+        }
+        
+        // verify the required parameter 'id' is set
+<span class="nc bnc" id="L518" title="All 2 branches missed.">        if (id == null) {</span>
+<span class="nc" id="L519">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'id' when calling apiUsersOrganizationsList&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L523">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L524">        uriVariables.put(&quot;version&quot;, version);</span>
+<span class="nc" id="L525">        uriVariables.put(&quot;id&quot;, id);</span>
+
+<span class="nc" id="L527">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L528">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L529">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L530">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L532">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;search&quot;, search));</span>
+<span class="nc" id="L533">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+<span class="nc" id="L534">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page_size&quot;, pageSize));</span>
+        
+
+<span class="nc" id="L537">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L540">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L541">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L542">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L544">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L546">        ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiOrganizationsList200Response&gt;() {};</span>
+<span class="nc" id="L547">        return apiClient.invokeAPI(&quot;/api/v2/users/{id}/organizations/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L552">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L553">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L555">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L556">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L557">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L558">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L559">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L561">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L564">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L565">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L566">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L568">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L570">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>

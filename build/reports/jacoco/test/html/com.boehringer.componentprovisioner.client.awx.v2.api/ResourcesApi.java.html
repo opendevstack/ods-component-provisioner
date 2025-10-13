@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ResourcesApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">component-provisioner</a> &gt; <a href="index.source.html" class="el_package">com.boehringer.componentprovisioner.client.awx.v2.api</a> &gt; <span class="el_source">ResourcesApi.java</span></div><h1>ResourcesApi.java</h1><pre class="source lang-java linenums">package com.boehringer.componentprovisioner.client.awx.v2.api;
+
+import com.boehringer.componentprovisioner.client.awx.v2.ApiClient;
+import com.boehringer.componentprovisioner.client.awx.v2.BaseApi;
+
+import com.boehringer.componentprovisioner.client.awx.v2.model.ApiV2ServiceIndexResourcesList200Response;
+import org.springframework.core.io.Resource;
+import java.util.UUID;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+@jakarta.annotation.Generated(value = &quot;org.openapitools.codegen.languages.JavaClientCodegen&quot;, comments = &quot;Generator version: 7.10.0&quot;)
+@Component(&quot;com.boehringer.componentprovisioner.client.awx.v2.api.ResourcesApi&quot;)
+public class ResourcesApi extends BaseApi {
+
+    public ResourcesApi() {
+<span class="nc" id="L36">        super(new ApiClient());</span>
+<span class="nc" id="L37">    }</span>
+
+    @Autowired
+    public ResourcesApi(ApiClient apiClient) {
+<span class="nc" id="L41">        super(apiClient);</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param data  (required)
+     * @return Resource
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Resource apiV2ServiceIndexResourcesCreate(Resource data) throws RestClientException {
+<span class="nc" id="L53">        return apiV2ServiceIndexResourcesCreateWithHttpInfo(data).getBody();</span>
+    }
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;201&lt;/b&gt; - 
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Resource&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Resource&gt; apiV2ServiceIndexResourcesCreateWithHttpInfo(Resource data) throws RestClientException {
+<span class="nc" id="L65">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L69">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiV2ServiceIndexResourcesCreate&quot;);</span>
+        }
+        
+
+<span class="nc" id="L73">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L74">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L75">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L76">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L78">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L81">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L82">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L85">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L87">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L89">        ParameterizedTypeReference&lt;Resource&gt; localReturnType = new ParameterizedTypeReference&lt;Resource&gt;() {};</span>
+<span class="nc" id="L90">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/&quot;, HttpMethod.POST, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public void apiV2ServiceIndexResourcesDelete(UUID ansibleId) throws RestClientException {
+<span class="nc" id="L100">        apiV2ServiceIndexResourcesDeleteWithHttpInfo(ansibleId);</span>
+<span class="nc" id="L101">    }</span>
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;204&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @return ResponseEntity&amp;lt;Void&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Void&gt; apiV2ServiceIndexResourcesDeleteWithHttpInfo(UUID ansibleId) throws RestClientException {
+<span class="nc" id="L112">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'ansibleId' is set
+<span class="nc bnc" id="L115" title="All 2 branches missed.">        if (ansibleId == null) {</span>
+<span class="nc" id="L116">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'ansibleId' when calling apiV2ServiceIndexResourcesDelete&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L120">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L121">        uriVariables.put(&quot;ansible_id&quot;, ansibleId);</span>
+
+<span class="nc" id="L123">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L124">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L125">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L126">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L128">        final String[] localVarAccepts = {  };</span>
+<span class="nc" id="L129">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L130">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L131">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L133">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L135">        ParameterizedTypeReference&lt;Void&gt; localReturnType = new ParameterizedTypeReference&lt;Void&gt;() {};</span>
+<span class="nc" id="L136">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/{ansible_id}/&quot;, HttpMethod.DELETE, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param page A page number within the paginated result set. (optional)
+     * @return ApiV2ServiceIndexResourcesList200Response
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ApiV2ServiceIndexResourcesList200Response apiV2ServiceIndexResourcesList(Integer page) throws RestClientException {
+<span class="nc" id="L147">        return apiV2ServiceIndexResourcesListWithHttpInfo(page).getBody();</span>
+    }
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param page A page number within the paginated result set. (optional)
+     * @return ResponseEntity&amp;lt;ApiV2ServiceIndexResourcesList200Response&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;ApiV2ServiceIndexResourcesList200Response&gt; apiV2ServiceIndexResourcesListWithHttpInfo(Integer page) throws RestClientException {
+<span class="nc" id="L159">        Object localVarPostBody = null;</span>
+        
+
+<span class="nc" id="L162">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L163">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L164">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L165">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L167">        localVarQueryParams.putAll(apiClient.parameterToMultiValueMap(null, &quot;page&quot;, page));</span>
+        
+
+<span class="nc" id="L170">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L173">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L174">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L175">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L177">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L179">        ParameterizedTypeReference&lt;ApiV2ServiceIndexResourcesList200Response&gt; localReturnType = new ParameterizedTypeReference&lt;ApiV2ServiceIndexResourcesList200Response&gt;() {};</span>
+<span class="nc" id="L180">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/&quot;, HttpMethod.GET, Collections.&lt;String, Object&gt;emptyMap(), localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @param data  (required)
+     * @return Resource
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Resource apiV2ServiceIndexResourcesPartialUpdate(UUID ansibleId, Resource data) throws RestClientException {
+<span class="nc" id="L192">        return apiV2ServiceIndexResourcesPartialUpdateWithHttpInfo(ansibleId, data).getBody();</span>
+    }
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Resource&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Resource&gt; apiV2ServiceIndexResourcesPartialUpdateWithHttpInfo(UUID ansibleId, Resource data) throws RestClientException {
+<span class="nc" id="L205">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'ansibleId' is set
+<span class="nc bnc" id="L208" title="All 2 branches missed.">        if (ansibleId == null) {</span>
+<span class="nc" id="L209">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'ansibleId' when calling apiV2ServiceIndexResourcesPartialUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L214">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiV2ServiceIndexResourcesPartialUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L218">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L219">        uriVariables.put(&quot;ansible_id&quot;, ansibleId);</span>
+
+<span class="nc" id="L221">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L222">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L223">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L224">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L226">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L229">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L230">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L233">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L235">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L237">        ParameterizedTypeReference&lt;Resource&gt; localReturnType = new ParameterizedTypeReference&lt;Resource&gt;() {};</span>
+<span class="nc" id="L238">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/{ansible_id}/&quot;, HttpMethod.PATCH, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @return Resource
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Resource apiV2ServiceIndexResourcesRead(UUID ansibleId) throws RestClientException {
+<span class="nc" id="L249">        return apiV2ServiceIndexResourcesReadWithHttpInfo(ansibleId).getBody();</span>
+    }
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @return ResponseEntity&amp;lt;Resource&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Resource&gt; apiV2ServiceIndexResourcesReadWithHttpInfo(UUID ansibleId) throws RestClientException {
+<span class="nc" id="L261">        Object localVarPostBody = null;</span>
+        
+        // verify the required parameter 'ansibleId' is set
+<span class="nc bnc" id="L264" title="All 2 branches missed.">        if (ansibleId == null) {</span>
+<span class="nc" id="L265">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'ansibleId' when calling apiV2ServiceIndexResourcesRead&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L269">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L270">        uriVariables.put(&quot;ansible_id&quot;, ansibleId);</span>
+
+<span class="nc" id="L272">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L273">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L274">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L275">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L277">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L280">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L281">        final String[] localVarContentTypes = {  };</span>
+<span class="nc" id="L282">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L284">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L286">        ParameterizedTypeReference&lt;Resource&gt; localReturnType = new ParameterizedTypeReference&lt;Resource&gt;() {};</span>
+<span class="nc" id="L287">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/{ansible_id}/&quot;, HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @param data  (required)
+     * @return Resource
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public Resource apiV2ServiceIndexResourcesUpdate(UUID ansibleId, Resource data) throws RestClientException {
+<span class="nc" id="L299">        return apiV2ServiceIndexResourcesUpdateWithHttpInfo(ansibleId, data).getBody();</span>
+    }
+
+    /**
+     * Index of all the resources in the system.
+     * 
+     * &lt;p&gt;&lt;b&gt;200&lt;/b&gt; - 
+     * @param ansibleId A unique ID identifying this resource by the resource server. (required)
+     * @param data  (required)
+     * @return ResponseEntity&amp;lt;Resource&amp;gt;
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public ResponseEntity&lt;Resource&gt; apiV2ServiceIndexResourcesUpdateWithHttpInfo(UUID ansibleId, Resource data) throws RestClientException {
+<span class="nc" id="L312">        Object localVarPostBody = data;</span>
+        
+        // verify the required parameter 'ansibleId' is set
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        if (ansibleId == null) {</span>
+<span class="nc" id="L316">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'ansibleId' when calling apiV2ServiceIndexResourcesUpdate&quot;);</span>
+        }
+        
+        // verify the required parameter 'data' is set
+<span class="nc bnc" id="L320" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L321">            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, &quot;Missing the required parameter 'data' when calling apiV2ServiceIndexResourcesUpdate&quot;);</span>
+        }
+        
+        // create path and map variables
+<span class="nc" id="L325">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L326">        uriVariables.put(&quot;ansible_id&quot;, ansibleId);</span>
+
+<span class="nc" id="L328">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L329">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L330">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L331">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L333">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L336">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L337">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L340">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L342">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L344">        ParameterizedTypeReference&lt;Resource&gt; localReturnType = new ParameterizedTypeReference&lt;Resource&gt;() {};</span>
+<span class="nc" id="L345">        return apiClient.invokeAPI(&quot;/api/v2/service-index/resources/{ansible_id}/&quot;, HttpMethod.PUT, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);</span>
+    }
+
+    @Override
+    public &lt;T&gt; ResponseEntity&lt;T&gt; invokeAPI(String url, HttpMethod method, Object request, ParameterizedTypeReference&lt;T&gt; returnType) throws RestClientException {
+<span class="nc" id="L350">        String localVarPath = url.replace(apiClient.getBasePath(), &quot;&quot;);</span>
+<span class="nc" id="L351">        Object localVarPostBody = request;</span>
+
+<span class="nc" id="L353">        final Map&lt;String, Object&gt; uriVariables = new HashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L354">        final MultiValueMap&lt;String, String&gt; localVarQueryParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L355">        final HttpHeaders localVarHeaderParams = new HttpHeaders();</span>
+<span class="nc" id="L356">        final MultiValueMap&lt;String, String&gt; localVarCookieParams = new LinkedMultiValueMap&lt;String, String&gt;();</span>
+<span class="nc" id="L357">        final MultiValueMap&lt;String, Object&gt; localVarFormParams = new LinkedMultiValueMap&lt;String, Object&gt;();</span>
+
+<span class="nc" id="L359">        final String[] localVarAccepts = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L362">        final List&lt;MediaType&gt; localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);</span>
+<span class="nc" id="L363">        final String[] localVarContentTypes = { </span>
+            &quot;application/json&quot;
+         };
+<span class="nc" id="L366">        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);</span>
+
+<span class="nc" id="L368">        String[] localVarAuthNames = new String[] { &quot;Basic&quot; };</span>
+
+<span class="nc" id="L370">        return apiClient.invokeAPI(localVarPath, method, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, returnType);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.9.202303310957</span></div></body></html>
