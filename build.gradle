@@ -31,7 +31,7 @@ plugins {
     id "org.openapi.generator" version "7.10.0"
 }
 
-group = 'devstack'
+group = 'opendevstack'
 version = '0.0.1-SNAPSHOT'
 
 java {
