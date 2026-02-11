@@ -2,9 +2,9 @@
 
 # Usage: ./generate.sh [run]
 
-CP_SPEC="generator-configs/generator-componentprovisioner-server.yaml"
+CP_SPEC="generator-configs/generator-component_provisioner-server.yaml"
 AWX_SPEC="generator-configs/generator-awx-client.yaml"
-CC_SPEC="generator-configs/generator-componentcatalog-client.yaml"
+CC_SPEC="generator-configs/generator-component_catalog-client.yaml"
 
 function usage() {
     echo "Usage: $(basename $0) run"

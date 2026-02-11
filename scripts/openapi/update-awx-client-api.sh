@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # This script updates the Bitbucket REST client sources
-AWX_CLIENT_SRC_FROM="./generated-sources/openapi-client-awx/src/%s/java/com/boehringer/componentprovisioner/client/awx/v2"
-AWX_CLIENT_SRC_TO="../../src/%s/java/com/boehringer/componentprovisioner/client/awx/v2"
+AWX_CLIENT_SRC_FROM="./generated-sources/openapi-client-awx/src/%s/java/org/opendevstack/component_provisioner/client/awx/v2"
+AWX_CLIENT_SRC_TO="../../src/%s/java/org/opendevstack/component_provisioner/client/awx/v2"
 
 [ "$1" != "run" ] && echo "Usage: $(basename $0) run - Update AWX REST client sources" && exit 1
 

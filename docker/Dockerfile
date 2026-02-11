@@ -26,7 +26,7 @@ ADD certs /tmp/application-certificates/
 COPY files/install_certificates.sh /tmp/
 RUN chmod +x /tmp/install_certificates.sh
 
-USER 1001    
+USER 1001
 
 EXPOSE 8080
 

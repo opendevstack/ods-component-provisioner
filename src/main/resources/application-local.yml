@@ -4,8 +4,8 @@ logging:
     org.springframework: DEBUG
     org.springframework.beans.factory: DEBUG
     com.azure.spring.cloud.autoconfigure: DEBUG
-    com.boehringer.componentprovisioner.server.controllers: INFO
-    com.boehringer.componentprovisioner.server.services.com.boehringer.componentprovisioner.server.services.AWXService: DEBUG
+    org.opendevstack.component_provisioner.server.controllers: INFO
+    org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: DEBUG
 management:
   endpoints:
     web:

@@ -25,9 +25,9 @@ additionalProperties:
   groupId: awx
   artifactId: awx-v2-client
   artifactVersion: 0.0.0-SNAPSHOT
-  invokerPackage: com.boehringer.componentprovisioner.client.awx.v2
-  apiPackage: com.boehringer.componentprovisioner.client.awx.v2.api
-  modelPackage: com.boehringer.componentprovisioner.client.awx.v2.model
+  invokerPackage: org.opendevstack.component_provisioner.client.awx.v2
+  apiPackage: org.opendevstack.component_provisioner.client.awx.v2.api
+  modelPackage: org.opendevstack.component_provisioner.client.awx.v2.model
   additionalModelTypeAnnotations: '@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)'
   generateBuilders: true
   generateClientAsBean: true
