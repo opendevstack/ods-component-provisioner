@@ -76,7 +76,7 @@ Set other properties in the `application-local.yml` file as needed for local dev
 ## 4. Edit secrets in the local Vault server
 To do this you will need both the tailor installation and the oc executable.
 - For the tailor installation: https://github.com/opendevstack/tailor and follow the README
-- For the oc console, download it from the openshift site, click on the question mark next to the user profile link: https://console-openshift-console.apps.us-test.ocp.aws.boehringer.com/command-line-tools
+- For the oc console, download it from the openshift site, click on the question mark next to the user profile link
 - Once everything is set, you can run the following command:
   `tailor secrets edit devstack-dev.env.enc --private-key="${ROUTE_TO_folderXYZ}/tailor-private.key" --public-key-dir="${ROUTE_TO_folderXYZ}"`
   notes:
@@ -101,4 +101,13 @@ To do that:
 **NOTES** 
 - The certificate should be added to the truststore for the JDK that IntelliJ IDEA uses to *run* the application. 
 - The default JVM truststore password is `changeit`
-- The default Boehringer Ingelheim's certificates can be taken from https://pki.boehringer.com/pki/
+
+# Quality
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=coverage)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=bugs)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=opendevstack_ods-component-provisioner&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=opendevstack_ods-component-provisioner)
