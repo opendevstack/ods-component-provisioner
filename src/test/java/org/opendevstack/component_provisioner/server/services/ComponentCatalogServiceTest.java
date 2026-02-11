@@ -1,0 +1,180 @@
+package org.opendevstack.component_provisioner.server.services;
+
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
+
+import java.util.Map;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ComponentCatalogServiceTest {
+
+    @Mock
+    private CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi;
+
+    @Mock
+    private ProvisionerActionsApi provisionerActionsApi;
+
+    @InjectMocks
+    private ComponentCatalogService componentCatalogService;
+
+    @Test
+    void givenValidInputs_whenGetCatalogItemUserActionMessageDefinition_thenReturnsBodyAndStatus() {
+        //given
+        String catalogItemId = "cat-123";
+        String userActionId = "ua-456";
+        String messageDefinitionId = "md-789";
+        Map<String, String> placeholders = Map.of("key", "value");
+
+        CatalogItemUserActionMessageDefinition definition = new CatalogItemUserActionMessageDefinition();
+        ResponseEntity<CatalogItemUserActionMessageDefinition> response = ResponseEntity.ok(definition);
+
+        when(itemUserActionMessagesDefinitionsApi.getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders
+        )).thenReturn(response);
+
+        //when
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
+                componentCatalogService.getCatalogItemUserActionMessageDefinition(
+                        catalogItemId, userActionId, messageDefinitionId, placeholders);
+
+        //then
+        assertThat(result.getLeft().value()).isEqualTo(HttpStatus.OK.value());
+        assertThat(result.getRight()).isPresent().contains(definition);
+
+        verify(itemUserActionMessagesDefinitionsApi).getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders);
+        verifyNoInteractions(provisionerActionsApi);
+    }
+
+    @Test
+    void givenNullBody_whenGetCatalogItemUserActionMessageDefinition_thenReturnsEmptyOptionalAndStatus() {
+        //given
+        String catalogItemId = "cat-123";
+        String userActionId = "ua-456";
+        String messageDefinitionId = "md-789";
+        Map<String, String> placeholders = Map.of("key", "value");
+
+        ResponseEntity<CatalogItemUserActionMessageDefinition> response =
+                ResponseEntity.status(HttpStatus.OK).body(null);
+
+        when(itemUserActionMessagesDefinitionsApi.getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders
+        )).thenReturn(response);
+
+        //when
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
+                componentCatalogService.getCatalogItemUserActionMessageDefinition(
+                        catalogItemId, userActionId, messageDefinitionId, placeholders);
+
+        //then
+        assertThat(result.getLeft().value()).isEqualTo(HttpStatus.OK.value());
+        assertThat(result.getRight()).isEmpty();
+
+        verify(itemUserActionMessagesDefinitionsApi).getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders);
+        verifyNoInteractions(provisionerActionsApi);
+    }
+
+    @Test
+    void givenApiReturns404_whenGetCatalogItemUserActionMessageDefinition_thenReturnsStatusAndEmptyOptional() {
+        //given
+        String catalogItemId = "cat-123";
+        String userActionId = "ua-456";
+        String messageDefinitionId = "md-789";
+        Map<String, String> placeholders = Map.of("key", "value");
+
+        when(itemUserActionMessagesDefinitionsApi.getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders
+        )).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
+
+        //when
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
+                componentCatalogService.getCatalogItemUserActionMessageDefinition(
+                        catalogItemId, userActionId, messageDefinitionId, placeholders);
+
+        //then
+        assertThat(result.getLeft().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(result.getRight()).isEmpty();
+
+        verify(itemUserActionMessagesDefinitionsApi).getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders);
+        verifyNoInteractions(provisionerActionsApi);
+    }
+
+    @Test
+    void givenRestClientException_whenGetCatalogItemUserActionMessageDefinition_thenThrowsCatalogClientException() {
+        //given
+        String catalogItemId = "cat-123";
+        String userActionId = "ua-456";
+        String messageDefinitionId = "md-789";
+        Map<String, String> placeholders = Map.of("key", "value");
+
+        when(itemUserActionMessagesDefinitionsApi.getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders
+        )).thenThrow(new RestClientException("Boom"));
+
+        //when //then
+        assertThatThrownBy(() ->
+                componentCatalogService.getCatalogItemUserActionMessageDefinition(
+                        catalogItemId, userActionId, messageDefinitionId, placeholders))
+                .isInstanceOf(CatalogClientException.class);
+
+        verify(itemUserActionMessagesDefinitionsApi).getMessageDefinitionByCatalogItemIdAndMessageIdWithHttpInfo(
+                catalogItemId, userActionId, messageDefinitionId, placeholders);
+        verifyNoInteractions(provisionerActionsApi);
+    }
+
+    @Test
+    void givenValidInput_whenNotifyComponentCatalogProvisionStarts_thenInvokesProvisionerActionsApiWithCreating() {
+        //given
+        String projectKey = "PRJ-KEY";
+        String componentId = "CMP-001";
+        String catalogItemId = "CAT-001";
+        String componentUrl = "component-url";
+
+        ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
+                ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
+
+        //when
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl);
+
+        //then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(
+                projectKeyCaptor.capture(),
+                statusCaptor.capture(),
+                requestCaptor.capture()
+        );
+
+        assertThat(projectKeyCaptor.getValue()).isEqualTo(projectKey);
+        assertThat(statusCaptor.getValue()).isEqualTo("CREATING");
+
+        ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
+        assertThat(captured.getComponentId()).isEqualTo(componentId);
+        assertThat(captured.getCatalogItemId()).isEqualTo(catalogItemId);
+
+        verifyNoMoreInteractions(provisionerActionsApi);
+        verifyNoInteractions(itemUserActionMessagesDefinitionsApi);
+    }
+}

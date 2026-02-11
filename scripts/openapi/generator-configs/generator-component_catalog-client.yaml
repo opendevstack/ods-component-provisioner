@@ -1,0 +1,36 @@
+generatorName: java
+outputDir: generated-sources/openapi-client-component_catalog
+library: resttemplate
+# FIXME set this to the AWX OpenAPI spec file
+inputSpec: ../../openapi/openapi-component_catalog-v1.0.0.yaml
+typeMappings: 
+  "string+byte": Resource
+importMappings: 
+  Resource: "org.springframework.core.io.Resource"
+serializableModel: true
+globalProperties:
+  generateAliasAsModel: true
+  # TODO these api, models options make other options not to work, find
+  #   an alternate way of pruning the output for both models and apis
+  #   from unnecessary classes
+  # apis: Repository
+  # models: ""
+  apiDocs: true
+  modelDocs: true
+  apiTests: false
+  modelTests: false
+additionalProperties:
+  useJakartaEe: true
+  java8: true
+  groupId: component_catalog
+  artifactId: component_catalog-v1-client
+  artifactVersion: 0.0.0-SNAPSHOT
+  invokerPackage: org.opendevstack.component_provisioner.client.component_catalog.v1
+  apiPackage: org.opendevstack.component_provisioner.client.component_catalog.v1.api
+  modelPackage: org.opendevstack.component_provisioner.client.component_catalog.v1.model
+  additionalModelTypeAnnotations: '@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)'
+  generateBuilders: true
+  generateClientAsBean: true
+  useSingleRequestParameter: true
+  hideGenerationTimestamp: true
+

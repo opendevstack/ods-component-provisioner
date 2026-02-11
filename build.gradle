@@ -1,3 +1,5 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
 buildscript {
     ext {
         springCloudAzureVersion = "5.19.0"
@@ -23,9 +25,10 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
 	id 'java'
-	id 'org.springframework.boot' version '3.4.7'
+	id 'org.springframework.boot' version '3.5.9'
 	id 'io.spring.dependency-management' version '1.1.7'
     id "com.gorylenko.gradle-git-properties" version "2.4.1" // Adds git info on /actuator/info endpoint
+    id "org.openapi.generator" version "7.10.0"
 }
 
 group = 'devstack'
@@ -33,7 +36,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
 
@@ -77,7 +80,6 @@ dependencies {
     implementation 'org.ehcache:ehcache:3.10.8:jakarta'
     implementation 'one.util:streamex:0.8.2'
     implementation 'com.networknt:json-schema-validator:1.5.7'
-    implementation 'org.apache.tika:tika-core:2.9.2'
     implementation 'org.apache.commons:commons-text:1.11.0'
     implementation 'org.apache.commons:commons-collections4:4.5.0'
     implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
@@ -128,6 +130,148 @@ bootJar {
 jacocoTestReport {
     reports {
         xml.required = true
+    }
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    outputDir = "$projectDir/target/generated-sources/openapi-server-component_provisioner"
+    inputSpec = "$projectDir/openapi/openapi-component_provisioner-v1.0.0.yaml"
+    library = "spring-boot"
+
+    globalProperties = [
+            generateAliasAsModel: "true",
+            apiDocs             : "true",
+            modelDocs           : "true",
+            apiTests            : "true",
+            modelTests          : "true"
+    ]
+
+    additionalProperties = [
+            useTags              : "true",
+            interfaceOnly        : "true",
+            groupId              : "component_provisioner",
+            artifactId           : "component_provisioner-v0-server",
+            artifactVersion      : "0.0.0-SNAPSHOT",
+            apiPackage           : "org.opendevstack.component_provisioner.server.api",
+            modelPackage         : "org.opendevstack.component_provisioner.server.model",
+            configPackage        : "org.opendevstack.component_provisioner.config",
+            documentationProvider: "springdoc",
+            generateBuilders     : "true",
+            useSpringBoot3       : "true",
+            useSpringController  : "true",
+            useSwaggerUI         : "true",
+            hideGenerationTimestamp: "true"
+    ]
+}
+
+
+tasks.register("openApiGenerateComponentCatalogClient", GenerateTask) {
+    generatorName = "java"
+    outputDir = "$projectDir/target/generated-sources/openapi-client-component_catalog"
+    inputSpec = "$projectDir/openapi/openapi-component_catalog-v1.0.0.yaml"
+    library = "resttemplate"
+
+    // Type and import mappings
+    typeMappings.put("string+byte", "Resource")
+    importMappings.put("Resource", "org.springframework.core.io.Resource")
+
+    globalProperties = [
+            generateAliasAsModel: "true",
+            apiDocs             : "true",
+            modelDocs           : "true",
+            apiTests            : "false",
+            modelTests          : "false"
+    ]
+
+    additionalProperties = [
+            serializableModel               : "true",
+            useJakartaEe                    : "true",
+            java8                           : "true",
+            groupId                         : "component_catalog",
+            artifactId                      : "component_catalog-v1-client",
+            artifactVersion                 : "0.0.0-SNAPSHOT",
+            invokerPackage                  : "org.opendevstack.component_provisioner.client.component_catalog.v1",
+            apiPackage                      : "org.opendevstack.component_provisioner.client.component_catalog.v1.api",
+            modelPackage                    : "org.opendevstack.component_provisioner.client.component_catalog.v1.model",
+            additionalModelTypeAnnotations  : "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
+            generateBuilders                : "true",
+            generateClientAsBean            : "true",
+            useSingleRequestParameter       : "true",
+            hideGenerationTimestamp         : "true"
+    ]
+}
+
+tasks.register("openApiGenerateAwxClient", GenerateTask) {
+    generatorName = "java"
+    outputDir = "$projectDir/target/generated-sources/openapi-client-awx"
+    inputSpec = "$projectDir/openapi/openapi-awx-v2.yaml"
+    library = "resttemplate"
+
+
+    // Disable spec validation. This is required as this yml is failing due to description is missing for some responses.
+    validateSpec = false
+
+
+    // Type and import mappings
+    typeMappings.put("string+byte", "Resource")
+    importMappings.put("Resource", "org.springframework.core.io.Resource")
+
+    globalProperties = [
+            generateAliasAsModel: "true",
+            apiDocs             : "true",
+            modelDocs           : "true",
+            apiTests            : "false",
+            modelTests          : "false"
+    ]
+
+    additionalProperties = [
+            serializableModel               : "true",
+            useJakartaEe                    : "true",
+            java8                           : "true",
+            groupId                         : "awx",
+            artifactId                      : "awx-v2-client",
+            artifactVersion                 : "0.0.0-SNAPSHOT",
+            invokerPackage                  : "org.opendevstack.component_provisioner.client.awx.v2",
+            apiPackage                      : "org.opendevstack.component_provisioner.client.awx.v2.api",
+            modelPackage                    : "org.opendevstack.component_provisioner.client.awx.v2.model",
+            additionalModelTypeAnnotations  : "@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)",
+            generateBuilders                : "true",
+            generateClientAsBean            : "true",
+            useSingleRequestParameter       : "true",
+            hideGenerationTimestamp         : "true"
+    ]
+}
+
+
+// Ensure code generation runs before Java compilation
+tasks.named("compileJava") {
+    dependsOn(
+            tasks.named("openApiGenerate"),
+            tasks.named("openApiGenerateComponentCatalogClient"),
+            tasks.named("openApiGenerateAwxClient")
+    )
+}
+
+tasks.named("clean").configure {
+    doLast {
+        delete("$projectDir/target")
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = [
+                    "src/main/java",
+                    "$projectDir/target/generated-sources/openapi-server-component_provisioner/src/main/java",
+                    "$projectDir/target/generated-sources/openapi-client-component_catalog/src/main/java",
+                    "$projectDir/target/generated-sources/openapi-client-awx/src/main/java"
+            ]
+        }
+        resources {
+            srcDirs = ["src/main/resources"]
+        }
     }
 }
 

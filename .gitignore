@@ -35,3 +35,14 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### docker ###
+/docker/app.jar
+
+### OpenAPI auto generated code ###
+/target/
+/src/main/resources/application-local.env
+
+### secrets skip for token generation ###
+/openshift/*.key
+/openshift/*.p12

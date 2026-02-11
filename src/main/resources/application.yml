@@ -3,15 +3,20 @@ server:
 logging:
   level:
     org.springframework: INFO
-    com.boehringer.componentprovisioner.server.controllers: INFO
+    org.opendevstack.component_provisioner.server.controllers: INFO
 spring:
+  security:
+    user:
+      name: ${SPRING_SECURITY_PROVISIONER_USERNAME}
+      password: ${SPRING_SECURITY_PROVISIONER_PASSWORD}
+      roles: PROVISIONER
   profiles:
     active: dev
   http:
     client:
       factory: jdk
   jackson:
-    date-format: com.boehringer.componentprovisioner.util.RFC3339DateFormat
+    date-format: org.opendevstack.component_provisioner.util.RFC3339DateFormat
     serialization:
       WRITE_DATES_AS_TIMESTAMPS: false
   cloud:
@@ -40,3 +45,8 @@ component-provisioner:
   component-catalog:
     service:
       base-rest-url: ${COMPONENT_CATALOG_SERVICE_BASE_REST_URL}
+    project-components:
+      username: ${COMPONENT_CATALOG_PROVISIONER_USERNAME}
+      password: ${COMPONENT_CATALOG_PROVISIONER_PASSWORD}
+  support:
+    create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}

@@ -21,7 +21,7 @@ scripts/openapi
 │   ├── ...
 ├── generator-configs   # modify these config files to customize generated code
 │   ├── generator-bitbucket-client.yaml 
-│   └── generator-componentprovisioner-server.yaml
+│   └── generator-component_provisioner-server.yaml
 ├── img             # images for this README
 ├── generate.sh     # run this to generate the sources
 ├── openapitools.json   # metainfo about the openapi-generator tool
@@ -42,7 +42,7 @@ Run: `$ ./update-awx-client-api.sh run`
 
 To update the Spring REST client for component catalog with the last generated code:
 
-Run: `$ ./update-componentcatalog-client-api.sh run`
+Run: `$ ./update-component_catalog-client-api.sh run`
 
 To update the Component Provisioner Spring Boot REST API with the last generated code:
 

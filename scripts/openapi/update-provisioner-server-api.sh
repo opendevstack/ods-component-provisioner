@@ -1,7 +1,7 @@
 #!/bin/bash
 # This script updates the Component Provisioner REST API sources
-CP_API_SRC_FROM="./generated-sources/openapi-server-componentprovisioner/src/%s/java/com/boehringer/componentprovisioner/server"
-CP_API_SRC_TO="../../src/%s/java/com/boehringer/componentprovisioner/server"
+CP_API_SRC_FROM="./generated-sources/openapi-server-component_provisioner/src/%s/java/org/opendevstack/component_provisioner/server"
+CP_API_SRC_TO="../../src/%s/java/org/opendevstack/component_provisioner/server"
 
 # Change to the directory of the script, so that relative paths work
 cd "$(dirname $0)"
