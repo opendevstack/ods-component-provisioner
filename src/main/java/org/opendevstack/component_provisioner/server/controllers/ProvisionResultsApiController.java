@@ -108,6 +108,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         return projectComponents.stream()
                 .filter(component -> component.getComponentId() != null)
+                .filter(component -> ProjectComponentStatus.DELETING.name().equals(component.getStatus()))
                 .anyMatch(component -> component.getComponentId().equals(componentId));
     }
 
