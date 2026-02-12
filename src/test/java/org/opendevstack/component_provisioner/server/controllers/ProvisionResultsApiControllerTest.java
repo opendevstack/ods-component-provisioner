@@ -1,15 +1,5 @@
 package org.opendevstack.component_provisioner.server.controllers;
 
-import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,16 +7,32 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
+import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProvisionService;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +40,9 @@ class ProvisionResultsApiControllerTest {
 
     @Mock
     private AwxService awxService;
+
+    @Mock
+    private ComponentCatalogService componentCatalogService;
 
     @Mock
     private EntitiesMapper entitiesMapper;
@@ -53,7 +62,7 @@ class ProvisionResultsApiControllerTest {
     void givenAProvisionService_whenNotifyProvisioningCompletedIsCalled_thenReturnsOk( ) {
         // given
         var projectKey = "project-key";
-        var status = "status";
+        var status = ProjectComponentStatus.CREATED;
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
@@ -64,7 +73,7 @@ class ProvisionResultsApiControllerTest {
         notifyProvisioningCompletedRequest.setComponentUrl(componentUrl);
 
         // when
-        var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status, notifyProvisioningCompletedRequest);
+        var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), notifyProvisioningCompletedRequest);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -148,6 +157,75 @@ class ProvisionResultsApiControllerTest {
 
         // then
         assertThat(ex.getMessage()).isEqualTo("caller, cluster_location, is_deployed, change_number and reason are required.");
+    }
+
+    @Test
+    void givenAProjectKey_AndAComponentId_AndCreateIncidentAction_whenCreateIncident_AndComponentAlreadyInDeletingState_thenReturnsOk_andIgnoreAWXCall( ) {
+        // given
+        var projectKey = "project-key";
+        var componentId =  "componentId";
+        var createIncidentAction = CreateIncidentActionMother.of();
+
+        var idToken = createIncidentAction.getParameters().stream()
+                .filter(parameter -> parameter.getName().equals("id_token"))
+                .map(CreateIncidentParameter::getValue)
+                .map(Object::toString)
+                .findFirst().orElseThrow();
+        var accessToken = createIncidentAction.getParameters().stream()
+                .filter(parameter -> parameter.getName().equals("access_token"))
+                .map(CreateIncidentParameter::getValue)
+                .map(Object::toString)
+                .findFirst().orElseThrow();
+
+        var projectComponentInfo = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
+        var projectComponents = List.of(projectComponentInfo);
+
+        when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken)).thenReturn(projectComponents);
+
+        // when
+        var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        verifyNoInteractions(entitiesMapper);
+        verifyNoInteractions(awxService);
+    }
+
+    @Test
+    void givenInvalidStatus_whenNotifyProvisioningStatusUpdate_then400OrInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var invalidStatus = "NOT_A_STATUS";
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setCatalogItemId("cat-1");
+        request.setComponentUrl("http://example");
+
+        // when
+        var exception = assertThrows(InvalidRestEntityException.class,
+                () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request));
+
+        // then
+        assertThat(exception.getMessage()).isEqualTo("Status is not valid. It can only be CREATING, CREATED, DELETING, UNKNOWN");
+    }
+
+    @Test
+    void givenLowercaseStatus_whenNotifyProvisioningStatusUpdate_thenEitherOkOrReject() {
+        // given
+        var projectKey = "project-key";
+        var statusLowercase = "created"; // lower-case vs ProjectComponentStatus.CREATED
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setCatalogItemId("cat-1");
+        request.setComponentUrl("http://example");
+
+        // when
+        var exception = assertThrows(InvalidRestEntityException.class,
+                () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+
+        // then
+        assertThat(exception.getMessage()).isEqualTo("Status is not valid. It can only be CREATING, CREATED, DELETING, UNKNOWN");
     }
 
 }

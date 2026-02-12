@@ -13,6 +13,9 @@ public class CreateIncidentActionMother {
         parameters.add(CreateIncidentParameterMother.of("change_number"));
         parameters.add(CreateIncidentParameterMother.of("reason"));
 
+        parameters.add(CreateIncidentParameterMother.of("id_token"));
+        parameters.add(CreateIncidentParameterMother.of("access_token"));
+
         return CreateIncidentAction.builder()
                 .parameters(parameters)
                 .build();
