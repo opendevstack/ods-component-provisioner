@@ -4,6 +4,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,7 @@ public class ProvisionService {
         this.provisionerActionsApi = provisionerActionsApi;
     }
 
-    public void notifyProvisioningStatusUpdate(String projectKey, String status, String componentId, String catalogItemId, String componentUrl) {
+    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId, String catalogItemId, String componentUrl) {
         log.info("Notifying provisioning completed");
 
         var notifyProvisioningCompletedRequest = ProvisioningStatusUpdateRequest.builder()
@@ -26,7 +27,7 @@ public class ProvisionService {
                 .componentUrl(componentUrl)
                 .build();
 
-        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, status, notifyProvisioningCompletedRequest);
+        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), notifyProvisioningCompletedRequest);
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId) {

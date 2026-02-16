@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 
 import static org.mockito.Mockito.verify;
 
@@ -23,17 +24,17 @@ class ProvisionerServiceTest {
     @Test
     void givenAProvisionClient_WhenNotifyProvisioningCompleted_ThenProvisioningIsNotified() {
         // given
-        String projectKey = "projectKey";
-        String status = "status";
-        String componentId = "componentId";
-        String catalogItemId = "catalogItemId";
-        String componentUrl = "componentUrl";
+        var projectKey = "projectKey";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "componentId";
+        var catalogItemId = "catalogItemId";
+        var componentUrl = "componentUrl";
 
         // when
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status, ProvisioningStatusUpdateRequest.builder()
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
