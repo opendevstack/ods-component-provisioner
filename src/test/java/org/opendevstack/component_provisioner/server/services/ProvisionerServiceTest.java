@@ -34,7 +34,7 @@ class ProvisionerServiceTest {
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)

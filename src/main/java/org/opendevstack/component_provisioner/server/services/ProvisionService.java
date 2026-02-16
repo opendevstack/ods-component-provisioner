@@ -27,7 +27,7 @@ public class ProvisionService {
                 .componentUrl(componentUrl)
                 .build();
 
-        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, status.name(), notifyProvisioningCompletedRequest);
+        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), notifyProvisioningCompletedRequest);
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId) {
