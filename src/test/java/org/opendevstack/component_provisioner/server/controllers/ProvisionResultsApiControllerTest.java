@@ -50,6 +50,9 @@ class ProvisionResultsApiControllerTest {
     @Mock
     private ProvisionService provisionService;
 
+    @Mock
+    private AuthenticationProvider authenticationProvider;
+
     @InjectMocks
     private ProvisionResultsApiController provisionResultsApiController;
 
@@ -164,13 +167,9 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId =  "componentId";
+        var idToken = "idToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        var idToken = createIncidentAction.getParameters().stream()
-                .filter(parameter -> parameter.getName().equals("id_token"))
-                .map(CreateIncidentParameter::getValue)
-                .map(Object::toString)
-                .findFirst().orElseThrow();
         var accessToken = createIncidentAction.getParameters().stream()
                 .filter(parameter -> parameter.getName().equals("access_token"))
                 .map(CreateIncidentParameter::getValue)
@@ -180,6 +179,7 @@ class ProvisionResultsApiControllerTest {
         var projectComponentInfo = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
         var projectComponents = List.of(projectComponentInfo);
 
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken)).thenReturn(projectComponents);
 
         // when

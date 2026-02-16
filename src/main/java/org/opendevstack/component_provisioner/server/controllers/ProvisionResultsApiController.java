@@ -30,12 +30,12 @@ import java.util.Arrays;
 public class ProvisionResultsApiController implements ProvisionResultsApi {
 
     public static final String STRING_PARAMETER_TYPE = "string";
-    public static final String ID_TOKEN_PARAMETER_NAME = "id_token";
     public static final String ACCESS_TOKEN_PARAMETER_NAME = "access_token";
     private final AwxService awxService;
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final ProvisionService provisionService;
+    private final AuthenticationProvider authenticationProvider;
 
     @Value("${component-provisioner.support.create-incident-workflow-id}")
     private String workflowJobId;
@@ -43,11 +43,12 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ProvisionResultsApiController(AwxService awxService,
                                          ComponentCatalogService componentCatalogService,
                                          EntitiesMapper entitiesMapper,
-                                         ProvisionService provisionService) {
+                                         ProvisionService provisionService, AuthenticationProvider authenticationProvider) {
         this.awxService = awxService;
         this.componentCatalogService = componentCatalogService;
         this.entitiesMapper = entitiesMapper;
         this.provisionService = provisionService;
+        this.authenticationProvider = authenticationProvider;
     }
 
     @Override
@@ -78,9 +79,11 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
 
+        var idToken = authenticationProvider.getIdToken();
+
         validate(projectKey, componentId, createIncidentAction);
 
-        var isInDeletingState = isInDeletingState(projectKey, componentId, createIncidentAction);
+        var isInDeletingState = isInDeletingState(projectKey, componentId, idToken, createIncidentAction);
 
         if (isInDeletingState) {
             log.debug("Project component already in DELETING state, skipping create of the incident via AWX");
@@ -100,8 +103,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         }
     }
 
-    private boolean isInDeletingState(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
-        var idToken = getParameterString(createIncidentAction, ID_TOKEN_PARAMETER_NAME);
+    private boolean isInDeletingState(String projectKey, String componentId, String idToken, CreateIncidentAction createIncidentAction) {
         var accessToken = getParameterString(createIncidentAction, ACCESS_TOKEN_PARAMETER_NAME);
 
         var projectComponents = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
@@ -184,13 +186,12 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         var changeNumber = getParameterString(createIncidentAction, "change_number");
         var reason = getParameterString(createIncidentAction, "reason");
 
-        var idToken = getParameterString(createIncidentAction, ID_TOKEN_PARAMETER_NAME);
         var accessToken = getParameterString(createIncidentAction, ACCESS_TOKEN_PARAMETER_NAME);
 
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
         var extraParamsAreEmtpy = StringUtils.isBlank(caller) || StringUtils.isBlank(clusterLocation) || StringUtils.isBlank(isDeployed)
                 || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
-        var tokensAreEmpty = StringUtils.isBlank(idToken) || StringUtils.isBlank(accessToken);
+        var tokensAreEmpty = StringUtils.isBlank(accessToken);
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
