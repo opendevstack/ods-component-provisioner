@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionResultsApiControllerTest {
+    String exceptionMsg = "Status is not valid. It can only be CREATING, CREATED, FAILED, DELETING, UNKNOWN";
 
     @Mock
     private AwxService awxService;
@@ -69,6 +70,7 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
+
 
         NotifyProvisioningStatusUpdateRequest notifyProvisioningCompletedRequest = new NotifyProvisioningStatusUpdateRequest();
         notifyProvisioningCompletedRequest.setComponentId(componentId);
@@ -207,7 +209,7 @@ class ProvisionResultsApiControllerTest {
                 () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request));
 
         // then
-        assertThat(exception.getMessage()).isEqualTo("Status is not valid. It can only be CREATING, CREATED, DELETING, UNKNOWN");
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
 
     @Test
@@ -225,7 +227,7 @@ class ProvisionResultsApiControllerTest {
                 () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
 
         // then
-        assertThat(exception.getMessage()).isEqualTo("Status is not valid. It can only be CREATING, CREATED, DELETING, UNKNOWN");
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
 
 }
