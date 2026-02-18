@@ -5,6 +5,7 @@ import java.util.Arrays;
 public enum ProjectComponentStatus {
     CREATING,
     CREATED,
+    FAILED,
     DELETING,
     UNKNOWN;
 
