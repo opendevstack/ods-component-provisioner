@@ -27,6 +27,7 @@ import static org.opendevstack.component_provisioner.util.EitherUtils.uncheckedF
 @Slf4j
 public class EntitiesMapper {
     private static final ModelMapper MAPPER = new ModelMapper();
+    public static final String WORKFLOW = "workflow";
     private static Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateId; //NOSONAR
     private static Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateExtraVars; //NOSONAR
 
@@ -69,7 +70,7 @@ public class EntitiesMapper {
     private static void setupActionParamsConverters(ObjectMapper objectMapper) {
         actionParamsToAwxWorkflowTemplateId = ctx ->
                 ctx.getSource().stream()
-                        .filter(p -> p.getName().equals("workflow") && p.getValue() instanceof String)
+                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String)
                         .findFirst()
                         .map(ProvisionActionParameter::getValue)
                         .map(String::valueOf)
@@ -77,7 +78,7 @@ public class EntitiesMapper {
 
         createIncidentParamsToAwxWorkflowTemplateId = ctx ->
                 ctx.getSource().stream()
-                        .filter(p -> p.getName().equals("workflow") && p.getValue() instanceof String)
+                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String)
                         .findFirst()
                         .map(CreateIncidentParameter::getValue)
                         .map(String::valueOf)
@@ -87,7 +88,7 @@ public class EntitiesMapper {
         actionParamsToAwxWorkflowTemplateExtraVars = ctx -> {
             // Turn into: "param1": "value1", "param2": "value2", ...
             var extraParams = StreamEx.of(ctx.getSource())
-                    .filter(p -> !p.getName().equals("workflow"))
+                    .filter(p -> !p.getName().equals(WORKFLOW))
                     .mapToEntry(ProvisionActionParameter::getName, ProvisionActionParameter::getValue)
                     .toMap();
 
@@ -102,7 +103,7 @@ public class EntitiesMapper {
         createIncidentParamsToAwxWorkflowTemplateExtraVars = ctx -> {
             // Turn into: "param1": "value1", "param2": "value2", ...
             var extraParams = StreamEx.of(ctx.getSource())
-                    .filter(p -> !p.getName().equals("workflow"))
+                    .filter(p -> !p.getName().equals(WORKFLOW))
                     .mapToEntry(CreateIncidentParameter::getName, CreateIncidentParameter::getValue)
                     .toMap();
 
