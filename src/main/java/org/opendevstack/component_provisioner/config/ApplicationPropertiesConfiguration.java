@@ -23,6 +23,12 @@ public class ApplicationPropertiesConfiguration {
         return ComponentCatalogServiceProps.builder().build();
     }
 
+    @Bean("componentProvisionerParametersConfig")
+    @ConfigurationProperties(prefix = "component-provisioner.parameters")
+    public ComponentProvisionerParametersProps componentProvisionerParametersProps() {
+        return ComponentProvisionerParametersProps.builder().build();
+    }
+
     @Builder // useful for unit testing
     @Data
     public static class AWXServiceProps {
@@ -35,5 +41,11 @@ public class ApplicationPropertiesConfiguration {
     @Data
     public static class ComponentCatalogServiceProps {
         private URL baseRestUrl;
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class ComponentProvisionerParametersProps {
+        private String[] blacklist;
     }
 }

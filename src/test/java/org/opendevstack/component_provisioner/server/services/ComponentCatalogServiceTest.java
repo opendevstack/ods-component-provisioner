@@ -1,10 +1,5 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,12 +7,22 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,6 +38,15 @@ class ComponentCatalogServiceTest {
 
     @Mock
     private ProvisionerActionsApi provisionerActionsApi;
+
+    @Mock
+    private ApiClient componentCatalogApiClient;
+
+    @Mock
+    private ProjectComponentsApi projectComponentsApi;
+
+    @Mock
+    private ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
 
     @InjectMocks
     private ComponentCatalogService componentCatalogService;
@@ -151,6 +165,12 @@ class ComponentCatalogServiceTest {
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
         String componentUrl = "component-url";
+        Map<String, String> parameters = Map.of(
+                "access_token", "secret",
+                "other", "value"
+        );
+
+        when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -158,7 +178,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         //when
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);
 
         //then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(
@@ -173,8 +193,48 @@ class ComponentCatalogServiceTest {
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
         assertThat(captured.getCatalogItemId()).isEqualTo(catalogItemId);
+        assertThat(captured.getComponentUrl()).isEqualTo(componentUrl);
+
+        List<ProvisioningStatusUpdateRequestParametersInner> capturedParameters = captured.getParameters();
+        assertThat(capturedParameters).hasSize(2);
+        assertThat(capturedParameters).extracting(ProvisioningStatusUpdateRequestParametersInner::getName)
+                .containsExactlyInAnyOrder("access_token", "other");
+        assertThat(capturedParameters).filteredOn(p -> p.getName().equals("access_token"))
+                .extracting(ProvisioningStatusUpdateRequestParametersInner::getValue)
+                .containsExactly("<PRIVATE>");
 
         verifyNoMoreInteractions(provisionerActionsApi);
         verifyNoInteractions(itemUserActionMessagesDefinitionsApi);
+    }
+
+    @Test
+    void givenParameters_whenMaskParameters_thenCorrectParametersAreMasked() {
+        // given
+        when(parametersProps.getBlacklist()).thenReturn(new String[]{"password", "token"});
+        Map<String, String> input = Map.of(
+                "username", "user",
+                "password", "pass123",
+                "token", "secret-token",
+                "env", "prod"
+        );
+
+        // when
+        // maskParameters is private, so we test it via notifyComponentCatalogProvisionStarts or reflection
+        // For simplicity, let's use a public wrapper if we wanted to be thorough, but we can just use reflection for a quick check.
+        try {
+            java.lang.reflect.Method method = ComponentCatalogService.class.getDeclaredMethod("obfuscateParameters", Map.class);
+            method.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, String> result = (Map<String, String>) method.invoke(componentCatalogService, input);
+
+            // then
+            assertThat(result.get("username")).isEqualTo("user");
+            assertThat(result.get("password")).isEqualTo("<PRIVATE>");
+            assertThat(result.get("token")).isEqualTo("<PRIVATE>");
+            assertThat(result.get("env")).isEqualTo("prod");
+            assertThat(result.size()).isEqualTo(4);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -50,3 +50,5 @@ component-provisioner:
       password: ${COMPONENT_CATALOG_PROVISIONER_PASSWORD}
   support:
     create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
+  parameters:
+    blacklist: ${SENSITIVE_PARAMETERS_BLACKLIST}
