@@ -91,7 +91,13 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         var catalogItemId = getCatalogItemId(provisionAction);
         var componentUrl = getComponentUrl(provisionAction);
 
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId,  componentUrl);
+        var parameters = provisionAction.getParameters().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        ProvisionActionParameter::getName,
+                        p -> p.getValue() != null ? p.getValue().toString() : ""
+                ));
+
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);
     }
 
     private String getCatalogItemId(ProvisionAction provisionAction) {

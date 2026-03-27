@@ -8,6 +8,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,15 +44,19 @@ public class ComponentCatalogService {
     @Qualifier("projectComponentsApi")
     private final ProjectComponentsApi projectComponentsApi;
 
+    private final ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
+
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
             ProvisionerActionsApi provisionerActionsApi, ApiClient componentCatalogApiClient,
-            ProjectComponentsApi projectComponentsApi
+            ProjectComponentsApi projectComponentsApi,
+            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps
     ) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
         this.provisionerActionsApi = provisionerActionsApi;
         this.componentCatalogApiClient = componentCatalogApiClient;
         this.projectComponentsApi = projectComponentsApi;
+        this.parametersProps = parametersProps;
     }
 
     public Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> getCatalogItemUserActionMessageDefinition(
@@ -96,14 +102,47 @@ public class ComponentCatalogService {
     public void notifyComponentCatalogProvisionStarts(String projectKey,
                                                       String componentId,
                                                       String catalogItemId,
-                                                      String componentUrl) {
+                                                      String componentUrl,
+                                                      Map<String, String> parameters) {
+        var obfuscatedParameters = obfuscateParameters(parameters).entrySet().stream()
+                .map(e -> ProvisioningStatusUpdateRequestParametersInner.builder()
+                        .name(e.getKey())
+                        .value(e.getValue())
+                        .build())
+                .toList();
+
         var provisioningStatusUpdateRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
+                .parameters(obfuscatedParameters)
                 .build();
 
         provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, "CREATING", provisioningStatusUpdateRequest);
+    }
+
+    private Map<String, String> obfuscateParameters(Map<String, String> parameters) {
+        if (parameters == null) {
+            return null;
+        }
+
+        var blacklist = parametersProps.getBlacklist();
+        if (blacklist == null || blacklist.length == 0) {
+            return parameters;
+        }
+
+        List<String> blacklistedKeys = Arrays.asList(blacklist);
+        Map<String, String> obfuscatedParameters = new java.util.HashMap<>();
+
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            if (blacklistedKeys.contains(entry.getKey())) {
+                obfuscatedParameters.put(entry.getKey(), "<PRIVATE>");
+            } else {
+                obfuscatedParameters.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return obfuscatedParameters;
     }
 
     public List<ProjectComponentInfo> getProjectComponents(String projectKey, String idToken, String accessToken) {
