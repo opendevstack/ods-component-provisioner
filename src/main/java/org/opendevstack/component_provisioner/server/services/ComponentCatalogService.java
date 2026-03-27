@@ -20,10 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
@@ -123,7 +120,7 @@ public class ComponentCatalogService {
 
     private Map<String, String> obfuscateParameters(Map<String, String> parameters) {
         if (parameters == null) {
-            return null;
+            return Collections.emptyMap();
         }
 
         var blacklist = parametersProps.getBlacklist();
