@@ -208,6 +208,64 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
+    void givenNullParameters_whenNotifyComponentCatalogProvisionStarts_thenEmptyMapIsUsed() {
+        //given
+        String projectKey = "PRJ-KEY";
+        String componentId = "CMP-001";
+        String catalogItemId = "CAT-001";
+
+        ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
+                ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
+
+        //when
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, null);
+
+        //then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq("CREATING"), requestCaptor.capture());
+        assertThat(requestCaptor.getValue().getParameters()).isEmpty();
+    }
+
+    @Test
+    void givenEmptyBlacklist_whenObfuscateParameters_thenNoParametersAreMasked() {
+        // given
+        when(parametersProps.getBlacklist()).thenReturn(new String[0]);
+        Map<String, List<String>> input = Map.of("key", List.of("value"));
+
+        // when
+        try {
+            java.lang.reflect.Method method = ComponentCatalogService.class.getDeclaredMethod("obfuscateParameters", Map.class);
+            method.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, List<String>> result = (Map<String, List<String>>) method.invoke(componentCatalogService, input);
+
+            // then
+            assertThat(result).isEqualTo(input);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void givenNullBlacklist_whenObfuscateParameters_thenNoParametersAreMasked() {
+        // given
+        when(parametersProps.getBlacklist()).thenReturn(null);
+        Map<String, List<String>> input = Map.of("key", List.of("value"));
+
+        // when
+        try {
+            java.lang.reflect.Method method = ComponentCatalogService.class.getDeclaredMethod("obfuscateParameters", Map.class);
+            method.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            Map<String, List<String>> result = (Map<String, List<String>>) method.invoke(componentCatalogService, input);
+
+            // then
+            assertThat(result).isEqualTo(input);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void givenParameters_whenMaskParameters_thenCorrectParametersAreMasked() {
         // given
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"password", "token"});

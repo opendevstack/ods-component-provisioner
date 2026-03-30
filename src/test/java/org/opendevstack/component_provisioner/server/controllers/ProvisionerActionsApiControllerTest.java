@@ -24,7 +24,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,6 +36,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiControllerTest {
@@ -75,6 +78,8 @@ class ProvisionerActionsApiControllerTest {
         parameters.add(ProvisionActionParameterMother.of("catalog_item_id", catalogItemId));
         parameters.add(ProvisionActionParameterMother.of("access_token", accessToken));
         parameters.add(ProvisionActionParameterMother.of("component_url", componentUrl));
+        parameters.add(ProvisionActionParameterMother.of("list_param", List.of("v1", "v2")));
+        parameters.add(ProvisionActionParameterMother.of("null_param", null));
 
         var provisionAction = ProvisionActionMother.of(parameters);
 
@@ -92,8 +97,14 @@ class ProvisionerActionsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(provisionActionResponse, response.getBody());
 
+        org.mockito.ArgumentCaptor<Map<String, List<String>>> paramsCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
         verify(componentCatalogService)
-                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), any(java.util.Map.class));
+                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), paramsCaptor.capture());
+
+        Map<String, List<String>> capturedParams = paramsCaptor.getValue();
+        assertThat(capturedParams.get("project_key")).containsExactly(projectKey);
+        assertThat(capturedParams.get("list_param")).containsExactly("v1", "v2");
+        assertThat(capturedParams.get("null_param")).containsExactly("");
     }
 
     @Test
