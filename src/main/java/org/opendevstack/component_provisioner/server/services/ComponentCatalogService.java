@@ -100,7 +100,7 @@ public class ComponentCatalogService {
                                                       String componentId,
                                                       String catalogItemId,
                                                       String componentUrl,
-                                                      Map<String, String> parameters) {
+                                                      Map<String, List<String>> parameters) {
         var obfuscatedParameters = obfuscateParameters(parameters).entrySet().stream()
                 .map(e -> ProvisioningStatusUpdateRequestParametersInner.builder()
                         .name(e.getKey())
@@ -118,7 +118,7 @@ public class ComponentCatalogService {
         provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, "CREATING", provisioningStatusUpdateRequest);
     }
 
-    private Map<String, String> obfuscateParameters(Map<String, String> parameters) {
+    private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {
         if (parameters == null) {
             return Collections.emptyMap();
         }
@@ -129,11 +129,11 @@ public class ComponentCatalogService {
         }
 
         List<String> blacklistedKeys = Arrays.asList(blacklist);
-        Map<String, String> obfuscatedParameters = new java.util.HashMap<>();
+        Map<String, List<String>> obfuscatedParameters = new java.util.HashMap<>();
 
-        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
             if (blacklistedKeys.contains(entry.getKey())) {
-                obfuscatedParameters.put(entry.getKey(), "<PRIVATE>");
+                obfuscatedParameters.put(entry.getKey(), List.of("<PRIVATE>"));
             } else {
                 obfuscatedParameters.put(entry.getKey(), entry.getValue());
             }

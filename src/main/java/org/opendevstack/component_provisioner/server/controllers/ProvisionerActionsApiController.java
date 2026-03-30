@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("${openapi.componentProvisionerREST.base-path:/v1}")
 @AllArgsConstructor
@@ -94,7 +96,16 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         var parameters = provisionAction.getParameters().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
-                        p -> p.getValue() != null ? p.getValue().toString() : ""
+                        p -> {
+                            Object val = p.getValue();
+                            if (val == null) {
+                                return List.of("");
+                            }
+                            if (val instanceof List<?> list) {
+                                return list.stream().map(Object::toString).toList();
+                            }
+                            return List.of(val.toString());
+                        }
                 ));
 
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);

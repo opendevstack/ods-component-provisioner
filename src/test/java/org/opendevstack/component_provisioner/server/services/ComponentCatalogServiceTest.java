@@ -165,9 +165,9 @@ class ComponentCatalogServiceTest {
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
         String componentUrl = "component-url";
-        Map<String, String> parameters = Map.of(
-                "access_token", "secret",
-                "other", "value"
+        Map<String, List<String>> parameters = Map.of(
+                "access_token", List.of("secret"),
+                "other", List.of("value")
         );
 
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
@@ -200,7 +200,7 @@ class ComponentCatalogServiceTest {
         assertThat(capturedParameters).extracting(ProvisioningStatusUpdateRequestParametersInner::getName)
                 .containsExactlyInAnyOrder("access_token", "other");
         assertThat(capturedParameters).filteredOn(p -> p.getName().equals("access_token"))
-                .extracting(ProvisioningStatusUpdateRequestParametersInner::getValue)
+                .flatExtracting(ProvisioningStatusUpdateRequestParametersInner::getValue)
                 .containsExactly("<PRIVATE>");
 
         verifyNoMoreInteractions(provisionerActionsApi);
@@ -211,27 +211,25 @@ class ComponentCatalogServiceTest {
     void givenParameters_whenMaskParameters_thenCorrectParametersAreMasked() {
         // given
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"password", "token"});
-        Map<String, String> input = Map.of(
-                "username", "user",
-                "password", "pass123",
-                "token", "secret-token",
-                "env", "prod"
+        Map<String, List<String>> input = Map.of(
+                "username", List.of("user"),
+                "password", List.of("pass123"),
+                "token", List.of("secret-token"),
+                "env", List.of("prod")
         );
 
         // when
-        // maskParameters is private, so we test it via notifyComponentCatalogProvisionStarts or reflection
-        // For simplicity, let's use a public wrapper if we wanted to be thorough, but we can just use reflection for a quick check.
         try {
             java.lang.reflect.Method method = ComponentCatalogService.class.getDeclaredMethod("obfuscateParameters", Map.class);
             method.setAccessible(true);
             @SuppressWarnings("unchecked")
-            Map<String, String> result = (Map<String, String>) method.invoke(componentCatalogService, input);
+            Map<String, List<String>> result = (Map<String, List<String>>) method.invoke(componentCatalogService, input);
 
             // then
-            assertThat(result.get("username")).isEqualTo("user");
-            assertThat(result.get("password")).isEqualTo("<PRIVATE>");
-            assertThat(result.get("token")).isEqualTo("<PRIVATE>");
-            assertThat(result.get("env")).isEqualTo("prod");
+            assertThat(result.get("username")).containsExactly("user");
+            assertThat(result.get("password")).containsExactly("<PRIVATE>");
+            assertThat(result.get("token")).containsExactly("<PRIVATE>");
+            assertThat(result.get("env")).containsExactly("prod");
             assertThat(result.size()).isEqualTo(4);
         } catch (Exception e) {
             throw new RuntimeException(e);
