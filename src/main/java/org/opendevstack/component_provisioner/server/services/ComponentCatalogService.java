@@ -104,7 +104,7 @@ public class ComponentCatalogService {
         var obfuscatedParameters = obfuscateParameters(parameters).entrySet().stream()
                 .map(e -> ProvisioningStatusUpdateRequestParametersInner.builder()
                         .name(e.getKey())
-                        .value(e.getValue())
+                        .values(e.getValue())
                         .build())
                 .toList();
 

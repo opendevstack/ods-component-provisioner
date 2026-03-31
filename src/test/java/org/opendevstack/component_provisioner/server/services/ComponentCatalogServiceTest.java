@@ -200,7 +200,7 @@ class ComponentCatalogServiceTest {
         assertThat(capturedParameters).extracting(ProvisioningStatusUpdateRequestParametersInner::getName)
                 .containsExactlyInAnyOrder("access_token", "other");
         assertThat(capturedParameters).filteredOn(p -> p.getName().equals("access_token"))
-                .flatExtracting(ProvisioningStatusUpdateRequestParametersInner::getValue)
+                .flatExtracting(ProvisioningStatusUpdateRequestParametersInner::getValues)
                 .containsExactly("<PRIVATE>");
 
         verifyNoMoreInteractions(provisionerActionsApi);
