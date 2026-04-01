@@ -302,6 +302,7 @@ sourceSets {
                     "src/main/java",
                     "$projectDir/target/generated-sources/openapi-server-component_provisioner/src/main/java",
                     "$projectDir/target/generated-sources/openapi-client-component_catalog/src/main/java",
+                    "$projectDir/target/generated-sources/openapi-client-projects-info-service/src/main/java",
                     "$projectDir/target/generated-sources/openapi-client-awx/src/main/java"
             ]
         }

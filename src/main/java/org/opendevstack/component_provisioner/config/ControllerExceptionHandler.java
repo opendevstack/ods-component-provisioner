@@ -4,6 +4,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.model.RestErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -47,6 +48,11 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(ProjectComponentAlreadyProvisionedException.class)
     public ResponseEntity<RestErrorMessage> handleProjectComponentAlreadyProvisionedException(ProjectComponentAlreadyProvisionedException ex) {
         return defaultErrResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UserNotAllowedException.class)
+    public ResponseEntity<RestErrorMessage> handleUserNotAllowedException(UserNotAllowedException ex) {
+        return defaultErrResponse(ex, HttpStatus.FORBIDDEN);
     }
 
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {

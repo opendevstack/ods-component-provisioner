@@ -1,8 +1,10 @@
 package org.opendevstack.component_provisioner.server.controllers;
 
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
@@ -11,11 +13,17 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.CatalogItemUserActionGroupsRestriction;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.EvaluationRestrictions;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.GroupsRestrictionsEvaluator;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.RestrictionsParams;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.UserActionEntityRestrictions;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,6 +40,9 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
+    private final GroupsRestrictionsEvaluator groupsRestrictionsEvaluator;
+    private final ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
+    private final ProjectsInfoService projectsInfoService;
 
     @Override
     public ResponseEntity<ProvisionActionResponse> triggerProvisionAction(ProvisionAction provisionAction) {
@@ -83,6 +94,27 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
 
         if (componentIdAlreadyProvisioned) {
             throw new ProjectComponentAlreadyProvisionedException("This component name already exists, please choose another name.");
+        }
+
+        CatalogItemUserActionGroupsRestriction catalogItemUserActionGroupsRestriction = CatalogItemUserActionGroupsRestriction.builder()
+                .prefix(catalogItemUserActionGroupsRestrictionProps.getPrefix())
+                .suffix(catalogItemUserActionGroupsRestrictionProps.getSuffix())
+                .build();
+        UserActionEntityRestrictions userActionEntityRestrictions = UserActionEntityRestrictions.builder()
+                .groups(catalogItemUserActionGroupsRestriction)
+                .build();
+        EvaluationRestrictions restrictions = new EvaluationRestrictions(projectKey, userActionEntityRestrictions);
+
+        List<String> userGroups = projectsInfoService.getProjectGroups(idToken, accessToken);
+        RestrictionsParams params = RestrictionsParams.builder()
+                .projectKey(projectKey)
+                .userGroups(userGroups)
+                .build();
+
+        var groupsEvaluationResult = groupsRestrictionsEvaluator.evaluate(restrictions, params);
+
+        if (Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
+            throw new UserNotAllowedException(groupsEvaluationResult.getRight());
         }
     }
 
