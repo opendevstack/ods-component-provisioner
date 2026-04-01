@@ -2,6 +2,7 @@
 logging:
   level:
     org.springframework: DEBUG
+    org.springframework.expression: INFO
     org.springframework.beans.factory: DEBUG
     com.azure.spring.cloud.autoconfigure: DEBUG
     org.opendevstack.component_provisioner.server.controllers: INFO

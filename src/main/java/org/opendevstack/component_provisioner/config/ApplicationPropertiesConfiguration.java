@@ -40,8 +40,8 @@ public class ApplicationPropertiesConfiguration {
         return CatalogItemUserActionGroupsRestrictionProps.builder().build();
     }
 
-    @Bean("bitbucketServiceCacheConfig")
-    @ConfigurationProperties(prefix = "component-catalog.caching.bitbucket-service-cache")
+    @Bean("projectsInfoServiceCacheConfig")
+    @ConfigurationProperties(prefix = "component-catalog.caching.projects-info-services-cache")
     public ProjectsInfoServicesCacheProps bitbucketServiceCacheProps() {
         return ProjectsInfoServicesCacheProps.builder().build();
     }
