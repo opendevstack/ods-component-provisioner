@@ -3,10 +3,15 @@ package org.opendevstack.component_provisioner.config;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.convert.DurationUnit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.unit.DataSize;
 
 import java.net.URL;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Configuration
 public class ApplicationPropertiesConfiguration {
@@ -29,6 +34,42 @@ public class ApplicationPropertiesConfiguration {
         return ComponentProvisionerParametersProps.builder().build();
     }
 
+    @Bean("catalogItemGroupsRestrictionConfig")
+    @ConfigurationProperties(prefix = "catalog.user-action.groups-restriction")
+    public CatalogItemUserActionGroupsRestrictionProps catalogItemGroupsRestrictionConfig() {
+        return CatalogItemUserActionGroupsRestrictionProps.builder().build();
+    }
+
+    @Bean("projectsInfoServiceCacheConfig")
+    @ConfigurationProperties(prefix = "component-catalog.caching.projects-info-services-cache")
+    public ProjectsInfoServicesCacheProps bitbucketServiceCacheProps() {
+        return ProjectsInfoServicesCacheProps.builder().build();
+    }
+
+    @Bean("projectsInfoServiceConfig")
+    @ConfigurationProperties(prefix = "component-catalog.projects-info-service.service")
+    public ExternalServiceProps projectsInfoServiceServiceProps() {
+        return ExternalServiceProps.builder().build();
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class ProjectsInfoServicesCacheProps {
+        public static final String CACHE_NAME = "projects-info-services-cache";
+
+        @Builder.Default
+        private boolean enabled = true;
+        private DataSize maxSize;
+        @DurationUnit(ChronoUnit.MINUTES) // default units, e.g. 5 -> 5m (minutes)
+        private Duration evictionInterval;
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class ExternalServiceProps {
+        private URL baseRestUrl;
+    }
+
     @Builder // useful for unit testing
     @Data
     public static class AWXServiceProps {
@@ -47,5 +88,12 @@ public class ApplicationPropertiesConfiguration {
     @Data
     public static class ComponentProvisionerParametersProps {
         private String[] blacklist;
+    }
+
+    @Builder
+    @Data
+    public static class CatalogItemUserActionGroupsRestrictionProps {
+        private List<String> prefix;
+        private List<String> suffix;
     }
 }

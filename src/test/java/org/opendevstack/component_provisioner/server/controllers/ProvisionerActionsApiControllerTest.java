@@ -1,42 +1,37 @@
 package org.opendevstack.component_provisioner.server.controllers;
 
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiControllerTest {
@@ -54,15 +49,10 @@ class ProvisionerActionsApiControllerTest {
     private EntitiesMapper entitiesMapper;
 
     @Mock
-    private AuthenticationProvider authenticationProvider;
+    ProvisionerActionsApiValidator provisionerActionsApiValidator;
 
     @InjectMocks
     private ProvisionerActionsApiController controller;
-
-    @BeforeEach
-    void setUp() {
-        when(authenticationProvider.getIdToken()).thenReturn("idToken");
-    }
 
     @Test
     void triggerProvisionAction_returnsResponseEntityWithMappedResponse_whenServiceReturnsSuccess() {
@@ -97,7 +87,7 @@ class ProvisionerActionsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(provisionActionResponse, response.getBody());
 
-        org.mockito.ArgumentCaptor<Map<String, List<String>>> paramsCaptor = org.mockito.ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, List<String>>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(componentCatalogService)
                 .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), paramsCaptor.capture());
 
@@ -134,54 +124,5 @@ class ProvisionerActionsApiControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNull(response.getBody());
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = { "project_key", "component_id", "access_token" })
-    void validate_throwsInvalidRestEntityException_whenRequiredParameterMissing(String missingParam) {
-        var action = buildActionMissing(missingParam);
-
-        assertThrows(InvalidRestEntityException.class,
-                () -> controller.triggerProvisionAction(action));
-    }
-
-    @Test
-    void validate_throwsProjectComponentAlreadyProvisionedException_whenComponentAlreadyExistsInCatalog() {
-        var projectKey = "pkey";
-        var componentId = "cid";
-        var idToken = "idToken";
-        var accessToken = "accessToken";
-
-        var params = List.of(
-                ProvisionActionParameterMother.of("project_key", projectKey),
-                ProvisionActionParameterMother.of("component_id", componentId),
-                ProvisionActionParameterMother.of("catalog_item_id", "111"),
-                ProvisionActionParameterMother.of("access_token", accessToken)
-        );
-
-        var action = ProvisionActionMother.of(params);
-
-        var exists = new ProjectComponentInfo();
-        exists.setComponentId(componentId);
-
-        when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
-                .thenReturn(List.of(exists));
-
-        assertThrows(ProjectComponentAlreadyProvisionedException.class,
-                () -> controller.triggerProvisionAction(action));
-    }
-
-    private ProvisionAction buildActionMissing(String missingParamName) {
-        var params = new ArrayList<ProvisionActionParameter>();
-        if (!"project_key".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
-        if (!"component_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
-        if (!"catalog_item_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
-        if (!"access_token".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
-
-        return ProvisionActionMother.of(params);
     }
 }
