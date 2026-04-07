@@ -9,7 +9,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 
 @Service
 @CacheConfig(cacheNames={ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME})
@@ -21,14 +20,6 @@ public class ProjectsInfoService {
     private final ApplicationPropertiesConfiguration.ExternalServiceProps projectsInfoServiceProps;
 
     private ApiClientsBuilder apiClientsBuilder;
-
-    @Cacheable
-    public ProjectInfo getProjectClusters(String projectKey, String idToken, String accessToken) {
-        var apiClient = apiClientsBuilder.apiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
-        var projectsApi = apiClientsBuilder.projectsApi(apiClient);
-
-        return projectsApi.getProjectClusters(accessToken, projectKey);
-    }
 
     @Cacheable
     public List<String> getProjectGroups(String idToken, String accessToken) {
