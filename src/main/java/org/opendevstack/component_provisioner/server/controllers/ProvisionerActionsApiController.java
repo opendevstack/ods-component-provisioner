@@ -38,12 +38,7 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
                 authInfo.getCurrentPrincipalName(),
                 provisionAction);
 
-        provisionAction.addParametersItem(ProvisionActionParameter.builder()
-                .name("id_token")
-                .value(authenticationProvider.getIdToken())
-                .type("string")
-                .build()
-        );
+        addIdTokenToActions(provisionAction);
 
         provisionerActionsApiValidator.validate(provisionAction);
         notifyComponentCatalogProvisionStarts(provisionAction);
@@ -53,6 +48,15 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())
                 .body(awxResponse.awxResponseBody());
+    }
+
+    private void addIdTokenToActions(ProvisionAction provisionAction) {
+        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+                .name("id_token")
+                .value(authenticationProvider.getIdToken())
+                .type("string")
+                .build()
+        );
     }
 
     private AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
