@@ -32,27 +32,30 @@ public class ComponentCatalogService {
     @Qualifier("itemUserActionMessagesDefinitionsApi")
     private final CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi;
 
-    @Qualifier("provisionerActionsApi")
-    private final ProvisionerActionsApi provisionerActionsApi;
-
     @Qualifier("componentCatalogApiClient")
     private final ApiClient componentCatalogApiClient;
 
     @Qualifier("projectComponentsApi")
     private final ProjectComponentsApi projectComponentsApi;
 
+    private final ApiClientsBuilder apiClientsBuilder;
+
+    private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
+
     private final ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
 
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
-            ProvisionerActionsApi provisionerActionsApi, ApiClient componentCatalogApiClient,
-            ProjectComponentsApi projectComponentsApi,
+            ApiClient componentCatalogApiClient,
+            ProjectComponentsApi projectComponentsApi, ApiClientsBuilder apiClientsBuilder,
+            ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
             @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps
     ) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
-        this.provisionerActionsApi = provisionerActionsApi;
         this.componentCatalogApiClient = componentCatalogApiClient;
         this.projectComponentsApi = projectComponentsApi;
+        this.apiClientsBuilder = apiClientsBuilder;
+        this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
     }
 
@@ -100,6 +103,8 @@ public class ComponentCatalogService {
                                                       String componentId,
                                                       String catalogItemId,
                                                       String componentUrl,
+                                                      String idToken,
+                                                      String accessToken,
                                                       Map<String, List<String>> parameters) {
         var obfuscatedParameters = obfuscateParameters(parameters).entrySet().stream()
                 .map(e -> ProvisioningStatusUpdateRequestParametersInner.builder()
@@ -112,8 +117,12 @@ public class ComponentCatalogService {
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
+                .accessToken(accessToken)
                 .parameters(obfuscatedParameters)
                 .build();
+
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(apiClient);
 
         provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, "CREATING", provisioningStatusUpdateRequest);
     }

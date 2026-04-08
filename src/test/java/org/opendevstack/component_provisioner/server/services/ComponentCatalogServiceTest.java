@@ -165,6 +165,8 @@ class ComponentCatalogServiceTest {
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
         String componentUrl = "component-url";
+        String idToken = "id-token";
+        String accessToken = "secret";
         Map<String, List<String>> parameters = Map.of(
                 "access_token", List.of("secret"),
                 "other", List.of("value")
@@ -178,7 +180,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         //when
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
 
         //then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(
@@ -213,12 +215,14 @@ class ComponentCatalogServiceTest {
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
+        String idToken = "id-token";
+        String accessToken = "secret";
 
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         //when
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, null);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, idToken, accessToken, null);
 
         //then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq("CREATING"), requestCaptor.capture());

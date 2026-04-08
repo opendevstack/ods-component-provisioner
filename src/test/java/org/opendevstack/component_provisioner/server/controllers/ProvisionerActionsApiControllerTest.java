@@ -59,6 +59,7 @@ class ProvisionerActionsApiControllerTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
+        var idToken = "idToken";
         var accessToken = "accessToken";
         var componentUrl = "componentUrl";
 
@@ -89,7 +90,7 @@ class ProvisionerActionsApiControllerTest {
 
         ArgumentCaptor<Map<String, List<String>>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(componentCatalogService)
-                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), paramsCaptor.capture());
+                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), eq(idToken), eq(accessToken), paramsCaptor.capture());
 
         Map<String, List<String>> capturedParams = paramsCaptor.getValue();
         assertThat(capturedParams.get("project_key")).containsExactly(projectKey);

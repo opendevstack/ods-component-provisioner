@@ -86,6 +86,9 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         var catalogItemId = getCatalogItemId(provisionAction);
         var componentUrl = getComponentUrl(provisionAction);
 
+        var idToken = getIdToken(provisionAction);
+        var accessToken = getAccessToken(provisionAction);
+
         var parameters = provisionAction.getParameters().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
@@ -101,7 +104,15 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
                         }
                 ));
 
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
+    }
+
+    private String getIdToken(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "id_token");
+    }
+
+    private String getAccessToken(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "access_token");
     }
 
     private String getCatalogItemId(ProvisionAction provisionAction) {

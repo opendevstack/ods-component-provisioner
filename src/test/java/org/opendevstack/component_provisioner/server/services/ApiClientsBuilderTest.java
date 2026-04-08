@@ -13,13 +13,13 @@ class ApiClientsBuilderTest {
     private final ApiClientsBuilder builder = new ApiClientsBuilder();
 
     @Test
-    void givenIdTokenAndBaseUrl_whenApiClient_thenClientConfiguredCorrectly() {
+    void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
         // given
         String idToken = "test-token";
         String baseUrl = "http://example.com";
 
         // when
-        ApiClient client = builder.apiClient(idToken, baseUrl);
+        ApiClient client = builder.projectsInfoServiceApiClient(idToken, baseUrl);
 
         // then
         assertThat(client).isNotNull();
@@ -30,7 +30,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenProjectsApi_thenReturnProjectsApiInstance() {
+    void givenApiClient_whenProjectsApi_thenReturnProjectsProjectsInfoServiceApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -43,7 +43,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsApiInstance() {
+    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsProjectsInfoServiceApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
