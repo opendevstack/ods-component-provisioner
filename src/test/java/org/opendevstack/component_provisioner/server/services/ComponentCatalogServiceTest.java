@@ -22,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,6 +46,12 @@ class ComponentCatalogServiceTest {
 
     @Mock
     private ProjectComponentsApi projectComponentsApi;
+
+    @Mock
+    private ApiClientsBuilder apiClientsBuilder;
+
+    @Mock
+    private ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     @Mock
     private ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
@@ -159,7 +167,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenNotifyComponentCatalogProvisionStarts_thenInvokesProvisionerActionsApiWithCreating() {
+    void givenValidInput_whenNotifyComponentCatalogProvisionStarts_thenInvokesProvisionerActionsApiWithCreating() throws MalformedURLException {
         //given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -172,7 +180,9 @@ class ComponentCatalogServiceTest {
                 "other", List.of("value")
         );
 
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
+        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -210,7 +220,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenNullParameters_whenNotifyComponentCatalogProvisionStarts_thenEmptyMapIsUsed() {
+    void givenNullParameters_whenNotifyComponentCatalogProvisionStarts_thenEmptyMapIsUsed() throws MalformedURLException {
         //given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -220,6 +230,9 @@ class ComponentCatalogServiceTest {
 
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
+        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
 
         //when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, idToken, accessToken, null);

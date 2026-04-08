@@ -51,6 +51,9 @@ class ProvisionerActionsApiControllerTest {
     @Mock
     ProvisionerActionsApiValidator provisionerActionsApiValidator;
 
+    @Mock
+    AuthenticationProvider authenticationProvider;
+
     @InjectMocks
     private ProvisionerActionsApiController controller;
 
@@ -78,6 +81,7 @@ class ProvisionerActionsApiControllerTest {
         var provisionActionResponse = new ProvisionActionResponse();
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         when(entitiesMapper.asAwxWorkflowJobLaunch(provisionAction)).thenReturn(workflowJobLaunch);
         when(awxService.triggerWorkflowJob("action-id", workflowJobLaunch))
                 .thenReturn(Pair.of(HttpStatus.OK, Optional.of(new AwxWorkflowJob())));
@@ -103,6 +107,7 @@ class ProvisionerActionsApiControllerTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
+        var idToken = "idToken";
         var accessToken = "accessToken";
 
         // Mind that listOf, or Arrays.asList returns an immutable list
@@ -117,6 +122,7 @@ class ProvisionerActionsApiControllerTest {
         var workflowJobLaunch = new AwxWorkflowJobLaunch();
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         when(entitiesMapper.asAwxWorkflowJobLaunch(provisionAction)).thenReturn(workflowJobLaunch);
         when(awxService.triggerWorkflowJob("action-id", workflowJobLaunch))
                 .thenReturn(Pair.of(HttpStatus.NO_CONTENT, Optional.empty()));
