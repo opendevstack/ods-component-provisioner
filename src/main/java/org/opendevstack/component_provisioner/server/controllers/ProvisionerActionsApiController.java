@@ -30,12 +30,20 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final AuthenticationProvider authenticationProvider;
 
     @Override
     public ResponseEntity<ProvisionActionResponse> triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("User '{}' requested  triggering provisioner action: '{}'",
                 authInfo.getCurrentPrincipalName(),
                 provisionAction);
+
+        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+                .name("id_token")
+                .value(authenticationProvider.getIdToken())
+                .type("string")
+                .build()
+        );
 
         provisionerActionsApiValidator.validate(provisionAction);
         notifyComponentCatalogProvisionStarts(provisionAction);
