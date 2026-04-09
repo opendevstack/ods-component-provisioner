@@ -9,8 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
@@ -46,6 +48,9 @@ class ComponentCatalogServiceTest {
 
     @Mock
     private ProjectComponentsApi projectComponentsApi;
+
+    @Mock
+    private CatalogItemsApi catalogItemsApi;
 
     @Mock
     private ApiClientsBuilder apiClientsBuilder;
@@ -309,5 +314,48 @@ class ComponentCatalogServiceTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void givenValidInput_whenGetCatalogItem_thenCatalogItemIsReturned() throws MalformedURLException {
+        // given
+        String idToken = "id-token";
+        String accessToken = "access-token";
+        String catalogItemId = "CAT-123";
+        String projectKey = "PRJ-1";
+
+        URL baseUrl = new URL("http://component-catalog");
+
+        CatalogItem expectedCatalogItem = new CatalogItem();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(idToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
+                .thenReturn(catalogItemsApi);
+        when(catalogItemsApi.getCatalogItemByIdForProjectKey(
+                catalogItemId, projectKey, accessToken))
+                .thenReturn(expectedCatalogItem);
+
+        // when
+        CatalogItem result = componentCatalogService.getCatalogItem(
+                idToken, accessToken, catalogItemId, projectKey);
+
+        // then
+        assertThat(result).isSameAs(expectedCatalogItem);
+
+        verify(apiClientsBuilder)
+                .componentCatalogApiClient(idToken, baseUrl.toString());
+        verify(apiClientsBuilder)
+                .catalogItemsApi(componentCatalogApiClient);
+        verify(catalogItemsApi)
+                .getCatalogItemByIdForProjectKey(catalogItemId, projectKey, accessToken);
+
+        verifyNoMoreInteractions(catalogItemsApi);
+        verifyNoInteractions(
+                itemUserActionMessagesDefinitionsApi,
+                provisionerActionsApi,
+                projectComponentsApi
+        );
     }
 }
