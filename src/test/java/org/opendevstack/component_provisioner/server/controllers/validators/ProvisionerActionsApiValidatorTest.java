@@ -14,6 +14,7 @@ import org.opendevstack.component_provisioner.server.controllers.AuthenticationP
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
+import org.opendevstack.component_provisioner.server.model.CatalogItemMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
@@ -144,6 +145,7 @@ class ProvisionerActionsApiValidatorTest {
         // Given
         var projectKey = "pkey";
         var componentId = "cid";
+        var catalogItemId = "111";
         var accessToken = "accessToken";
         var idToken = "idToken";
 
@@ -153,6 +155,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("catalog_item_id", "111"),
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
+
+        var catalogItem = CatalogItemMother.of();
 
         when(authenticationProvider.getIdToken()).thenReturn(idToken);
 
@@ -171,6 +175,8 @@ class ProvisionerActionsApiValidatorTest {
         // Simulate evaluator result → allowed
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
                 .thenReturn(Pair.of(true, ""));
+
+        when(componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey)).thenReturn(catalogItem);
 
         // Should NOT throw
         provisionerActionsApiValidator.validate(action);

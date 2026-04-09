@@ -1,9 +1,12 @@
 package org.opendevstack.component_provisioner.server.controllers.validators;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
@@ -20,7 +23,12 @@ import org.opendevstack.component_provisioner.server.services.restrictions.evalu
 import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.UserActionEntityRestrictions;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -46,6 +54,59 @@ public class ProvisionerActionsApiValidator {
         validateComponentIsNotProvisioned(projectKey, idToken, accessToken, componentId);
 
         validateUserHasPermissionsToProvision(projectKey, idToken, accessToken);
+
+        validateMandatoryFields(provisionAction);
+    }
+
+    private void validateMandatoryFields(ProvisionAction provisionAction) {
+        var projectKey = getProjectKey(provisionAction);
+        var accessToken = getAccessToken(provisionAction);
+        var catalogItemId = getCatalogItemId(provisionAction);
+        var idToken = authenticationProvider.getIdToken();
+
+        var catalogItem = componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey);
+        var provisionUserAction = Optional.ofNullable(catalogItem)
+                .map(CatalogItem::getUserActions)
+                .map(userActions -> userActions.stream()
+                        .filter(userAction -> "PROVISION".equals(userAction.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new InvalidRestEntityException("The catalog item doesn't have a PROVISION user action")))
+                .orElseThrow(() -> new InvalidRestEntityException("The catalog item does not exist, or doesn't have any user action"));
+
+        Map<String, CatalogItemUserActionParameter> mandatoryFields =
+                Optional.ofNullable(provisionUserAction.getParameters())
+                        .map(parameters -> parameters.stream()
+                                .filter(userActionParameter -> Boolean.TRUE.equals(userActionParameter.getRequired()))
+                                .collect(Collectors.toMap(
+                                        CatalogItemUserActionParameter::getName,   // key
+                                        Function.identity()                         // value
+                                )))
+                        .orElse(Collections.emptyMap());
+
+        provisionAction.getParameters().stream()
+                .filter(param -> mandatoryFields.containsKey(param.getName()))
+                .forEach(param -> updateParam(param, mandatoryFields.get(param.getName())));
+    }
+
+    private void updateParam(@Valid ProvisionActionParameter param, CatalogItemUserActionParameter catalogItemUserActionParameter) {
+        if (StringUtils.isNotBlank(param.getValue().toString())) {
+            var validParamValue = catalogItemUserActionParameter.getOptions().contains(param.getValue().toString());
+
+            if (!validParamValue) {
+                throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
+                        param.getValue(), param.getName(), catalogItemUserActionParameter.getOptions()));
+            }
+        } else {
+            if (StringUtils.isNotBlank(catalogItemUserActionParameter.getDefaultValue())) {
+                param.setValue(
+                        List.of(catalogItemUserActionParameter.getDefaultValue())
+                );
+            } else if (catalogItemUserActionParameter.getDefaultValues() != null) {
+                param.setValue(catalogItemUserActionParameter.getDefaultValues());
+            } else {
+                throw new InvalidRestEntityException(String.format("The parameter %s is mandatory and doesn't have a default value, please provide a value for this parameter.", param.getName()));
+            }
+        }
     }
 
     private void validateUserHasPermissionsToProvision(String projectKey, String idToken, String accessToken) {
@@ -105,6 +166,10 @@ public class ProvisionerActionsApiValidator {
 
     private String getAccessToken(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "access_token");
+    }
+
+    private String getCatalogItemId(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "catalog_item_id");
     }
 
     private String getParameterString(ProvisionAction provisionAction, String parameterName) {
