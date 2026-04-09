@@ -27,6 +27,9 @@ public class ProvisionService {
                 .componentUrl(componentUrl)
                 .build();
 
+        log.debug("Calling provisionerActionsApi.notifiyProvisionStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
+                projectKey, status.name(), notifyProvisioningCompletedRequest);
+
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), notifyProvisioningCompletedRequest);
     }
 

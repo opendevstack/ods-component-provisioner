@@ -23,7 +23,7 @@ public class ProjectsInfoService {
 
     @Cacheable
     public List<String> getProjectGroups(String idToken, String accessToken) {
-        var apiClient = apiClientsBuilder.apiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
+        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var azureGroupsApi = apiClientsBuilder.azureGroupsApi(apiClient);
 
         return azureGroupsApi.getAzureGroups(accessToken);

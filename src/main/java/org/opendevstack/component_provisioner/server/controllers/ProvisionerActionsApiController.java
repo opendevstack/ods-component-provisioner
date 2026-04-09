@@ -30,12 +30,15 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final AuthenticationProvider authenticationProvider;
 
     @Override
     public ResponseEntity<ProvisionActionResponse> triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("User '{}' requested  triggering provisioner action: '{}'",
                 authInfo.getCurrentPrincipalName(),
                 provisionAction);
+
+        addIdTokenToActions(provisionAction);
 
         provisionerActionsApiValidator.validate(provisionAction);
         notifyComponentCatalogProvisionStarts(provisionAction);
@@ -45,6 +48,15 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())
                 .body(awxResponse.awxResponseBody());
+    }
+
+    private void addIdTokenToActions(ProvisionAction provisionAction) {
+        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+                .name("id_token")
+                .value(authenticationProvider.getIdToken())
+                .type("string")
+                .build()
+        );
     }
 
     private AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
@@ -74,6 +86,9 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         var catalogItemId = getCatalogItemId(provisionAction);
         var componentUrl = getComponentUrl(provisionAction);
 
+        var idToken = getIdToken(provisionAction);
+        var accessToken = getAccessToken(provisionAction);
+
         var parameters = provisionAction.getParameters().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
@@ -89,7 +104,15 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
                         }
                 ));
 
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
+    }
+
+    private String getIdToken(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "id_token");
+    }
+
+    private String getAccessToken(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "access_token");
     }
 
     private String getCatalogItemId(ProvisionAction provisionAction) {

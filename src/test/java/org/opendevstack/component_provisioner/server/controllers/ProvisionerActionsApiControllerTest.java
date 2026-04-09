@@ -51,6 +51,9 @@ class ProvisionerActionsApiControllerTest {
     @Mock
     ProvisionerActionsApiValidator provisionerActionsApiValidator;
 
+    @Mock
+    AuthenticationProvider authenticationProvider;
+
     @InjectMocks
     private ProvisionerActionsApiController controller;
 
@@ -59,6 +62,7 @@ class ProvisionerActionsApiControllerTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
+        var idToken = "idToken";
         var accessToken = "accessToken";
         var componentUrl = "componentUrl";
 
@@ -77,6 +81,7 @@ class ProvisionerActionsApiControllerTest {
         var provisionActionResponse = new ProvisionActionResponse();
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         when(entitiesMapper.asAwxWorkflowJobLaunch(provisionAction)).thenReturn(workflowJobLaunch);
         when(awxService.triggerWorkflowJob("action-id", workflowJobLaunch))
                 .thenReturn(Pair.of(HttpStatus.OK, Optional.of(new AwxWorkflowJob())));
@@ -89,7 +94,7 @@ class ProvisionerActionsApiControllerTest {
 
         ArgumentCaptor<Map<String, List<String>>> paramsCaptor = ArgumentCaptor.forClass(Map.class);
         verify(componentCatalogService)
-                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), paramsCaptor.capture());
+                .notifyComponentCatalogProvisionStarts(eq(projectKey), eq(componentId), eq(catalogItemId), eq(componentUrl), eq(idToken), eq(accessToken), paramsCaptor.capture());
 
         Map<String, List<String>> capturedParams = paramsCaptor.getValue();
         assertThat(capturedParams.get("project_key")).containsExactly(projectKey);
@@ -102,6 +107,7 @@ class ProvisionerActionsApiControllerTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
+        var idToken = "idToken";
         var accessToken = "accessToken";
 
         // Mind that listOf, or Arrays.asList returns an immutable list
@@ -116,6 +122,7 @@ class ProvisionerActionsApiControllerTest {
         var workflowJobLaunch = new AwxWorkflowJobLaunch();
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         when(entitiesMapper.asAwxWorkflowJobLaunch(provisionAction)).thenReturn(workflowJobLaunch);
         when(awxService.triggerWorkflowJob("action-id", workflowJobLaunch))
                 .thenReturn(Pair.of(HttpStatus.NO_CONTENT, Optional.empty()));
