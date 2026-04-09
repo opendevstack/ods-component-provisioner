@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
-import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,12 +26,29 @@ class ApiClientsBuilderTest {
         assertThat(client).isNotNull();
         assertThat(client.getBasePath()).isEqualTo(baseUrl);
 
-        var auth = (HttpBearerAuth) client.getAuthentication("bearerAuth");
+        var auth = (org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth) client.getAuthentication("bearerAuth");
         assertThat(auth.getBearerToken()).isEqualTo(idToken);
     }
 
     @Test
-    void givenApiClient_whenProjectsApi_thenReturnProjectsProjectsInfoServiceApiInstance() {
+    void givenIdTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
+        // given
+        String idToken = "test-token";
+        String baseUrl = "http://component-catalog";
+
+        // when
+        var client = builder.componentCatalogApiClient(idToken, baseUrl);
+
+        // then
+        assertThat(client).isNotNull();
+        assertThat(client.getBasePath()).isEqualTo(baseUrl);
+
+        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) client.getAuthentication("bearerAuth");
+        assertThat(auth.getBearerToken()).isEqualTo(idToken);
+    }
+
+    @Test
+    void givenApiClient_whenProjectsApi_thenReturnProjectsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -43,12 +61,38 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsProjectsInfoServiceApiInstance() {
+    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
         // when
         AzureGroupsApi api = builder.azureGroupsApi(client);
+
+        // then
+        assertThat(api).isNotNull();
+        assertThat(api.getApiClient()).isSameAs(client);
+    }
+
+    @Test
+    void givenApiClient_whenCatalogItemsApi_thenReturnCatalogItemsApiInstance() {
+        // given
+        var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+
+        // when
+        CatalogItemsApi api = builder.catalogItemsApi(client);
+
+        // then
+        assertThat(api).isNotNull();
+        assertThat(api.getApiClient()).isSameAs(client);
+    }
+
+    @Test
+    void givenApiClient_whenProvisionerActionsApi_thenReturnProvisionerActionsApiInstance() {
+        // given
+        var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+
+        // when
+        ProvisionerActionsApi api = builder.provisionerActionsApi(client);
 
         // then
         assertThat(api).isNotNull();
