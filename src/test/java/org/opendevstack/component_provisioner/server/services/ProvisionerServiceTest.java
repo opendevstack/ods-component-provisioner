@@ -31,7 +31,7 @@ class ProvisionerServiceTest {
         var componentUrl = "componentUrl";
 
         // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,null);
 
         // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()

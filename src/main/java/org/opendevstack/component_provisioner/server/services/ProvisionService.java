@@ -18,13 +18,15 @@ public class ProvisionService {
         this.provisionerActionsApi = provisionerActionsApi;
     }
 
-    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId, String catalogItemId, String componentUrl) {
+    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
+                                               String catalogItemId, String componentUrl, String accessToken) {
         log.info("Notifying provisioning completed");
 
         var notifyProvisioningCompletedRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
+                .accessToken(accessToken)
                 .build();
 
         log.debug("Calling provisionerActionsApi.notifiyProvisionStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
