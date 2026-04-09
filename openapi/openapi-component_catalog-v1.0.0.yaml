@@ -1149,7 +1149,6 @@ components:
           type: string
           description: the repository url where the component was provisioned
           example: "https://bitbucket.com/projects/DEVSTACK/repos/devstack-component-catalog"
-          nullable: true
 
         accessToken:
           type: string
