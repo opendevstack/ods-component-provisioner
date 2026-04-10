@@ -46,7 +46,6 @@ class ProvisionerServiceTest {
         var baseUrl = "http://localhost";
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
-        when(apiClientsBuilder.componentCatalogApiClient(idToken, baseUrl)).thenReturn(apiClient);
         when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
 
         // when

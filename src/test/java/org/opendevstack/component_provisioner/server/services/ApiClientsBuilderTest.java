@@ -2,8 +2,9 @@ package org.opendevstack.component_provisioner.server.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
@@ -13,18 +14,19 @@ import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class ApiClientsBuilderTest {
 
     private ApiClientsBuilder builder;
 
     @Mock
-    private RestTemplate patchRestTemplate;
+    private RestTemplate restTemplate;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        builder = new ApiClientsBuilder(patchRestTemplate);
+        builder = new ApiClientsBuilder(restTemplate);
     }
+
 
     @Test
     void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
