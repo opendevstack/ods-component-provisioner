@@ -8,6 +8,7 @@ import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

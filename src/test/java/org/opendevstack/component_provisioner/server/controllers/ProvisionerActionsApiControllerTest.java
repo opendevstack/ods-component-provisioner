@@ -12,6 +12,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionMother
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;

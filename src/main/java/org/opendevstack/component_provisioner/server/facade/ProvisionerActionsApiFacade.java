@@ -3,7 +3,7 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.opendevstack.component_provisioner.server.controllers.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
