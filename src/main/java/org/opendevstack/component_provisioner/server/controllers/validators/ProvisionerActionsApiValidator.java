@@ -90,11 +90,25 @@ public class ProvisionerActionsApiValidator {
 
     private void updateParam(@Valid ProvisionActionParameter param, CatalogItemUserActionParameter catalogItemUserActionParameter) {
         if (StringUtils.isNotBlank(param.getValue().toString())) {
-            var validParamValue = catalogItemUserActionParameter.getOptions().contains(param.getValue().toString());
+            if (catalogItemUserActionParameter.getOptions() != null && !catalogItemUserActionParameter.getOptions().isEmpty()) {
+                if (param.getType().equalsIgnoreCase("list") || param.getType().equalsIgnoreCase("multiplelist")) {
+                    List<String> paramValues = (List<String>) param.getValue();
+                    for (String value : paramValues) {
+                        if (!catalogItemUserActionParameter.getOptions().contains(value)) {
+                            throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
+                                    value, param.getName(), catalogItemUserActionParameter.getOptions()));
+                        }
+                    }
+                }  else {
+                    var validParamValue = catalogItemUserActionParameter.getOptions().contains(param.getValue().toString());
 
-            if (!validParamValue) {
-                throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
-                        param.getValue(), param.getName(), catalogItemUserActionParameter.getOptions()));
+                    if (!validParamValue) {
+                        throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
+                                param.getValue(), param.getName(), catalogItemUserActionParameter.getOptions()));
+                    }
+                }
+            } else {
+                log.debug("No options for default parameter, ignoring validation of the parameter value against options. parameterName: {}, parameterValue: {}", param.getName(), param.getValue());
             }
         } else {
             if (StringUtils.isNotBlank(catalogItemUserActionParameter.getDefaultValue())) {
