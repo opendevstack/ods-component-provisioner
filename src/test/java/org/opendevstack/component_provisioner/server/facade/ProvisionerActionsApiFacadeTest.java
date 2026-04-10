@@ -12,6 +12,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionMother
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
@@ -38,6 +39,8 @@ class ProvisionerActionsApiFacadeTest {
     private ComponentCatalogService componentCatalogService;
     @Mock
     private EntitiesMapper entitiesMapper;
+    @Mock
+    private AuthenticationProvider authenticationProvider;
 
     @InjectMocks
     private ProvisionerActionsApiFacade facade;
@@ -82,5 +85,19 @@ class ProvisionerActionsApiFacadeTest {
         var map = captor.getValue();
         assertThat(map.get("list_param")).containsExactly("a", "b");
         assertThat(map.get("null_param")).containsExactly("");
+    }
+
+    @Test
+    void addIdTokenToActions_addsParameter() {
+        var action = ProvisionActionMother.of(new ArrayList<>());
+        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+
+        facade.addIdTokenToActions(action);
+
+        assertThat(action.getParameters()).hasSize(1);
+        var param = action.getParameters().get(0);
+        assertThat(param.getName()).isEqualTo("id_token");
+        assertThat(param.getValue()).isEqualTo("id-token");
+        assertThat(param.getType()).isEqualTo("string");
     }
 }

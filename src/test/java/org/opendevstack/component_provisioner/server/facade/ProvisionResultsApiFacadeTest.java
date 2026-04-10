@@ -15,6 +15,7 @@ import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameterMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -23,6 +24,7 @@ import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -89,6 +91,40 @@ class ProvisionResultsApiFacadeTest {
         var invalid = CreateIncidentAction.builder().build();
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", invalid));
         assertThat(ex.getMessage()).contains("caller, cluster_location");
+    }
+
+    @Test
+    void validate_throwsOnMissingProjectKeyOrStatus() {
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CREATED"));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null));
+    }
+
+    @Test
+    void validate_createIncident_throwsOnMissingMainParams() {
+        var action = CreateIncidentActionMother.of();
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, action));
+    }
+
+    @Test
+    void validate_createIncident_throwsOnMissingTokens() {
+        var action = CreateIncidentAction.builder()
+                .parameters(new ArrayList<>(List.of(
+                        CreateIncidentParameterMother.of("caller"),
+                        CreateIncidentParameterMother.of("cluster_location"),
+                        CreateIncidentParameterMother.of("is_deployed"),
+                        CreateIncidentParameterMother.of("change_number"),
+                        CreateIncidentParameterMother.of("reason")
+                )))
+                .build();
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", action));
+        assertThat(ex.getMessage()).contains("id_token and access_token are required");
+    }
+
+    @Test
+    void getParameterString_returnsEmptyOnMissing() {
+        var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
+        assertThat(facade.getParameterString(action, "missing")).isEmpty();
     }
 
     @Test
