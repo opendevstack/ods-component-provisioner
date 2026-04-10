@@ -8,6 +8,7 @@ logging:
     org.opendevstack.component_provisioner.server.controllers: INFO
     org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: INFO
     org.springframework.web.client : DEBUG
+    org.opendevstack.component_provisioner.server.controllers.interceptors: DEBUG
 
 management:
   endpoints:
