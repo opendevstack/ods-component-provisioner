@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -88,39 +89,113 @@ public class ProvisionerActionsApiValidator {
                 .forEach(param -> updateParam(param, mandatoryFields.get(param.getName())));
     }
 
-    private void updateParam(@Valid ProvisionActionParameter param, CatalogItemUserActionParameter catalogItemUserActionParameter) {
-        if (StringUtils.isNotBlank(param.getValue().toString())) {
-            if (catalogItemUserActionParameter.getOptions() != null && !catalogItemUserActionParameter.getOptions().isEmpty()) {
-                if (param.getType().equalsIgnoreCase("list") || param.getType().equalsIgnoreCase("multiplelist")) {
-                    List<String> paramValues = (List<String>) param.getValue();
-                    for (String value : paramValues) {
-                        if (!catalogItemUserActionParameter.getOptions().contains(value)) {
-                            throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
-                                    value, param.getName(), catalogItemUserActionParameter.getOptions()));
-                        }
-                    }
-                }  else {
-                    var validParamValue = catalogItemUserActionParameter.getOptions().contains(param.getValue().toString());
+    public void updateParam(
+            @Valid ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam
+    ) {
 
-                    if (!validParamValue) {
-                        throw new InvalidRestEntityException(String.format("The value %s is not valid for the parameter %s. Valid values are: %s",
-                                param.getValue(), param.getName(), catalogItemUserActionParameter.getOptions()));
-                    }
-                }
-            } else {
-                log.debug("No options for default parameter, ignoring validation of the parameter value against options. parameterName: {}, parameterValue: {}", param.getName(), param.getValue());
-            }
+        if (isBlankValue(param)) {
+            applyDefaultValue(param, catalogParam);
+            return;
+        }
+
+        if (hasNoOptions(catalogParam)) {
+            logNoOptions(param);
+            return;
+        }
+
+        validateAgainstOptions(param, catalogParam);
+    }
+
+    private void validateAgainstOptions(
+            ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam
+    ) {
+        if (isListType(param)) {
+            validateListValues(param, catalogParam);
         } else {
-            if (StringUtils.isNotBlank(catalogItemUserActionParameter.getDefaultValue())) {
-                param.setValue(
-                        List.of(catalogItemUserActionParameter.getDefaultValue())
-                );
-            } else if (catalogItemUserActionParameter.getDefaultValues() != null) {
-                param.setValue(catalogItemUserActionParameter.getDefaultValues());
-            } else {
-                throw new InvalidRestEntityException(String.format("The parameter %s is mandatory and doesn't have a default value, please provide a value for this parameter.", param.getName()));
+            validateSingleValue(param, catalogParam);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateListValues(
+            ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam
+    ) {
+        List<String> values = (List<String>) param.getValue();
+
+        for (String value : values) {
+            if (!Objects.requireNonNull(catalogParam.getOptions()).contains(value)) {
+                throw invalidValueException(param, value, catalogParam.getOptions());
             }
         }
+    }
+
+    private void validateSingleValue(
+            ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam
+    ) {
+        String value = param.getValue().toString();
+
+        if (!Objects.requireNonNull(catalogParam.getOptions()).contains(value)) {
+            throw invalidValueException(param, value, catalogParam.getOptions());
+        }
+    }
+
+    private void applyDefaultValue(
+            ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam
+    ) {
+
+        if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
+            param.setValue(List.of(catalogParam.getDefaultValue()));
+            return;
+        }
+
+        if (catalogParam.getDefaultValues() != null) {
+            param.setValue(catalogParam.getDefaultValues());
+            return;
+        }
+
+        throw new InvalidRestEntityException(String.format(
+                "The parameter %s is mandatory and doesn't have a default value, please provide a value for this parameter.",
+                param.getName()
+        ));
+    }
+
+    private boolean isBlankValue(ProvisionActionParameter param) {
+        return param.getValue() == null ||
+                StringUtils.isBlank(param.getValue().toString());
+    }
+
+    private boolean hasNoOptions(CatalogItemUserActionParameter param) {
+        return param.getOptions() == null || param.getOptions().isEmpty();
+    }
+
+    private boolean isListType(ProvisionActionParameter param) {
+        return "list".equalsIgnoreCase(param.getType())
+                || "multiplelist".equalsIgnoreCase(param.getType());
+    }
+
+    private InvalidRestEntityException invalidValueException(
+            ProvisionActionParameter param,
+            String value,
+            List<String> options
+    ) {
+        return new InvalidRestEntityException(String.format(
+                "The value %s is not valid for the parameter %s. Valid values are: %s",
+                value, param.getName(), options
+        ));
+    }
+
+    private void logNoOptions(ProvisionActionParameter param) {
+        log.debug(
+                "No options for default parameter, ignoring validation of the parameter value against options. " +
+                        "parameterName: {}, parameterValue: {}",
+                param.getName(),
+                param.getValue()
+        );
     }
 
     private void validateUserHasPermissionsToProvision(String projectKey, String idToken, String accessToken) {
