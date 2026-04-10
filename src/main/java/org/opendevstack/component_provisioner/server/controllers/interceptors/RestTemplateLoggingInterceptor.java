@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.controllers.interceptors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpRequestExecution;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
@@ -14,16 +15,14 @@ public class RestTemplateLoggingInterceptor implements ClientHttpRequestIntercep
 
     @Override
     public ClientHttpResponse intercept(
-            HttpRequest request,
-            byte[] body,
+            @NonNull HttpRequest request,
+            byte @NonNull [] body,
             ClientHttpRequestExecution execution
     ) throws IOException {
 
         logRequest(request, body);
 
-        ClientHttpResponse response = execution.execute(request, body);
-
-        return response;
+        return execution.execute(request, body);
     }
 
     private void logRequest(HttpRequest request, byte[] body) {
