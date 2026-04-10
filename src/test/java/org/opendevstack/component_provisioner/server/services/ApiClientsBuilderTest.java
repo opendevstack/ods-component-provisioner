@@ -1,17 +1,24 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 class ApiClientsBuilderTest {
 
-    private final ApiClientsBuilder builder = new ApiClientsBuilder();
+    RestTemplate restTemplate = mock(RestTemplate.class);
+
+    private final ApiClientsBuilder builder = new ApiClientsBuilder(restTemplate);
 
     @Test
     void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {

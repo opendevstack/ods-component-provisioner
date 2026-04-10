@@ -1,17 +1,24 @@
 package org.opendevstack.component_provisioner.server.services;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.springframework.stereotype.Service;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.springframework.web.client.RestTemplate;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class ApiClientsBuilder {
+
+    private final RestTemplate restTemplate;
+
     public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String idToken, String baseRestUrl) {
-        var apiClient = new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient();
+        var apiClient = new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient(restTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
@@ -22,7 +29,7 @@ public class ApiClientsBuilder {
     }
 
     public org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient componentCatalogApiClient(String idToken, String baseRestUrl) {
-        var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+        var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(restTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
