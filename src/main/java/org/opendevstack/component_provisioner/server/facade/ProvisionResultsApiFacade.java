@@ -91,7 +91,7 @@ public class ProvisionResultsApiFacade {
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
         var extraParamsAreEmtpy = StringUtils.isBlank(caller) || StringUtils.isBlank(clusterLocation) || StringUtils.isBlank(isDeployed)
                 || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
-        var tokensAreEmpty = StringUtils.isBlank(accessToken);
+        var tokenIsEmpty = StringUtils.isBlank(accessToken);
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
@@ -101,8 +101,8 @@ public class ProvisionResultsApiFacade {
             throw new InvalidRestEntityException("caller, cluster_location, is_deployed, change_number and reason are required.");
         }
 
-        if (tokensAreEmpty) {
-            throw new InvalidRestEntityException("id_token and access_token are required.");
+        if (tokenIsEmpty) {
+            throw new InvalidRestEntityException("access_token is required.");
         }
     }
 
