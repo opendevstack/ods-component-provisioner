@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @AllArgsConstructor
 public class ApiClientsBuilder {
-    private final static String bearerToken = "bearerAuth";
+    private final static String BEARER_TOKEN = "bearerAuth";
     private final RestTemplate restTemplate;
 
     public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String idToken, String baseRestUrl) {
@@ -21,7 +21,7 @@ public class ApiClientsBuilder {
 
         apiClient.setBasePath(baseRestUrl);
 
-        var auth = (org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth) apiClient.getAuthentication(bearerToken);
+        var auth = (org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
         auth.setBearerToken(idToken);
 
         return apiClient;
@@ -32,7 +32,7 @@ public class ApiClientsBuilder {
 
         apiClient.setBasePath(baseRestUrl);
 
-        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(bearerToken);
+        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
         auth.setBearerToken(idToken);
 
         return apiClient;
@@ -54,7 +54,7 @@ public class ApiClientsBuilder {
         var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(restTemplate);
         apiClient.setBasePath(baseRestUrl);
 
-        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(bearerToken);
+        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
         auth.setBearerToken(idToken);
 
         return new ProvisionerActionsApi(apiClient);
