@@ -118,7 +118,7 @@ class ProvisionResultsApiFacadeTest {
                 )))
                 .build();
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", action));
-        assertThat(ex.getMessage()).contains("id_token and access_token are required");
+        assertThat(ex.getMessage()).contains("access_token is required");
     }
 
     @Test
