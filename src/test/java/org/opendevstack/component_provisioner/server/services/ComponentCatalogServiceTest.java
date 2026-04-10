@@ -187,7 +187,7 @@ class ComponentCatalogServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
-        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -237,7 +237,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
-        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         //when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, idToken, accessToken, null);

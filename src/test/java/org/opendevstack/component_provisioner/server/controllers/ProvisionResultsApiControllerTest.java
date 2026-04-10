@@ -43,16 +43,20 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
+        var idToken = "idToken";
+        var accessToken = "accessToken";
 
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setComponentUrl(componentUrl);
+        request.setAccessToken(accessToken);
 
+        when(authenticationProvider.getIdToken()).thenReturn(idToken);
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,null);
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,idToken, accessToken);
         verify(provisionResultsApiFacade).validate(projectKey, status.name());
     }
 
@@ -66,7 +70,7 @@ class ProvisionResultsApiControllerTest {
         var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionService).deleteProvisioningStatus(projectKey, componentId);
+        verify(provisionService).deleteProvisioningStatus(projectKey, componentId,null);
     }
 
     @Test

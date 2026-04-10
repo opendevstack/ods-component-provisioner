@@ -1,26 +1,26 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import lombok.AllArgsConstructor;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class ProvisionService {
 
-    private final ProvisionerActionsApi provisionerActionsApi;
-
-    public ProvisionService(@Qualifier("provisionerActionsBasicAuthApi") ProvisionerActionsApi provisionerActionsApi) {
-        this.provisionerActionsApi = provisionerActionsApi;
-    }
+    private final ApiClientsBuilder apiClientsBuilder;
+    private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String accessToken) {
+                                               String catalogItemId, String componentUrl, String idToken, String accessToken) {
         log.info("Notifying provisioning completed");
+
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         var notifyProvisioningCompletedRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
@@ -29,18 +29,20 @@ public class ProvisionService {
                 .accessToken(accessToken)
                 .build();
 
-        log.debug("Calling provisionerActionsApi.notifiyProvisionStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
+        log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, status.name(), notifyProvisioningCompletedRequest);
 
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), notifyProvisioningCompletedRequest);
     }
 
-    public void deleteProvisioningStatus(String projectKey, String componentId) {
+    public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
         log.info("Deleting provisioning completed. Project Key: {}, componentId: {}", projectKey, componentId);
 
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
                 .build();
+
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         provisionerActionsApi.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
     }

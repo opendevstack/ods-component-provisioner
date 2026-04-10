@@ -41,6 +41,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
                 notifyProvisioningCompletedRequest.getComponentId(),
                 notifyProvisioningCompletedRequest.getCatalogItemId(),
                 notifyProvisioningCompletedRequest.getComponentUrl(),
+                authenticationProvider.getIdToken(),
                 notifyProvisioningCompletedRequest.getAccessToken());
 
         return ResponseEntity.ok().build();
@@ -50,7 +51,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<Void> deleteProvisioningStatus(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
         log.debug("Delete provisioning status. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
 
-        provisionService.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId());
+        provisionService.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId(), authenticationProvider.getIdToken());
 
         return ResponseEntity.ok().build();
     }
@@ -76,6 +77,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
                     componentId,
                     null,
                     null,
+                    authenticationProvider.getIdToken(),
                     null);
 
             log.debug("Creating incident via AWX");

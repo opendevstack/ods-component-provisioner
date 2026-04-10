@@ -1,12 +1,14 @@
 # See: README.md for details about setting up your local environment
 logging:
   level:
-    org.springframework: DEBUG
+    org.springframework: INFO
     org.springframework.expression: INFO
-    org.springframework.beans.factory: DEBUG
-    com.azure.spring.cloud.autoconfigure: DEBUG
+    org.springframework.beans.factory: INFO
+    com.azure.spring.cloud.autoconfigure: INFO
     org.opendevstack.component_provisioner.server.controllers: INFO
-    org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: DEBUG
+    org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: INFO
+    org.springframework.web.client : DEBUG
+
 management:
   endpoints:
     web:

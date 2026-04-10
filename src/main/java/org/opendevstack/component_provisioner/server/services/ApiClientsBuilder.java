@@ -4,14 +4,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
-import org.springframework.stereotype.Service;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
+
 public class ApiClientsBuilder {
+    private final RestTemplate patchRestTemplate;
+
+    public ApiClientsBuilder(@Qualifier("patchRestTemplate") RestTemplate patchRestTemplate) {
+        this.patchRestTemplate = patchRestTemplate;
+    }
+
     public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String idToken, String baseRestUrl) {
-        var apiClient = new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient();
+        var apiClient = new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient(patchRestTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
@@ -22,7 +31,7 @@ public class ApiClientsBuilder {
     }
 
     public org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient componentCatalogApiClient(String idToken, String baseRestUrl) {
-        var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+        var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(patchRestTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
@@ -44,7 +53,13 @@ public class ApiClientsBuilder {
         return new CatalogItemsApi(apiClient);
     }
 
-    public ProvisionerActionsApi provisionerActionsApi(org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient apiClient) {
+    public ProvisionerActionsApi provisionerActionsApi(String idToken, String baseRestUrl) {
+        var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(patchRestTemplate);
+        apiClient.setBasePath(baseRestUrl);
+
+        var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication("bearerAuth");
+        auth.setBearerToken(idToken);
+
         return new ProvisionerActionsApi(apiClient);
     }
 }

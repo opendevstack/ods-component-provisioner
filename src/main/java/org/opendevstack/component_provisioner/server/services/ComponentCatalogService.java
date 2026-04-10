@@ -120,8 +120,7 @@ public class ComponentCatalogService {
                 .parameters(obfuscatedParameters)
                 .build();
 
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(apiClient);
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisioningStatusUpdateRequest);
