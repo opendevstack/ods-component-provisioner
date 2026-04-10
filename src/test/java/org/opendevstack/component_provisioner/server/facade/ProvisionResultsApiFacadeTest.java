@@ -23,6 +23,7 @@ import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,5 +89,27 @@ class ProvisionResultsApiFacadeTest {
         var invalid = CreateIncidentAction.builder().build();
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", invalid));
         assertThat(ex.getMessage()).contains("caller, cluster_location");
+    }
+
+    @Test
+    void isInDeletingState_returnsFalseWhenComponentNotFound() {
+        var action = CreateIncidentActionMother.of();
+        String accessToken = facade.getParameterString(action, "access_token");
+        when(componentCatalogService.getProjectComponents("PRJ", "ID", accessToken)).thenReturn(Collections.emptyList());
+
+        var result = facade.isInDeletingState("PRJ", "componentId", "ID", action);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void isInDeletingState_returnsFalseWhenComponentNotDeleting() {
+        var action = CreateIncidentActionMother.of();
+        String accessToken = facade.getParameterString(action, "access_token");
+        ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
+        pc.setComponentId("componentId");
+        when(componentCatalogService.getProjectComponents("PRJ", "ID", accessToken)).thenReturn(List.of(pc));
+
+        var result = facade.isInDeletingState("PRJ", "componentId", "ID", action);
+        assertThat(result).isFalse();
     }
 }
