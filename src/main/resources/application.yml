@@ -47,17 +47,19 @@ catalog-collection:
 user-actions:
   id: ${USER_ACTIONS_ID}
 
-component-catalog:
+component-provisioner:
   caching:
     projects-info-services-cache:
+      enabled: true
+      eviction-interval: ${CACHING_PROJECTS_INFO_SERVICE_CACHE_EVICTION_INTERVAL}
+      max-size: ${CACHING_PROJECTS_INFO_SERVICE_CACHE_MAX_SIZE}
+    component-catalog-cache:
       enabled: true
       eviction-interval: ${CACHING_PROJECTS_INFO_SERVICE_CACHE_EVICTION_INTERVAL}
       max-size: ${CACHING_PROJECTS_INFO_SERVICE_CACHE_MAX_SIZE}
   projects-info-service:
     service:
       base-rest-url: ${PROJECTS_INFO_SERVICE_BASE_REST_URL}
-
-component-provisioner:
   awx:
     service:
       base-rest-url: ${AWX_SERVICE_BASE_REST_URL}

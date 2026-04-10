@@ -41,13 +41,19 @@ public class ApplicationPropertiesConfiguration {
     }
 
     @Bean("projectsInfoServiceCacheConfig")
-    @ConfigurationProperties(prefix = "component-catalog.caching.projects-info-services-cache")
-    public ProjectsInfoServicesCacheProps bitbucketServiceCacheProps() {
+    @ConfigurationProperties(prefix = "component-provisioner.caching.projects-info-services-cache")
+    public ProjectsInfoServicesCacheProps projectsInfoServicesCacheProps() {
         return ProjectsInfoServicesCacheProps.builder().build();
     }
 
+    @Bean("componentCatalogCacheConfig")
+    @ConfigurationProperties(prefix = "component-provisioner.caching.component-catalog-cache")
+    public ComponentCatalogCacheProps componentCatalogCacheProps() {
+        return ComponentCatalogCacheProps.builder().build();
+    }
+
     @Bean("projectsInfoServiceConfig")
-    @ConfigurationProperties(prefix = "component-catalog.projects-info-service.service")
+    @ConfigurationProperties(prefix = "component-provisioner.projects-info-service.service")
     public ExternalServiceProps projectsInfoServiceServiceProps() {
         return ExternalServiceProps.builder().build();
     }
@@ -56,6 +62,18 @@ public class ApplicationPropertiesConfiguration {
     @Data
     public static class ProjectsInfoServicesCacheProps {
         public static final String CACHE_NAME = "projects-info-services-cache";
+
+        @Builder.Default
+        private boolean enabled = true;
+        private DataSize maxSize;
+        @DurationUnit(ChronoUnit.MINUTES) // default units, e.g. 5 -> 5m (minutes)
+        private Duration evictionInterval;
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class ComponentCatalogCacheProps {
+        public static final String CACHE_NAME = "component-catalog-cache";
 
         @Builder.Default
         private boolean enabled = true;
