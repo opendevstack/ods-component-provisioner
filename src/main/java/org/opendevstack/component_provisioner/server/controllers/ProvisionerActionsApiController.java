@@ -13,6 +13,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -31,6 +32,7 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
     private final EntitiesMapper entitiesMapper;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final AuthenticationProvider authenticationProvider;
+    private final PlaceholderPostProcessor placeholderPostProcessor;
 
     @Override
     public ResponseEntity<ProvisionActionResponse> triggerProvisionAction(ProvisionAction provisionAction) {
@@ -41,9 +43,10 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         addIdTokenToActions(provisionAction);
 
         provisionerActionsApiValidator.validate(provisionAction);
-        notifyComponentCatalogProvisionStarts(provisionAction);
+        var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);
+        notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholders);
 
-        var awxResponse = requestProvisionToAwx(provisionAction);
+        var awxResponse = requestProvisionToAwx(updateProvisionActionWithoutPlaceholders);
 
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())
