@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 @AllArgsConstructor
 public class ApiClientsBuilder {
-    private final static String BEARER_TOKEN = "bearerAuth";
+    private static final String BEARER_TOKEN = "bearerAuth";
     private final RestTemplate restTemplate;
 
     public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String idToken, String baseRestUrl) {

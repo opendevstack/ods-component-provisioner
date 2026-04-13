@@ -39,6 +39,7 @@ class ProvisionResultsApiControllerTest {
 
     @Test
     void givenAProvisionService_whenNotifyProvisioningCompletedIsCalled_thenReturnsOk() {
+        // given
         var projectKey = "project-key";
         var status = ProjectComponentStatus.CREATED;
         var componentId = "componentId";
@@ -54,8 +55,11 @@ class ProvisionResultsApiControllerTest {
         request.setAccessToken(accessToken);
 
         when(authenticationProvider.getIdToken()).thenReturn(idToken);
+
+        // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
 
+        // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,idToken, accessToken);
         verify(provisionResultsApiFacade).validate(projectKey, status.name());
@@ -63,19 +67,23 @@ class ProvisionResultsApiControllerTest {
 
     @Test
     void givenAProjectKey_AndAComponentId_whenDeleteProvisioningStatus_thenReturnsOk() {
+        // given
         var projectKey = "project-key";
         var componentId = "componentId";
 
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder().componentId(componentId).build();
 
+        // when
         var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
 
+        // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionService).deleteProvisioningStatus(projectKey, componentId,null);
     }
 
     @Test
     void givenAProjectKey_AndAComponentId_AndCreateIncidentAction_whenCreateIncident_thenReturnsOk() {
+        // given
         var projectKey = "project-key";
         var componentId = "componentId";
         var createIncidentAction = CreateIncidentActionMother.of();
@@ -86,8 +94,10 @@ class ProvisionResultsApiControllerTest {
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
         when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
 
+        // when
         var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
 
+        // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
@@ -96,6 +106,7 @@ class ProvisionResultsApiControllerTest {
 
     @Test
     void givenInvalidComponentId_whenCreateIncident_thenThrowsInvalidRestEntityException() {
+        // given
         String projectKey = "PRJ";
         String componentId = "";
 
@@ -103,12 +114,14 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(), any(), any());
 
+        // when / then
         var ex = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.createIncident(projectKey, componentId, action));
         assertThat(ex.getMessage()).isEqualTo("project_key, component_id are required.");
     }
 
     @Test
     void givenAProjectKey_AndAComponentId_AndCreateIncidentAction_whenCreateIncident_AndComponentAlreadyInDeletingState_thenReturnsOk_andIgnoreAWXCall() {
+        // given
         var projectKey = "project-key";
         var componentId = "componentId";
         var createIncidentAction = CreateIncidentActionMother.of();
@@ -116,14 +129,17 @@ class ProvisionResultsApiControllerTest {
         when(authenticationProvider.getIdToken()).thenReturn("id-token");
         when(provisionResultsApiFacade.isInDeletingState(any(), any(), any(), any())).thenReturn(true);
 
+        // when
         var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
 
+        // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
     }
 
     @Test
     void givenInvalidStatus_whenNotifyProvisioningStatusUpdate_then400OrInvalidRestEntityException() {
+        // given
         var projectKey = "project-key";
         var invalidStatus = "NOT_A_STATUS";
         var request = new NotifyProvisioningStatusUpdateRequest();
@@ -133,6 +149,7 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class));
 
+        // when / then
         var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request));
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
@@ -140,6 +157,7 @@ class ProvisionResultsApiControllerTest {
 
     @Test
     void givenLowercaseStatus_whenNotifyProvisioningStatusUpdate_thenEitherOkOrReject() {
+        // given
         var projectKey = "project-key";
         var statusLowercase = "created";
         var request = new NotifyProvisioningStatusUpdateRequest();
@@ -149,6 +167,7 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class));
 
+        // when / then
         var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);

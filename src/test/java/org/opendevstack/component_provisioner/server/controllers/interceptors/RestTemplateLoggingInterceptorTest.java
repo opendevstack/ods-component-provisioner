@@ -29,7 +29,8 @@ class RestTemplateLoggingInterceptorTest {
     private ClientHttpRequestExecution execution;
 
     @Test
-    void intercept_logsAndExecutes() throws IOException {
+    void givenRequestAndBody_whenIntercept_thenLogsAndExecutes() throws IOException {
+        // given
         HttpRequest request = mock(HttpRequest.class);
         byte[] body = "test body".getBytes(StandardCharsets.UTF_8);
         ClientHttpResponse response = mock(ClientHttpResponse.class);
@@ -39,13 +40,16 @@ class RestTemplateLoggingInterceptorTest {
         when(request.getHeaders()).thenReturn(new HttpHeaders());
         when(execution.execute(request, body)).thenReturn(response);
 
+        // when
         ClientHttpResponse result = interceptor.intercept(request, body, execution);
 
+        // then
         assertThat(result).isEqualTo(response);
     }
 
     @Test
-    void intercept_withEmptyBody_logsAndExecutes() throws IOException {
+    void givenRequestAndEmptyBody_whenIntercept_thenLogsAndExecutes() throws IOException {
+        // given
         HttpRequest request = mock(HttpRequest.class);
         byte[] body = new byte[0];
         ClientHttpResponse response = mock(ClientHttpResponse.class);
@@ -57,8 +61,10 @@ class RestTemplateLoggingInterceptorTest {
         when(request.getHeaders()).thenReturn(headers);
         when(execution.execute(request, body)).thenReturn(response);
 
+        // when
         ClientHttpResponse result = interceptor.intercept(request, body, execution);
 
+        // then
         assertThat(result).isEqualTo(response);
     }
 }
