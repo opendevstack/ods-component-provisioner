@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ParameterType {
 
-    TEXT("text"),
+    STRING("string"),
     BOOLEAN("boolean"),
     NUMBER("number"),
     SINGLELIST("singlelist"),

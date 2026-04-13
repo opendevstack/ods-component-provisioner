@@ -36,6 +36,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenBlankValueAndSingleDefault_whenUpdateParam_thenDefaultValueIsApplied() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", null);
 
@@ -46,7 +48,7 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when
-        validator.updateParam(param, catalogParam);
+        validator.updateParam(param, catalogParam, location);
 
         // then
         assertThat(param.getValue())
@@ -56,6 +58,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenBlankValueAndMultipleDefaultsForNonListType_whenUpdateParam_thenExceptionIsThrown() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", "");
 
@@ -66,7 +70,7 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam))
+        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("param1 is mandatory");
     }
@@ -74,6 +78,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenBlankValueAndNoDefaults_whenUpdateParam_thenExceptionIsThrown() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", " ");
 
@@ -83,7 +89,7 @@ class MandatoryFieldsValidatorTest {
         catalogParam.setDefaultValues(null);
 
         // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam))
+        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("param1 is mandatory");
     }
@@ -91,6 +97,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenNonBlankValueAndNoDefaults_whenUpdateParam_thenValueIsAccepted() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", "any-value");
 
@@ -100,7 +108,7 @@ class MandatoryFieldsValidatorTest {
         catalogParam.setDefaultValues(null);
 
         // when
-        validator.updateParam(param, catalogParam);
+        validator.updateParam(param, catalogParam, location);
 
         // then
         assertThat(param.getValue()).isEqualTo("any-value");
@@ -109,6 +117,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenSingleValueNotInOptions_whenUpdateParam_thenExceptionIsThrown() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", "invalid");
 
@@ -120,7 +130,7 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam))
+        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("invalid")
                 .hasMessageContaining("param1");
@@ -129,6 +139,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenListValueWithInvalidOption_whenUpdateParam_thenExceptionIsThrown() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", List.of("valid", "invalid"));
         param.setType("multiplelist");
@@ -141,7 +153,7 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam))
+        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("invalid");
     }
@@ -149,6 +161,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenListValueAllValid_whenUpdateParam_thenValueIsAccepted() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", List.of("a", "b"));
         param.setType("multiplelist");
@@ -160,7 +174,7 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when
-        validator.updateParam(param, catalogParam);
+        validator.updateParam(param, catalogParam, location);
 
         // then
         assertThat(param.getValue()).isEqualTo(List.of("a", "b"));
@@ -169,6 +183,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenBlankValueAndMultipleDefaultsButWrongType_whenUpdateParam_thenExceptionIsThrown() {
         // given
+        String location = "loc-1";
+
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", " ");
 
@@ -183,7 +199,7 @@ class MandatoryFieldsValidatorTest {
         // when / then
         var exception = assertThrows(
                 InvalidRestEntityException.class,
-                () -> validator.updateParam(param, catalogParam)
+                () -> validator.updateParam(param, catalogParam, location)
         );
 
         assertThat(exception.getMessage())

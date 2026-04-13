@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getAccessToken;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getCatalogItemId;
+import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getParameterString;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getProjectKey;
 
 @Service
@@ -37,6 +38,7 @@ public class MandatoryFieldsValidator {
         var accessToken = getAccessToken(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
         var idToken = authenticationProvider.getIdToken();
+        var location = getLocation(provisionAction);
 
         var catalogItem = componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey);
         var provisionUserAction = Optional.ofNullable(catalogItem)
@@ -59,16 +61,17 @@ public class MandatoryFieldsValidator {
 
         provisionAction.getParameters().stream()
                 .filter(param -> mandatoryFields.containsKey(param.getName()))
-                .forEach(param -> updateParam(param, mandatoryFields.get(param.getName())));
+                .forEach(param -> updateParam(param, mandatoryFields.get(param.getName()), location));
     }
 
     public void updateParam(
             ProvisionActionParameter param,
-            CatalogItemUserActionParameter catalogParam
+            CatalogItemUserActionParameter catalogParam,
+            String location
     ) {
 
         if (isBlankValue(param)) {
-            applyDefaultValue(param, catalogParam);
+            applyDefaultValue(param, catalogParam, location);
         }
 
         if (isBlankValue(param)) {
@@ -103,12 +106,18 @@ public class MandatoryFieldsValidator {
 
     private void applyDefaultValue(
             ProvisionActionParameter param,
-            CatalogItemUserActionParameter catalogParam
+            CatalogItemUserActionParameter catalogParam,
+            String location
     ) {
         // TEXT
-        if (ParameterType.TEXT.getValue().equalsIgnoreCase(param.getType())) {
+        if (ParameterType.STRING.getValue().equalsIgnoreCase(param.getType())) {
             if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
                 param.setValue(List.of(catalogParam.getDefaultValue()));
+            } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
+                catalogParam.getLocations().stream()
+                        .filter(parameterLocation -> StringUtils.equalsIgnoreCase(parameterLocation.getLocation(), location))
+                        .findFirst()
+                        .ifPresent(loc -> param.setValue(loc.getValue()));
             }
             return; // no default, but that's OK
         }
@@ -117,6 +126,11 @@ public class MandatoryFieldsValidator {
         if (MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
             if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
                 param.setValue(catalogParam.getDefaultValue());
+            } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
+                catalogParam.getLocations().stream()
+                        .filter(loc -> StringUtils.equalsIgnoreCase(loc.getLocation(), location))
+                        .findFirst()
+                        .ifPresent(loc -> param.setValue(loc.getValue()));
             }
             return; // no defaultValue is allowed
         }
@@ -183,4 +197,7 @@ public class MandatoryFieldsValidator {
         ));
     }
 
+    private String getLocation(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "cluster_location");
+    }
 }
