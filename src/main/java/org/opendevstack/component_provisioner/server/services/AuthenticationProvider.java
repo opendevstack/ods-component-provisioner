@@ -1,4 +1,4 @@
-package org.opendevstack.component_provisioner.server.controllers;
+package org.opendevstack.component_provisioner.server.services;
 
 import com.azure.spring.cloud.autoconfigure.implementation.aad.filter.UserPrincipal;
 import lombok.extern.slf4j.Slf4j;

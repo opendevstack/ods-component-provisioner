@@ -12,6 +12,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Ca
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
@@ -25,6 +26,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -185,9 +187,9 @@ class ComponentCatalogServiceTest {
                 "other", List.of("value")
         );
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
-        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -236,8 +238,8 @@ class ComponentCatalogServiceTest {
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://component-catalog"));
-        when(apiClientsBuilder.provisionerActionsApi(any())).thenReturn(provisionerActionsApi);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
+        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         //when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, idToken, accessToken, null);
@@ -324,7 +326,7 @@ class ComponentCatalogServiceTest {
         String catalogItemId = "CAT-123";
         String projectKey = "PRJ-1";
 
-        URL baseUrl = new URL("http://component-catalog");
+        URL baseUrl = URI.create("http://component-catalog").toURL();
 
         CatalogItem expectedCatalogItem = new CatalogItem();
 
@@ -357,5 +359,27 @@ class ComponentCatalogServiceTest {
                 provisionerActionsApi,
                 projectComponentsApi
         );
+    }
+
+    @Test
+    void givenValidInput_whenGetProjectComponents_thenProjectComponentsAreReturned() {
+        // given
+        String projectKey = "PRJ-1";
+        String idToken = "id-token";
+        String accessToken = "access-token";
+
+        HttpBearerAuth auth = mock(HttpBearerAuth.class);
+        when(componentCatalogApiClient.getAuthentication("bearerAuth")).thenReturn(auth);
+
+        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> expectedComponents = List.of();
+        when(projectComponentsApi.getProjectComponents(projectKey, accessToken)).thenReturn(expectedComponents);
+
+        // when
+        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
+
+        // then
+        assertThat(result).isSameAs(expectedComponents);
+        verify(auth).setBearerToken(idToken);
+        verify(projectComponentsApi).getProjectComponents(projectKey, accessToken);
     }
 }

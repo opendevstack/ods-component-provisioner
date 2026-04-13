@@ -2,6 +2,7 @@ package org.opendevstack.component_provisioner.server.services;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
@@ -12,13 +13,15 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
+@ExtendWith(MockitoExtension.class)
 class ApiClientsBuilderTest {
 
-    RestTemplate restTemplate = mock(RestTemplate.class);
+    @Mock
+    private RestTemplate restTemplate;
 
-    private final ApiClientsBuilder builder = new ApiClientsBuilder(restTemplate);
+    @InjectMocks
+    private ApiClientsBuilder builder;
 
     @Test
     void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
@@ -96,13 +99,15 @@ class ApiClientsBuilderTest {
     @Test
     void givenApiClient_whenProvisionerActionsApi_thenReturnProvisionerActionsApiInstance() {
         // given
-        var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+        String idToken = "test-token";
+        String baseUrl = "http://component-catalog";
 
         // when
-        ProvisionerActionsApi api = builder.provisionerActionsApi(client);
+        ProvisionerActionsApi api = builder.provisionerActionsApi(idToken, baseUrl);
 
         // then
         assertThat(api).isNotNull();
-        assertThat(api.getApiClient()).isSameAs(client);
+        assertThat(api.getApiClient()).isNotNull();
+        assertThat(api.getApiClient().getBasePath()).isEqualTo(baseUrl);
     }
 }
