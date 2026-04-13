@@ -10,6 +10,7 @@ import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ap
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -41,7 +42,7 @@ class ProjectsInfoServiceTest {
         // given
         String idToken = "id-token";
         String accessToken = "access-token";
-        URL baseUrl = new URL("http://projects-info");
+        URL baseUrl = URI.create("http://projects-info").toURL();
 
         List<String> expectedGroups = List.of("group-a", "group-b");
 

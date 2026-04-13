@@ -6,11 +6,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiCli
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,11 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
@@ -77,24 +69,24 @@ public class ComponentCatalogService {
                         messageDefinitionId,
                         placeholdersValues),
                 format("""
-                        Http exception requesting message definitions to Component Catalog with:\s
-                        userActionId: '%s',\s
-                        catalogItemId: '%s',\s
-                        messageDefinitionId: '%s',\s
-                        placeholdersValues: '%s',\s
-                        status code: '%%s'
-                       \s""",
+                                 Http exception requesting message definitions to Component Catalog with:\s
+                                 userActionId: '%s',\s
+                                 catalogItemId: '%s',\s
+                                 messageDefinitionId: '%s',\s
+                                 placeholdersValues: '%s',\s
+                                 status code: '%%s'
+                                \s""",
                         userActionId,
                         catalogItemId,
                         messageDefinitionId,
                         Arrays.toString(placeholdersValues.entrySet().toArray())),
                 format("""
-                        REST Client exception requesting message definitions to Component Catalog with:
-                        userActionId: '%s',
-                        catalogItemId: '%s',
-                        messageDefinitionId: '%s',
-                        placeholdersValues: '%s'
-                        """,
+                                REST Client exception requesting message definitions to Component Catalog with:
+                                userActionId: '%s',
+                                catalogItemId: '%s',
+                                messageDefinitionId: '%s',
+                                placeholdersValues: '%s'
+                                """,
                         userActionId,
                         catalogItemId,
                         messageDefinitionId,
@@ -128,8 +120,7 @@ public class ComponentCatalogService {
                 .parameters(obfuscatedParameters)
                 .build();
 
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(apiClient);
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisioningStatusUpdateRequest);
