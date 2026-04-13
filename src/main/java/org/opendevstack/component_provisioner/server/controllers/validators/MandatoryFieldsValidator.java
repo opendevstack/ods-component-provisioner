@@ -109,30 +109,18 @@ public class MandatoryFieldsValidator {
             CatalogItemUserActionParameter catalogParam,
             String location
     ) {
-        // TEXT
-        if (ParameterType.STRING.getValue().equalsIgnoreCase(param.getType())) {
+        // STRING - SINGLELIST
+        if (ParameterType.STRING.getValue().equalsIgnoreCase(param.getType())
+        || MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
             if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
                 param.setValue(List.of(catalogParam.getDefaultValue()));
             } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
                 catalogParam.getLocations().stream()
                         .filter(parameterLocation -> StringUtils.equalsIgnoreCase(parameterLocation.getLocation(), location))
                         .findFirst()
-                        .ifPresent(loc -> param.setValue(loc.getValue()));
+                        .ifPresent(loc -> param.setValue(List.of(loc.getValue())));
             }
             return; // no default, but that's OK
-        }
-
-        // SINGLELIST
-        if (MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
-            if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
-                param.setValue(catalogParam.getDefaultValue());
-            } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
-                catalogParam.getLocations().stream()
-                        .filter(loc -> StringUtils.equalsIgnoreCase(loc.getLocation(), location))
-                        .findFirst()
-                        .ifPresent(loc -> param.setValue(loc.getValue()));
-            }
-            return; // no defaultValue is allowed
         }
 
         // MULTIPLELIST
