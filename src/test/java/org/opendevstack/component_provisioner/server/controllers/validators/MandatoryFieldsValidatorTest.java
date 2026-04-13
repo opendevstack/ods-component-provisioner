@@ -54,7 +54,7 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
-    void givenBlankValueAndMultipleDefaults_whenUpdateParam_thenDefaultValuesAreApplied() {
+    void givenBlankValueAndMultipleDefaultsForNonListType_whenUpdateParam_thenExceptionIsThrown() {
         // given
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", "");
@@ -89,7 +89,7 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
-    void givenNonBlankValueAndNoOptions_whenUpdateParam_thenValueIsAccepted() {
+    void givenNonBlankValueAndNoDefaults_whenUpdateParam_thenValueIsAccepted() {
         // given
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", "any-value");
@@ -131,7 +131,7 @@ class MandatoryFieldsValidatorTest {
         // given
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", List.of("valid", "invalid"));
-        param.setType("list");
+        param.setType("multiplelist");
 
         CatalogItemUserActionParameter catalogParam =
                 CatalogItemUserActionParameterMother.of(
@@ -167,11 +167,12 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
-    void givenBlankValueAndNoDefault_AndDefaults_AndValueTypeString_whenUpdateParam_thenExceptionIsThrown() {
+    void givenBlankValueAndMultipleDefaultsButWrongType_whenUpdateParam_thenExceptionIsThrown() {
         // given
         ProvisionActionParameter param =
                 ProvisionActionParameterMother.of("param1", " ");
 
+        // multiple defaults exist, but param is TEXT
         CatalogItemUserActionParameter catalogParam =
                 CatalogItemUserActionParameterMother.of(
                         "param1",
@@ -180,8 +181,10 @@ class MandatoryFieldsValidatorTest {
                 );
 
         // when / then
-        var exception = assertThrows(InvalidRestEntityException.class,
-                () -> validator.updateParam(param, catalogParam));
+        var exception = assertThrows(
+                InvalidRestEntityException.class,
+                () -> validator.updateParam(param, catalogParam)
+        );
 
         assertThat(exception.getMessage())
                 .contains("param1 is mandatory")

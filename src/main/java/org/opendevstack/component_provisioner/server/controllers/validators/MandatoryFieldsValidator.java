@@ -69,7 +69,13 @@ public class MandatoryFieldsValidator {
 
         if (isBlankValue(param)) {
             applyDefaultValue(param, catalogParam);
-            return;
+        }
+
+        if (isBlankValue(param)) {
+            throw new InvalidRestEntityException(String.format(
+                    "The parameter %s is mandatory and no value was provided.",
+                    param.getName()
+            ));
         }
 
         if (hasNoOptions(catalogParam)) {
@@ -79,6 +85,7 @@ public class MandatoryFieldsValidator {
 
         validateAgainstOptions(param, catalogParam);
     }
+
 
     private boolean isBlankValue(ProvisionActionParameter param) {
         return param.getValue() == null ||
@@ -90,31 +97,34 @@ public class MandatoryFieldsValidator {
     }
 
     private boolean isListType(ProvisionActionParameter param) {
-        return "list".equalsIgnoreCase(param.getType())
-                || "multiplelist".equalsIgnoreCase(param.getType());
+        return MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())
+                || MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
     }
 
     private void applyDefaultValue(
             ProvisionActionParameter param,
             CatalogItemUserActionParameter catalogParam
     ) {
-
-        if ("string".equalsIgnoreCase(param.getType())) {
+        // TEXT
+        if (ParameterType.TEXT.getValue().equalsIgnoreCase(param.getType())) {
             if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
                 param.setValue(List.of(catalogParam.getDefaultValue()));
-                return;
             }
-        } else {
-            if (catalogParam.getDefaultValues() != null) {
-                param.setValue(catalogParam.getDefaultValues());
-                return;
-            }
+            return; // no default, but that's OK
         }
 
-        throw new InvalidRestEntityException(String.format(
-                "The parameter %s is mandatory and doesn't have a default value, please provide a value for this parameter.",
-                param.getName()
-        ));
+        // SINGLELIST
+        if (MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
+            if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
+                param.setValue(catalogParam.getDefaultValue());
+            }
+            return; // no defaultValue is allowed
+        }
+
+        // MULTIPLELIST
+        if (MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType()) && catalogParam.getDefaultValues() != null) {
+            param.setValue(catalogParam.getDefaultValues());
+        }
     }
 
     private void logNoOptions(ProvisionActionParameter param) {
