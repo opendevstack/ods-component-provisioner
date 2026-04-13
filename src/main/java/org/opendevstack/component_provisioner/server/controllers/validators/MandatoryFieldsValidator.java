@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.controllers.validators;
 
-import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +63,7 @@ public class MandatoryFieldsValidator {
     }
 
     public void updateParam(
-            @Valid ProvisionActionParameter param,
+            ProvisionActionParameter param,
             CatalogItemUserActionParameter catalogParam
     ) {
 
@@ -100,14 +99,16 @@ public class MandatoryFieldsValidator {
             CatalogItemUserActionParameter catalogParam
     ) {
 
-        if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
-            param.setValue(List.of(catalogParam.getDefaultValue()));
-            return;
-        }
-
-        if (catalogParam.getDefaultValues() != null) {
-            param.setValue(catalogParam.getDefaultValues());
-            return;
+        if ("string".equalsIgnoreCase(param.getType())) {
+            if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
+                param.setValue(List.of(catalogParam.getDefaultValue()));
+                return;
+            }
+        } else {
+            if (catalogParam.getDefaultValues() != null) {
+                param.setValue(catalogParam.getDefaultValues());
+                return;
+            }
         }
 
         throw new InvalidRestEntityException(String.format(

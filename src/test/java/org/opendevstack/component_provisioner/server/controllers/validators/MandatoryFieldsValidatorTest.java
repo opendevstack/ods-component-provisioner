@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class MandatoryFieldsValidatorTest {
@@ -64,11 +65,10 @@ class MandatoryFieldsValidatorTest {
                         List.of("a", "b")
                 );
 
-        // when
-        validator.updateParam(param, catalogParam);
-
-        // then
-        assertThat(param.getValue()).isEqualTo(List.of("a", "b"));
+        // when / then
+        assertThatThrownBy(() -> validator.updateParam(param, catalogParam))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("param1 is mandatory");
     }
 
     @Test
@@ -164,5 +164,27 @@ class MandatoryFieldsValidatorTest {
 
         // then
         assertThat(param.getValue()).isEqualTo(List.of("a", "b"));
+    }
+
+    @Test
+    void givenBlankValueAndNoDefault_AndDefaults_AndValueTypeString_whenUpdateParam_thenExceptionIsThrown() {
+        // given
+        ProvisionActionParameter param =
+                ProvisionActionParameterMother.of("param1", " ");
+
+        CatalogItemUserActionParameter catalogParam =
+                CatalogItemUserActionParameterMother.of(
+                        "param1",
+                        List.of("a", "b"),
+                        List.of("option1", "option2")
+                );
+
+        // when / then
+        var exception = assertThrows(InvalidRestEntityException.class,
+                () -> validator.updateParam(param, catalogParam));
+
+        assertThat(exception.getMessage())
+                .contains("param1 is mandatory")
+                .doesNotContain("option1", "option2");
     }
 }
