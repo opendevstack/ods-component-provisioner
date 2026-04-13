@@ -9,8 +9,10 @@ import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxRe
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,16 +29,23 @@ public class ProvisionResultsApiFacade {
     private final AwxService awxService;
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
+    private final ProvisionService provisionService;
+    private final AuthenticationProvider authenticationProvider;
+
 
     @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
     private String workflowJobId;
 
     public ProvisionResultsApiFacade(AwxService awxService,
                                      ComponentCatalogService componentCatalogService,
-                                     EntitiesMapper entitiesMapper) {
+                                     EntitiesMapper entitiesMapper,
+                                     ProvisionService provisionService,
+                                     AuthenticationProvider authenticationProvider) {
         this.awxService = awxService;
         this.componentCatalogService = componentCatalogService;
         this.entitiesMapper = entitiesMapper;
+        this.provisionService = provisionService;
+        this.authenticationProvider = authenticationProvider;
     }
 
     public boolean isInDeletingState(String projectKey, String componentId, String idToken, CreateIncidentAction createIncidentAction) {
@@ -64,6 +73,19 @@ public class ProvisionResultsApiFacade {
                 .httpStatusCode(awxHttpStatus)
                 .awxResponseBody(awxResponseBody)
                 .build();
+    }
+
+    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
+                                               String catalogItemId, String componentUrl, String idToken, String accessToken) {
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, idToken, accessToken);
+    }
+
+    public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
+        provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
+    }
+
+    public String getIdToken() {
+        return authenticationProvider.getIdToken();
     }
 
     public void validate(String projectKey, String status) {
@@ -106,6 +128,15 @@ public class ProvisionResultsApiFacade {
         }
     }
 
+    public String getParameterString(CreateIncidentAction createIncidentAction, String parameterName) {
+        return createIncidentAction.getParameters().stream()
+                .filter(parameter -> parameterName.equals(parameter.getName()))
+                .map(CreateIncidentParameter::getValue)
+                .map(Object::toString)
+                .findAny()
+                .orElse(Strings.EMPTY);
+    }
+
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Setting project_key parameter to: {}", projectKey);
 
@@ -132,14 +163,5 @@ public class ProvisionResultsApiFacade {
         createIncidentAction.addParametersItem(workflowParameterItem);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
-    }
-
-    public String getParameterString(CreateIncidentAction createIncidentAction, String parameterName) {
-        return createIncidentAction.getParameters().stream()
-                .filter(parameter -> parameterName.equals(parameter.getName()))
-                .map(CreateIncidentParameter::getValue)
-                .map(Object::toString)
-                .findAny()
-                .orElse(Strings.EMPTY);
     }
 }

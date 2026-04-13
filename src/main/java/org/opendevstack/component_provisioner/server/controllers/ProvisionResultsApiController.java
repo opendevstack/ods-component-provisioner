@@ -8,8 +8,6 @@ import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,15 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 public class ProvisionResultsApiController implements ProvisionResultsApi {
 
-    private final ProvisionService provisionService;
-    private final AuthenticationProvider authenticationProvider;
     private final ProvisionResultsApiFacade provisionResultsApiFacade;
 
-    public ProvisionResultsApiController(ProvisionService provisionService,
-                                         AuthenticationProvider authenticationProvider,
-                                         ProvisionResultsApiFacade provisionResultsApiFacade) {
-        this.provisionService = provisionService;
-        this.authenticationProvider = authenticationProvider;
+    public ProvisionResultsApiController(ProvisionResultsApiFacade provisionResultsApiFacade) {
         this.provisionResultsApiFacade = provisionResultsApiFacade;
     }
 
@@ -37,12 +29,12 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         provisionResultsApiFacade.validate(projectKey, status);
 
-        provisionService.notifyProvisioningStatusUpdate(projectKey,
+        provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                 ProjectComponentStatus.valueOf(status),
                 notifyProvisioningCompletedRequest.getComponentId(),
                 notifyProvisioningCompletedRequest.getCatalogItemId(),
                 notifyProvisioningCompletedRequest.getComponentUrl(),
-                authenticationProvider.getIdToken(),
+                provisionResultsApiFacade.getIdToken(),
                 notifyProvisioningCompletedRequest.getAccessToken());
 
         return ResponseEntity.ok().build();
@@ -52,7 +44,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<Void> deleteProvisioningStatus(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
         log.debug("Delete provisioning status. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
 
-        provisionService.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId(), authenticationProvider.getIdToken());
+        provisionResultsApiFacade.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId(), provisionResultsApiFacade.getIdToken());
 
         return ResponseEntity.ok().build();
     }
@@ -61,7 +53,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
 
-        var idToken = authenticationProvider.getIdToken();
+        var idToken = provisionResultsApiFacade.getIdToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
 
@@ -73,12 +65,12 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
             return ResponseEntity.ok().build();
         } else {
             log.debug("Setting state to DELETING");
-            provisionService.notifyProvisioningStatusUpdate(projectKey,
+            provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
                     componentId,
                     null,
                     null,
-                    authenticationProvider.getIdToken(),
+                    provisionResultsApiFacade.getIdToken(),
                     null);
 
             log.debug("Creating incident via AWX");

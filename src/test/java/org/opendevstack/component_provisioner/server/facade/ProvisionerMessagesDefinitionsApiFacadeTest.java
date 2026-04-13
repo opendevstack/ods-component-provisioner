@@ -9,9 +9,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinition;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.when;
 class ProvisionerMessagesDefinitionsApiFacadeTest {
 
     @Mock private EntitiesMapper entitiesMapper;
+    @Mock private ComponentCatalogService componentCatalogService;
 
     @InjectMocks private ProvisionerMessagesDefinitionsApiFacade facade;
 
@@ -51,5 +54,22 @@ class ProvisionerMessagesDefinitionsApiFacadeTest {
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNull(response.getBody());
+    }
+
+    @Test
+    void getCatalogItemUserActionMessageDefinition_callsService() {
+        String catalogItemId = "cat-1";
+        String action = "create";
+        String id = "msg-1";
+        Map<String, String> placeholders = Map.of("key", "value");
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result = Pair.of(HttpStatus.OK, Optional.empty());
+
+        when(componentCatalogService.getCatalogItemUserActionMessageDefinition(catalogItemId, action, id, placeholders))
+                .thenReturn(result);
+
+        var actualResult = facade.getCatalogItemUserActionMessageDefinition(catalogItemId, action, id, placeholders);
+
+        assertEquals(result, actualResult);
+        verify(componentCatalogService).getCatalogItemUserActionMessageDefinition(catalogItemId, action, id, placeholders);
     }
 }
