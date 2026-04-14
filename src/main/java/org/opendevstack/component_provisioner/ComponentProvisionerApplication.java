@@ -20,6 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         basePackages = {
                 "org.opendevstack.component_provisioner.server.api",
                 "org.opendevstack.component_provisioner.server.controllers",
+                "org.opendevstack.component_provisioner.server.facade",
                 "org.opendevstack.component_provisioner.server.security",
                 "org.opendevstack.component_provisioner.config",
                 "org.opendevstack.component_provisioner.server.services",

@@ -176,6 +176,10 @@ paths:
                   type: string
                   description: The bitbucket repository url for the provisioned component.
                   example: "https://bitbucket.com/projects/myproject/repos/repo_name"
+                accessToken:
+                  type: string
+                  description: The access token for the provisioned component.
+                  example: "secret-access-token"
       responses:
         "200":
           description: Provisioning completion notified.

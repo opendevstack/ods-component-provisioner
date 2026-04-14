@@ -7,6 +7,9 @@ logging:
     com.azure.spring.cloud.autoconfigure: DEBUG
     org.opendevstack.component_provisioner.server.controllers: INFO
     org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: DEBUG
+    org.springframework.web.client : DEBUG
+    org.opendevstack.component_provisioner.server.controllers.interceptors: DEBUG
+
 management:
   endpoints:
     web:

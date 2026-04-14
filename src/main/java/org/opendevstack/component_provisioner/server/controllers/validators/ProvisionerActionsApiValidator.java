@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
-import org.opendevstack.component_provisioner.server.controllers.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
@@ -71,8 +71,14 @@ public class ProvisionerActionsApiValidator {
 
         var groupsEvaluationResult = groupsRestrictionsEvaluator.evaluate(restrictions, params);
 
-        if (Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
-            throw new UserNotAllowedException(groupsEvaluationResult.getRight());
+        if (groupsEvaluationResult == null || Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
+            String message = " User does not have permissions to provision this component.";
+
+            if (groupsEvaluationResult != null && groupsEvaluationResult.getRight() != null) {
+                message = groupsEvaluationResult.getRight();
+            }
+
+            throw new UserNotAllowedException(message);
         }
     }
 

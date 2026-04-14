@@ -6,12 +6,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.server.controllers.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.model.CatalogItemMother;
 import org.opendevstack.component_provisioner.server.model.CatalogItemUserActionParameterMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 
 import java.util.Collections;
@@ -20,6 +24,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MandatoryFieldsValidatorTest {
@@ -205,5 +211,121 @@ class MandatoryFieldsValidatorTest {
         assertThat(exception.getMessage())
                 .contains("param1 is mandatory")
                 .doesNotContain("option1", "option2");
+    }
+
+    @Test
+    void givenCatalogItemWithoutUserActions_whenValidate_thenExceptionIsThrown() {
+        // given
+        CatalogItem catalogItem = CatalogItemMother.of();
+        catalogItem.setUserActions(null);
+
+        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionAction action =
+                ProvisionActionMother.of(Collections.emptyList());
+
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("does not exist");
+    }
+
+    @Test
+    void givenCatalogItemWithoutProvisionAction_whenValidate_thenExceptionIsThrown() {
+        // given
+        CatalogItem catalogItem = CatalogItemMother.of();
+        catalogItem.getUserActions().getFirst().setId("DELETE");
+
+        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionAction action =
+                ProvisionActionMother.of(Collections.emptyList());
+
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("doesn't have a PROVISION user action");
+    }
+
+    @Test
+    void givenValueAndNoOptions_whenUpdateParam_thenValueIsAccepted() {
+        // given
+        ProvisionActionParameter param =
+                ProvisionActionParameterMother.of("param1", "any-value");
+
+        CatalogItemUserActionParameter catalogParam =
+                CatalogItemUserActionParameterMother.of("param1", "default");
+        catalogParam.setOptions(null); // force hasNoOptions()
+
+        // when
+        validator.updateParam(param, catalogParam, "loc-1");
+
+        // then
+        assertThat(param.getValue()).isEqualTo("any-value");
+    }
+
+    @Test
+    void givenSingleListTypeAndDefaultValue_whenUpdateParam_thenDefaultApplied() {
+        // given
+        ProvisionActionParameter param =
+                ProvisionActionParameterMother.of("param1", null);
+        param.setType("singlelist");
+
+        CatalogItemUserActionParameter catalogParam =
+                CatalogItemUserActionParameterMother.of("param1", "default");
+
+        // when
+        validator.updateParam(param, catalogParam, "loc-1");
+
+        // then
+        assertThat(param.getValue()).isEqualTo(List.of("default"));
+    }
+
+    @Test
+    void givenAValidProvisionAction_whenValidate_thenMandatoryFieldsAreProcessed() {
+        // given
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
+
+        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", null);
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when
+        validator.validate(action);
+
+        // then
+        assertThat(actionParam.getValue()).isEqualTo(List.of("defaultValue"));
+    }
+
+    @Test
+    void givenAParamWithBlankValue_AndTypeMultipleList_whenUpdateParam_thenDefaultValuesAreApplied() {
+        // given
+        ProvisionActionParameter param =
+                ProvisionActionParameterMother.of("param1", null);
+        param.setType("multiplelist");
+
+        CatalogItemUserActionParameter catalogParam =
+                CatalogItemUserActionParameterMother.of(
+                        "param1",
+                        List.of("default1", "default2")
+                );
+
+        // when
+        validator.updateParam(param, catalogParam, "loc-1");
+
+        // then
+        assertThat(param.getValue()).isEqualTo(List.of("default1", "default2"));
     }
 }
