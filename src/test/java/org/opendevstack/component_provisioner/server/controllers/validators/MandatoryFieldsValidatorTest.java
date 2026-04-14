@@ -308,4 +308,24 @@ class MandatoryFieldsValidatorTest {
         // then
         assertThat(actionParam.getValue()).isEqualTo(List.of("defaultValue"));
     }
+
+    @Test
+    void givenAParamWithBlankValue_AndTypeMultipleList_whenUpdateParam_thenDefaultValuesAreApplied() {
+        // given
+        ProvisionActionParameter param =
+                ProvisionActionParameterMother.of("param1", null);
+        param.setType("multiplelist");
+
+        CatalogItemUserActionParameter catalogParam =
+                CatalogItemUserActionParameterMother.of(
+                        "param1",
+                        List.of("default1", "default2")
+                );
+
+        // when
+        validator.updateParam(param, catalogParam, "loc-1");
+
+        // then
+        assertThat(param.getValue()).isEqualTo(List.of("default1", "default2"));
+    }
 }
