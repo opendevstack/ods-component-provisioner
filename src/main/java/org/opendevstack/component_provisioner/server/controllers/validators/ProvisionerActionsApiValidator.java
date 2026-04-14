@@ -72,7 +72,7 @@ public class ProvisionerActionsApiValidator {
         var groupsEvaluationResult = groupsRestrictionsEvaluator.evaluate(restrictions, params);
 
         if (groupsEvaluationResult == null || Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
-            String message = " User does not have permissions to provision this component.";
+            String message = "User does not have permissions to provision this component.";
 
             if (groupsEvaluationResult != null && groupsEvaluationResult.getRight() != null) {
                 message = groupsEvaluationResult.getRight();
