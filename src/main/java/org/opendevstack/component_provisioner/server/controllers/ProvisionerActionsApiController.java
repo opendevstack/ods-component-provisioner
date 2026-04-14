@@ -8,6 +8,10 @@ import org.opendevstack.component_provisioner.server.facade.ProvisionerActionsAp
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +24,7 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
     private final AuthorizationInfo authInfo;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final ProvisionerActionsApiFacade provisionerActionsApiFacade;
+    private final PlaceholderPostProcessor placeholderPostProcessor;
 
     @Override
     public ResponseEntity<ProvisionActionResponse> triggerProvisionAction(ProvisionAction provisionAction) {
@@ -30,9 +35,10 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         provisionerActionsApiFacade.addIdTokenToActions(provisionAction);
 
         provisionerActionsApiValidator.validate(provisionAction);
-        provisionerActionsApiFacade.notifyComponentCatalogProvisionStarts(provisionAction);
+        var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);
+        provisionerActionsApiFacade.notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholders);
 
-        var awxResponse = provisionerActionsApiFacade.requestProvisionToAwx(provisionAction);
+        var awxResponse = provisionerActionsApiFacade.requestProvisionToAwx(updateProvisionActionWithoutPlaceholders);
 
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())
