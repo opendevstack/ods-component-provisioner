@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
+import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
+import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 
 import java.net.MalformedURLException;
@@ -33,6 +35,9 @@ class ProjectsInfoServiceTest {
 
     @Mock
     private AzureGroupsApi azureGroupsApi;
+
+    @Mock
+    private ProjectsApi projectsApi;
 
     @InjectMocks
     private ProjectsInfoService projectsInfoService;
@@ -68,5 +73,38 @@ class ProjectsInfoServiceTest {
                 .getAzureGroups(accessToken);
 
         verifyNoMoreInteractions(apiClientsBuilder, azureGroupsApi);
+    }
+
+    @Test
+    void givenTokenAndProjectKey_whenGetProjectClusters_thenProjectInfoReturned() throws MalformedURLException {
+        // given
+        String accessToken = "access-token";
+        String projectKey = "MY-PROJECT";
+        URL baseUrl = URI.create("http://projects-info").toURL();
+
+        ProjectInfo expectedProjectInfo = new ProjectInfo();
+
+        when(projectsInfoServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.projectsInfoServiceApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(apiClient);
+        when(apiClientsBuilder.projectsApi(apiClient))
+                .thenReturn(projectsApi);
+        when(projectsApi.getProjectClusters(accessToken, projectKey))
+                .thenReturn(expectedProjectInfo);
+
+        // when
+        ProjectInfo result = projectsInfoService.getProjectClusters(accessToken, projectKey);
+
+        // then
+        assertThat(result).isEqualTo(expectedProjectInfo);
+
+        verify(apiClientsBuilder)
+                .projectsInfoServiceApiClient(accessToken, baseUrl.toString());
+        verify(apiClientsBuilder)
+                .projectsApi(apiClient);
+        verify(projectsApi)
+                .getProjectClusters(accessToken, projectKey);
+
+        verifyNoMoreInteractions(apiClientsBuilder, projectsApi);
     }
 }

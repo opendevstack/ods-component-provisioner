@@ -56,4 +56,20 @@ class AuthenticationProviderTest {
         // then
         assertThat(actualIdToken).isEqualTo(expectedIdToken);
     }
+
+    @Test
+    void shouldReturnUserPrincipalNameWhenAuthenticated() {
+        // given
+        String expectedUserPrincipalName = "user@example.com";
+
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(userPrincipal);
+        when(userPrincipal.getUserPrincipalName()).thenReturn(expectedUserPrincipalName);
+
+        // when
+        String actualUserPrincipalName = authenticationProvider.getUserPrincipalName();
+
+        // then
+        assertThat(actualUserPrincipalName).isEqualTo(expectedUserPrincipalName);
+    }
 }
