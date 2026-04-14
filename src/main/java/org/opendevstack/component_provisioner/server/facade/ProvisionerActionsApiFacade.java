@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
@@ -119,7 +120,7 @@ public class ProvisionerActionsApiFacade {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
                 .name("caller")
                 .value(caller)
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .build());
     }
 
@@ -138,7 +139,7 @@ public class ProvisionerActionsApiFacade {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
                 .name("cluster_location")
                 .value(clusterLocation)
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .build());
     }
 
@@ -146,7 +147,7 @@ public class ProvisionerActionsApiFacade {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
                 .name("id_token")
                 .value(authenticationProvider.getIdToken())
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .build()
         );
     }
@@ -156,7 +157,7 @@ public class ProvisionerActionsApiFacade {
 
         var parameterItem = ProvisionActionParameter.builder()
                 .name("action_id")
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .value(provisionAction.getId())
                 .build();
 
