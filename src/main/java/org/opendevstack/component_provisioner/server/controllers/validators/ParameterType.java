@@ -6,8 +6,6 @@ import lombok.Getter;
 public enum ParameterType {
 
     STRING("string"),
-    BOOLEAN("boolean"),
-    NUMBER("number"),
     SINGLELIST("singlelist"),
     MULTIPLELIST("multiplelist");
 
