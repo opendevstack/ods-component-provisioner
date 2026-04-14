@@ -32,6 +32,7 @@ public class ProvisionerActionsApiValidator {
     private final GroupsRestrictionsEvaluator groupsRestrictionsEvaluator;
     private final ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
     private final ProjectsInfoService projectsInfoService;
+    private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
     public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
@@ -46,6 +47,8 @@ public class ProvisionerActionsApiValidator {
         validateComponentIsNotProvisioned(projectKey, idToken, accessToken, componentId);
 
         validateUserHasPermissionsToProvision(projectKey, idToken, accessToken);
+
+        mandatoryFieldsValidator.validate(provisionAction);
     }
 
     private void validateUserHasPermissionsToProvision(String projectKey, String idToken, String accessToken) {
@@ -68,8 +71,14 @@ public class ProvisionerActionsApiValidator {
 
         var groupsEvaluationResult = groupsRestrictionsEvaluator.evaluate(restrictions, params);
 
-        if (Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
-            throw new UserNotAllowedException(groupsEvaluationResult.getRight());
+        if (groupsEvaluationResult == null || Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
+            String message = "User does not have permissions to provision this component.";
+
+            if (groupsEvaluationResult != null && groupsEvaluationResult.getRight() != null) {
+                message = groupsEvaluationResult.getRight();
+            }
+
+            throw new UserNotAllowedException(message);
         }
     }
 
@@ -95,19 +104,23 @@ public class ProvisionerActionsApiValidator {
         }
     }
 
-    private String getComponentId(ProvisionAction provisionAction) {
+    protected static String getComponentId(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "component_id");
     }
 
-    private String getProjectKey(ProvisionAction provisionAction) {
+    protected static String getProjectKey(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "project_key");
     }
 
-    private String getAccessToken(ProvisionAction provisionAction) {
+    protected static String getAccessToken(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "access_token");
     }
 
-    private String getParameterString(ProvisionAction provisionAction, String parameterName) {
+    protected static String getCatalogItemId(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "catalog_item_id");
+    }
+
+    protected static String getParameterString(ProvisionAction provisionAction, String parameterName) {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))
                 .map(ProvisionActionParameter::getValue)

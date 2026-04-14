@@ -17,11 +17,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class ApiClientsBuilderTest {
 
-    @InjectMocks
-    private ApiClientsBuilder builder;
-
     @Mock
     private RestTemplate restTemplate;
+
+    @InjectMocks
+    private ApiClientsBuilder builder;
 
     @Test
     void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {

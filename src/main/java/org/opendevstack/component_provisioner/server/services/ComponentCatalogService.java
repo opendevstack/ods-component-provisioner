@@ -10,6 +10,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 
+@CacheConfig(cacheNames={ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME})
 @Service
 @Slf4j
 public class ComponentCatalogService {
@@ -135,6 +138,7 @@ public class ComponentCatalogService {
         return projectComponentsApi.getProjectComponents(projectKey, accessToken);
     }
 
+    @Cacheable
     public CatalogItem getCatalogItem(String idToken, String accessToken, String catalogItemId, String projectKey) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);

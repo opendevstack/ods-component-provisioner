@@ -61,7 +61,10 @@ public class CachingConfiguration implements CacheEventListener<Object, Object> 
                 .withService(ehEventListenerConfig)
                 .build();
 
-        return Map.of(ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, ehCacheConfig);
+        return Map.of(
+                ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, ehCacheConfig,
+                ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME, ehCacheConfig
+        );
     }
 
     @Scheduled(fixedRateString = "#{projectsInfoServiceCacheConfig.getEvictionInterval().toString()}")
