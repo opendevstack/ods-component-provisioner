@@ -284,4 +284,28 @@ class MandatoryFieldsValidatorTest {
         // then
         assertThat(param.getValue()).isEqualTo(List.of("default"));
     }
+
+    @Test
+    void givenAValidProvisionAction_whenValidate_thenMandatoryFieldsAreProcessed() {
+        // given
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
+
+        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", null);
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when
+        validator.validate(action);
+
+        // then
+        assertThat(actionParam.getValue()).isEqualTo(List.of("defaultValue"));
+    }
 }
