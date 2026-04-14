@@ -32,7 +32,7 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
                 authInfo.getCurrentPrincipalName(),
                 provisionAction);
 
-        provisionerActionsApiFacade.addIdTokenToActions(provisionAction);
+        provisionerActionsApiFacade.addSystemParametersToAction(provisionAction);
 
         provisionerActionsApiValidator.validate(provisionAction);
         var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);

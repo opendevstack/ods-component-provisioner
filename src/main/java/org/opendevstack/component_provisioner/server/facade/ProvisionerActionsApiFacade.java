@@ -3,13 +3,16 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
 import org.springframework.stereotype.Service;
@@ -25,6 +28,7 @@ public class ProvisionerActionsApiFacade {
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
+    private final ProjectsInfoService projectsInfoService;
 
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
@@ -103,11 +107,47 @@ public class ProvisionerActionsApiFacade {
                 .orElse(Strings.EMPTY);
     }
 
-    public void addIdTokenToActions(ProvisionAction provisionAction) {
+    public void addSystemParametersToAction(ProvisionAction provisionAction) {
+        addClusterLocationToAction(provisionAction);
+        addCallerToAction(provisionAction);
+        addIdTokenToActions(provisionAction);
+    }
+
+    private void addCallerToAction(ProvisionAction provisionAction) {
+        var caller = authenticationProvider.getUserPrincipalName();
+
+        log.debug("Adding caller parameter with value: {}", caller);
+        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+                .name("caller")
+                .value(caller)
+                .type(ParameterType.STRING.getValue())
+                .build());
+    }
+
+    private void addClusterLocationToAction(ProvisionAction provisionAction) {
+        var projectKey = getParameterString(provisionAction, "project_key");
+        var accessToken = getParameterString(provisionAction, "access_token");
+
+        log.debug("Fetching cluster location for project: {}", projectKey);
+        var clusters = projectsInfoService.getProjectClusters(accessToken, projectKey).getClusters();
+        if (clusters.isEmpty()) {
+            throw new ProjectConfigurationException("Cannot retrieve the current project location for project: " + projectKey);
+        }
+        var clusterLocation = clusters.get(0);
+
+        log.debug("Adding cluster_location parameter with value: {}", clusterLocation);
+        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+                .name("cluster_location")
+                .value(clusterLocation)
+                .type(ParameterType.STRING.getValue())
+                .build());
+    }
+
+    private void addIdTokenToActions(ProvisionAction provisionAction) {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
                 .name("id_token")
                 .value(authenticationProvider.getIdToken())
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .build()
         );
     }
@@ -117,7 +157,7 @@ public class ProvisionerActionsApiFacade {
 
         var parameterItem = ProvisionActionParameter.builder()
                 .name("action_id")
-                .type("string")
+                .type(ParameterType.STRING.getValue())
                 .value(provisionAction.getId())
                 .build();
 

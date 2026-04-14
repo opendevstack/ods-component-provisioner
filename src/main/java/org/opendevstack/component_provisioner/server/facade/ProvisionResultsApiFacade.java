@@ -6,6 +6,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -23,7 +24,6 @@ import java.util.Arrays;
 @Slf4j
 public class ProvisionResultsApiFacade {
 
-    public static final String STRING_PARAMETER_TYPE = "string";
     public static final String ACCESS_TOKEN_PARAMETER_NAME = "access_token";
 
     private final AwxService awxService;
@@ -142,19 +142,19 @@ public class ProvisionResultsApiFacade {
 
         var projectKeyParameterItem = CreateIncidentParameter.builder()
                 .name("project_key")
-                .type(STRING_PARAMETER_TYPE)
+                .type(ParameterType.STRING.getValue())
                 .value(projectKey)
                 .build();
 
         var componentIdParameterItem = CreateIncidentParameter.builder()
                 .name("component_id")
-                .type(STRING_PARAMETER_TYPE)
+                .type(ParameterType.STRING.getValue())
                 .value(componentId)
                 .build();
 
         var workflowParameterItem = CreateIncidentParameter.builder()
                 .name("workflow")
-                .type(STRING_PARAMETER_TYPE)
+                .type(ParameterType.STRING.getValue())
                 .value(workflowJobId)
                 .build();
 

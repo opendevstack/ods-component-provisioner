@@ -62,7 +62,7 @@ class ProvisionerActionsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(provisionActionResponse, response.getBody());
 
-        verify(provisionerActionsApiFacade).addIdTokenToActions(provisionAction);
+        verify(provisionerActionsApiFacade).addSystemParametersToAction(provisionAction);
         verify(provisionerActionsApiValidator).validate(provisionAction);
         verify(provisionerActionsApiFacade).notifyComponentCatalogProvisionStarts(processedProvisionAction);
         verify(provisionerActionsApiFacade).requestProvisionToAwx(processedProvisionAction);
@@ -87,7 +87,7 @@ class ProvisionerActionsApiControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         assertNull(response.getBody());
 
-        verify(provisionerActionsApiFacade).addIdTokenToActions(provisionAction);
+        verify(provisionerActionsApiFacade).addSystemParametersToAction(provisionAction);
         verify(provisionerActionsApiValidator).validate(provisionAction);
         verify(provisionerActionsApiFacade).notifyComponentCatalogProvisionStarts(provisionAction);
         verify(provisionerActionsApiFacade).requestProvisionToAwx(provisionAction);

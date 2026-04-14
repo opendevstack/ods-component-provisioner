@@ -7,6 +7,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
@@ -15,6 +17,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -41,12 +45,15 @@ class ProvisionerActionsApiFacadeTest {
     private EntitiesMapper entitiesMapper;
     @Mock
     private AuthenticationProvider authenticationProvider;
+    @Mock
+    private ProjectsInfoService projectsInfoService;
 
     @InjectMocks
     private ProvisionerActionsApiFacade facade;
 
     @Test
     void requestProvisionToAwx_mapsResponseCorrectly() {
+        // given
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         var action = ProvisionActionMother.of(params);
@@ -60,14 +67,17 @@ class ProvisionerActionsApiFacadeTest {
                 .thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
         when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
 
+        // when
         var result = facade.requestProvisionToAwx(action);
 
+        // then
         assertEquals(HttpStatus.OK, result.httpStatusCode());
         assertEquals(response, result.awxResponseBody());
     }
 
     @Test
     void notifyComponentCatalogProvisionStarts_sendsParametersAsListOfStrings() {
+        // given
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("component_id", "CID"));
@@ -78,8 +88,10 @@ class ProvisionerActionsApiFacadeTest {
         params.add(ProvisionActionParameterMother.of("null_param", null));
         var action = ProvisionActionMother.of(params);
 
+        // when
         facade.notifyComponentCatalogProvisionStarts(action);
 
+        // then
         ArgumentCaptor<Map<String, List<String>>> captor = ArgumentCaptor.forClass(Map.class);
         verify(componentCatalogService).notifyComponentCatalogProvisionStarts(eq("PRJ"), eq("CID"), eq("CAT"), eq("http://comp"), eq(""), eq("TOKEN"), captor.capture());
         var map = captor.getValue();
@@ -88,16 +100,88 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addIdTokenToActions_addsParameter() {
-        var action = ProvisionActionMother.of(new ArrayList<>());
-        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+    void addSystemParametersToAction_addsClusterLocationCallerAndIdToken() {
+        // given
+        var params = new ArrayList<ProvisionActionParameter>();
+        params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
+        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        var action = ProvisionActionMother.of(params);
 
-        facade.addIdTokenToActions(action);
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster-eu-west"));
+        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
+        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
 
-        assertThat(action.getParameters()).hasSize(1);
-        var param = action.getParameters().get(0);
-        assertThat(param.getName()).isEqualTo("id_token");
-        assertThat(param.getValue()).isEqualTo("id-token");
-        assertThat(param.getType()).isEqualTo("string");
+        // when
+        facade.addSystemParametersToAction(action);
+
+        // then
+        var paramNames = action.getParameters().stream()
+                .map(ProvisionActionParameter::getName)
+                .toList();
+        assertThat(paramNames).contains("cluster_location", "caller", "id_token");
+
+        var clusterLocation = action.getParameters().stream()
+                .filter(p -> "cluster_location".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(clusterLocation).isEqualTo("cluster-eu-west");
+
+        var caller = action.getParameters().stream()
+                .filter(p -> "caller".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(caller).isEqualTo("user@example.com");
+
+        var idToken = action.getParameters().stream()
+                .filter(p -> "id_token".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(idToken).isEqualTo("id-token-value");
     }
+
+    @Test
+    void addSystemParametersToAction_throwsIllegalStateException_whenClustersIsEmpty() {
+        // given
+        var params = new ArrayList<ProvisionActionParameter>();
+        params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
+        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        var action = ProvisionActionMother.of(params);
+
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of());
+        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+
+        // when / then
+        assertThatThrownBy(() -> facade.addSystemParametersToAction(action))
+                .isInstanceOf(ProjectConfigurationException.class)
+                .hasMessageContaining("PRJ");
+    }
+
+    @Test
+    void addSystemParametersToAction_usesFirstCluster_whenMultipleClustersAreReturned() {
+        // given
+        var params = new ArrayList<ProvisionActionParameter>();
+        params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
+        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        var action = ProvisionActionMother.of(params);
+
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
+        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
+        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+
+        // when
+        facade.addSystemParametersToAction(action);
+
+        // then
+        var clusterLocation = action.getParameters().stream()
+                .filter(p -> "cluster_location".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(clusterLocation).isEqualTo("cluster-primary");
+    }
+
 }

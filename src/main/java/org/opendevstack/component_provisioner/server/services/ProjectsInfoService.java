@@ -2,6 +2,7 @@ package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
@@ -27,6 +28,13 @@ public class ProjectsInfoService {
         var azureGroupsApi = apiClientsBuilder.azureGroupsApi(apiClient);
 
         return azureGroupsApi.getAzureGroups(accessToken);
+    }
+
+    public ProjectInfo getProjectClusters(String accessToken, String projectKey) {
+        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
+        var projectsApi = apiClientsBuilder.projectsApi(apiClient);
+
+        return projectsApi.getProjectClusters(accessToken, projectKey);
     }
 
 }

@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.config;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.model.RestErrorMessage;
@@ -48,6 +49,11 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(ProjectComponentAlreadyProvisionedException.class)
     public ResponseEntity<RestErrorMessage> handleProjectComponentAlreadyProvisionedException(ProjectComponentAlreadyProvisionedException ex) {
         return defaultErrResponse(ex, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(ProjectConfigurationException.class)
+    public ResponseEntity<RestErrorMessage> handleProjectConfigurationException(ProjectConfigurationException ex) {
+        return defaultErrResponse(ex, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     @ExceptionHandler(UserNotAllowedException.class)
