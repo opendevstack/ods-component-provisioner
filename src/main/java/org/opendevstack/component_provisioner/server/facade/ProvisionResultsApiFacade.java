@@ -10,6 +10,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Para
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -76,8 +77,15 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String idToken, String accessToken) {
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, idToken, accessToken);
+                                               String catalogItemId, String catalogItemSlug, String componentUrl, String idToken, String accessToken) {
+        String resolvedCatalogItemId = catalogItemId;
+        if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
+            log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
+            var catalogItem = componentCatalogService.getCatalogItemBySlug(idToken, catalogItemSlug);
+            resolvedCatalogItemId = catalogItem.getId();
+            log.debug("Resolved catalogItemSlug {} to catalogItemId: {}", catalogItemSlug, resolvedCatalogItemId);
+        }
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, idToken, accessToken);
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
@@ -86,6 +94,13 @@ public class ProvisionResultsApiFacade {
 
     public String getIdToken() {
         return authenticationProvider.getIdToken();
+    }
+
+    public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
+        validate(projectKey, status);
+        if (StringUtils.isNotBlank(request.getCatalogItemId()) && StringUtils.isNotBlank(request.getCatalogItemSlug())) {
+            throw new InvalidRestEntityException("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
+        }
     }
 
     public void validate(String projectKey, String status) {

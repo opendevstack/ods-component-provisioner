@@ -58,7 +58,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenProjectsApi_thenReturnProjectsApiInstance() {
+    void givenApiClient_whenProjectsApi_thenReturnsProjectsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -71,7 +71,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsApiInstance() {
+    void givenApiClient_whenAzureGroupsApi_thenReturnsAzureGroupsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -84,7 +84,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenCatalogItemsApi_thenReturnCatalogItemsApiInstance() {
+    void givenApiClient_whenCatalogItemsApi_thenReturnsCatalogItemsApiInstance() {
         // given
         var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
 
@@ -97,7 +97,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenProvisionerActionsApi_thenReturnProvisionerActionsApiInstance() {
+    void givenIdTokenAndBaseUrl_whenProvisionerActionsApi_thenReturnsProvisionerActionsApiInstance() {
         // given
         String idToken = "test-token";
         String baseUrl = "http://component-catalog";
