@@ -22,4 +22,14 @@ public class AuthenticationProvider {
 
         return idToken;
     }
+
+    public String getUserPrincipalName() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserPrincipal authUserPrincipal = (UserPrincipal) auth.getPrincipal();
+        var userPrincipalName = authUserPrincipal.getUserPrincipalName();
+
+        log.debug("Authenticated user '{}'", userPrincipalName);
+
+        return userPrincipalName;
+    }
 }
