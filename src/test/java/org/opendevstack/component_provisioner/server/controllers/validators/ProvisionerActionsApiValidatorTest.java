@@ -27,6 +27,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,26 +55,12 @@ class ProvisionerActionsApiValidatorTest {
     private ProvisionerActionsApiValidator provisionerActionsApiValidator;
 
     @ParameterizedTest
-    @ValueSource(strings = { "project_key", "component_id", "access_token" })
+    @ValueSource(strings = { "project_key", "component_id", "access_token"})
     void validate_throwsInvalidRestEntityException_whenRequiredParameterMissing(String missingParam) {
         var action = buildActionMissing(missingParam);
 
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validate(action));
-    }
-
-    private ProvisionAction buildActionMissing(String missingParamName) {
-        var params = new ArrayList<ProvisionActionParameter>();
-        if (!"project_key".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
-        if (!"component_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
-        if (!"catalog_item_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
-        if (!"access_token".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
-
-        return ProvisionActionMother.of(params);
     }
 
     @Test
@@ -179,4 +166,130 @@ class ProvisionerActionsApiValidatorTest {
         provisionerActionsApiValidator.validate(action);
     }
 
+    @Test
+    void validate_throwsInvalidRestEntityException_whenProjectKeyIsBlank() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", ""),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsInvalidRestEntityException_whenComponentIdIsBlank() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", ""),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsInvalidRestEntityException_whenAccessTokenIsBlank() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "")
+        ));
+
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsInvalidRestEntityException_whenMandatoryFieldsValidatorThrows() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups(any(), any())).thenReturn(List.of("group"));
+        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
+        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
+        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
+        doThrow(new InvalidRestEntityException("Mandatory field missing"))
+                .when(mandatoryFieldsValidator)
+                .validate(any());
+
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsException_whenComponentCatalogServiceThrowsDuringProvisionCheck() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenThrow(new RuntimeException("Service error"));
+
+        assertThrows(RuntimeException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsException_whenProjectsInfoServiceThrowsDuringPermissionsCheck() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups(any(), any())).thenThrow(new RuntimeException("Service error"));
+
+        assertThrows(RuntimeException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_throwsException_whenGroupsRestrictionsEvaluatorThrowsDuringPermissionsCheck() {
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups(any(), any())).thenReturn(List.of("group"));
+        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
+
+        assertThrows(RuntimeException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    private ProvisionAction buildActionMissing(String missingParamName) {
+        var params = new ArrayList<ProvisionActionParameter>();
+        if (!"project_key".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
+        if (!"component_id".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
+        if (!"catalog_item_id".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
+        if (!"access_token".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
+
+        return ProvisionActionMother.of(params);
+    }
 }
