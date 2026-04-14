@@ -12,7 +12,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionMother
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ class ProvisionerActionsApiControllerTest {
     private ProvisionerActionsApiFacade provisionerActionsApiFacade;
 
     @Mock
-    private AuthenticationProvider authenticationProvider;
+    private PlaceholderPostProcessor placeholderPostProcessor;
 
     @InjectMocks
     private ProvisionerActionsApiController controller;
@@ -45,6 +45,7 @@ class ProvisionerActionsApiControllerTest {
     void triggerProvisionAction_returnsResponseEntityWithMappedResponse_whenFacadeReturnsSuccess() {
         var parameters = new ArrayList<ProvisionActionParameter>();
         var provisionAction = ProvisionActionMother.of(parameters);
+        var processedProvisionAction = ProvisionActionMother.of(parameters);
 
         var provisionActionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder()
@@ -54,6 +55,7 @@ class ProvisionerActionsApiControllerTest {
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
         when(provisionerActionsApiFacade.requestProvisionToAwx(any())).thenReturn(awxResponse);
+        when(placeholderPostProcessor.process(provisionAction)).thenReturn(processedProvisionAction);
 
         var response = controller.triggerProvisionAction(provisionAction);
 
@@ -62,8 +64,8 @@ class ProvisionerActionsApiControllerTest {
 
         verify(provisionerActionsApiFacade).addIdTokenToActions(provisionAction);
         verify(provisionerActionsApiValidator).validate(provisionAction);
-        verify(provisionerActionsApiFacade).notifyComponentCatalogProvisionStarts(provisionAction);
-        verify(provisionerActionsApiFacade).requestProvisionToAwx(provisionAction);
+        verify(provisionerActionsApiFacade).notifyComponentCatalogProvisionStarts(processedProvisionAction);
+        verify(provisionerActionsApiFacade).requestProvisionToAwx(processedProvisionAction);
     }
 
     @Test
@@ -78,6 +80,7 @@ class ProvisionerActionsApiControllerTest {
 
         when(authInfo.getCurrentPrincipalName()).thenReturn("test-user");
         when(provisionerActionsApiFacade.requestProvisionToAwx(any())).thenReturn(awxResponse);
+        when(placeholderPostProcessor.process(provisionAction)).thenReturn(provisionAction);
 
         var response = controller.triggerProvisionAction(provisionAction);
 
