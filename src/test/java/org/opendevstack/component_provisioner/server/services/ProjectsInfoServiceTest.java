@@ -77,7 +77,6 @@ class ProjectsInfoServiceTest {
     @Test
     void givenTokenAndProjectKey_whenGetProjectClusters_thenProjectInfoReturned() throws MalformedURLException {
         // given
-        String idToken = "id-token";
         String accessToken = "access-token";
         String projectKey = "MY-PROJECT";
         URL baseUrl = URI.create("http://projects-info").toURL();
@@ -85,7 +84,7 @@ class ProjectsInfoServiceTest {
         ProjectInfo expectedProjectInfo = new ProjectInfo();
 
         when(projectsInfoServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.projectsInfoServiceApiClient(idToken, baseUrl.toString()))
+        when(apiClientsBuilder.projectsInfoServiceApiClient(accessToken, baseUrl.toString()))
                 .thenReturn(apiClient);
         when(apiClientsBuilder.projectsApi(apiClient))
                 .thenReturn(projectsApi);
@@ -93,13 +92,13 @@ class ProjectsInfoServiceTest {
                 .thenReturn(expectedProjectInfo);
 
         // when
-        ProjectInfo result = projectsInfoService.getProjectClusters(idToken, accessToken, projectKey);
+        ProjectInfo result = projectsInfoService.getProjectClusters(accessToken, projectKey);
 
         // then
         assertThat(result).isEqualTo(expectedProjectInfo);
 
         verify(apiClientsBuilder)
-                .projectsInfoServiceApiClient(idToken, baseUrl.toString());
+                .projectsInfoServiceApiClient(accessToken, baseUrl.toString());
         verify(apiClientsBuilder)
                 .projectsApi(apiClient);
         verify(projectsApi)

@@ -148,14 +148,17 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void addSystemParametersToAction_throwsIllegalStateException_whenClustersIsEmpty() {
         // given
+        var bearerToken = "BEARER";
+
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
-        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        params.add(ProvisionActionParameterMother.of("access_token", bearerToken));
         var action = ProvisionActionMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of());
-        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(projectsInfoService.getProjectClusters(bearerToken, "PRJ")).thenReturn(projectInfo);
 
         // when / then
         assertThatThrownBy(() -> facade.addSystemParametersToAction(action))
@@ -174,7 +177,7 @@ class ProvisionerActionsApiFacadeTest {
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
-        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(projectsInfoService.getProjectClusters(bearerToken, "PRJ")).thenReturn(projectInfo);
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
         when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
 
