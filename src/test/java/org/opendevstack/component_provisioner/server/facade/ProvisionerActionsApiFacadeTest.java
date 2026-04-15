@@ -111,7 +111,7 @@ class ProvisionerActionsApiFacadeTest {
         projectInfo.setClusters(List.of("cluster-eu-west"));
         when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
-        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+        when(authenticationProvider.getAccessToken()).thenReturn("id-token-value");
 
         // when
         facade.addSystemParametersToAction(action);
@@ -171,7 +171,7 @@ class ProvisionerActionsApiFacadeTest {
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
         when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
-        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+        when(authenticationProvider.getAccessToken()).thenReturn("id-token-value");
 
         // when
         facade.addSystemParametersToAction(action);

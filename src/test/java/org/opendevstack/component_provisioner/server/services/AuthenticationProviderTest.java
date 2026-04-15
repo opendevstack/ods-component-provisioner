@@ -51,7 +51,7 @@ class AuthenticationProviderTest {
         when(userPrincipal.getAadIssuedBearerToken()).thenReturn(expectedIdToken);
 
         // when
-        String actualIdToken = authenticationProvider.getIdToken();
+        String actualIdToken = authenticationProvider.getAccessToken();
 
         // then
         assertThat(actualIdToken).isEqualTo(expectedIdToken);

@@ -17,10 +17,10 @@ public class ProvisionService {
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String idToken, String accessToken) {
+                                               String catalogItemId, String componentUrl, String accessToken) {
         log.info("Notifying provisioning completed");
 
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         var notifyProvisioningCompletedRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)

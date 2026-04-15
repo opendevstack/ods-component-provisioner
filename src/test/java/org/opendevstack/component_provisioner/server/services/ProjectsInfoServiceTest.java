@@ -45,32 +45,31 @@ class ProjectsInfoServiceTest {
     @Test
     void givenTokens_whenGetProjectGroups_thenAzureGroupsReturned() throws MalformedURLException {
         // given
-        String idToken = "id-token";
         String accessToken = "access-token";
         URL baseUrl = URI.create("http://projects-info").toURL();
 
         List<String> expectedGroups = List.of("group-a", "group-b");
 
         when(projectsInfoServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.projectsInfoServiceApiClient(idToken, baseUrl.toString()))
+        when(apiClientsBuilder.projectsInfoServiceApiClient(accessToken, baseUrl.toString()))
                 .thenReturn(apiClient);
         when(apiClientsBuilder.azureGroupsApi(apiClient))
                 .thenReturn(azureGroupsApi);
-        when(azureGroupsApi.getAzureGroups(accessToken))
+        when(azureGroupsApi.getAzureGroups())
                 .thenReturn(expectedGroups);
 
         // when
-        List<String> result = projectsInfoService.getProjectGroups(idToken, accessToken);
+        List<String> result = projectsInfoService.getProjectGroups(accessToken);
 
         // then
         assertThat(result).isEqualTo(expectedGroups);
 
         verify(apiClientsBuilder)
-                .projectsInfoServiceApiClient(idToken, baseUrl.toString());
+                .projectsInfoServiceApiClient(accessToken, baseUrl.toString());
         verify(apiClientsBuilder)
                 .azureGroupsApi(apiClient);
         verify(azureGroupsApi)
-                .getAzureGroups(accessToken);
+                .getAzureGroups();
 
         verifyNoMoreInteractions(apiClientsBuilder, azureGroupsApi);
     }
@@ -89,7 +88,7 @@ class ProjectsInfoServiceTest {
                 .thenReturn(apiClient);
         when(apiClientsBuilder.projectsApi(apiClient))
                 .thenReturn(projectsApi);
-        when(projectsApi.getProjectClusters(accessToken, projectKey))
+        when(projectsApi.getProjectClusters(projectKey))
                 .thenReturn(expectedProjectInfo);
 
         // when
@@ -103,7 +102,7 @@ class ProjectsInfoServiceTest {
         verify(apiClientsBuilder)
                 .projectsApi(apiClient);
         verify(projectsApi)
-                .getProjectClusters(accessToken, projectKey);
+                .getProjectClusters(projectKey);
 
         verifyNoMoreInteractions(apiClientsBuilder, projectsApi);
     }

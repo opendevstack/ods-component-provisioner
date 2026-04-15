@@ -219,7 +219,7 @@ class MandatoryFieldsValidatorTest {
         CatalogItem catalogItem = CatalogItemMother.of();
         catalogItem.setUserActions(null);
 
-        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
         when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
                 .thenReturn(catalogItem);
 
@@ -238,7 +238,7 @@ class MandatoryFieldsValidatorTest {
         CatalogItem catalogItem = CatalogItemMother.of();
         catalogItem.getUserActions().getFirst().setId("DELETE");
 
-        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
         when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
                 .thenReturn(catalogItem);
 
@@ -295,7 +295,7 @@ class MandatoryFieldsValidatorTest {
         );
         catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
 
-        when(authenticationProvider.getIdToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
         when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
                 .thenReturn(catalogItem);
 

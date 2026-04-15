@@ -17,24 +17,24 @@ public class ApiClientsBuilder {
 
     private final RestTemplate restTemplate;
 
-    public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String idToken, String baseRestUrl) {
+    public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient projectsInfoServiceApiClient(String accessToken, String baseRestUrl) {
         var apiClient = new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient(restTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
         var auth = (org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
-        auth.setBearerToken(idToken);
+        auth.setBearerToken(accessToken);
 
         return apiClient;
     }
 
-    public org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient componentCatalogApiClient(String idToken, String baseRestUrl) {
+    public org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient componentCatalogApiClient(String accessToken, String baseRestUrl) {
         var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(restTemplate);
 
         apiClient.setBasePath(baseRestUrl);
 
         var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
-        auth.setBearerToken(idToken);
+        auth.setBearerToken(accessToken);
 
         return apiClient;
     }

@@ -146,7 +146,7 @@ public class ProvisionerActionsApiFacade {
     private void addIdTokenToActions(ProvisionAction provisionAction) {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
                 .name("id_token")
-                .value(authenticationProvider.getIdToken())
+                .value(authenticationProvider.getAccessToken())
                 .type(ParameterType.STRING.getValue())
                 .build()
         );

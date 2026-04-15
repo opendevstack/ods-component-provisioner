@@ -82,7 +82,7 @@ class ProvisionerActionsApiValidatorTest {
         var exists = new ProjectComponentInfo();
         exists.setComponentId(componentId);
 
-        when(authenticationProvider.getIdToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
 
         when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
                 .thenReturn(List.of(exists));
@@ -106,14 +106,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
 
         // Component catalog empty → no conflict
         when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
                 .thenReturn(List.of());
 
         // User groups
-        when(projectsInfoService.getProjectGroups(idToken, accessToken))
+        when(projectsInfoService.getProjectGroups(accessToken))
                 .thenReturn(List.of("group1"));
 
         // Configure restriction prefix/suffix
@@ -144,14 +144,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
 
         // Component does NOT exist
         when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
                 .thenReturn(List.of());
 
         // User groups
-        when(projectsInfoService.getProjectGroups(idToken, accessToken))
+        when(projectsInfoService.getProjectGroups(accessToken))
                 .thenReturn(List.of("allowed-group"));
 
         // Configure restriction prefix/suffix
@@ -214,9 +214,9 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
         when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any(), any())).thenReturn(List.of("group"));
+        when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
         when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
@@ -237,7 +237,7 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
         when(componentCatalogService.getProjectComponents(any(), any(), any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
@@ -253,9 +253,9 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
         when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any(), any())).thenThrow(new RuntimeException("Service error"));
+        when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
@@ -270,9 +270,9 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getIdToken()).thenReturn("idToken");
+        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
         when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any(), any())).thenReturn(List.of("group"));
+        when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 
         assertThrows(RuntimeException.class,

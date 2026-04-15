@@ -40,7 +40,7 @@ public class ProvisionerActionsApiValidator {
         var projectKey = getProjectKey(provisionAction);
         var accessToken = getAccessToken(provisionAction);
         var componentId = getComponentId(provisionAction);
-        var idToken = authenticationProvider.getIdToken();
+        var idToken = authenticationProvider.getAccessToken();
 
         validateInputParams(projectKey, accessToken, componentId);
 
@@ -63,7 +63,7 @@ public class ProvisionerActionsApiValidator {
                 .build();
         EvaluationRestrictions restrictions = new EvaluationRestrictions(projectKey, userActionEntityRestrictions);
 
-        List<String> userGroups = projectsInfoService.getProjectGroups(idToken, accessToken);
+        List<String> userGroups = projectsInfoService.getProjectGroups(accessToken);
         RestrictionsParams params = RestrictionsParams.builder()
                 .projectKey(projectKey)
                 .userGroups(userGroups)

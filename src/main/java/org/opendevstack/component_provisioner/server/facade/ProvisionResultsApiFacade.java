@@ -76,16 +76,12 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String idToken, String accessToken) {
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, idToken, accessToken);
+                                               String catalogItemId, String componentUrl, String accessToken) {
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
         provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
-    }
-
-    public String getIdToken() {
-        return authenticationProvider.getIdToken();
     }
 
     public void validate(String projectKey, String status) {

@@ -37,7 +37,7 @@ public class MandatoryFieldsValidator {
         var projectKey = getProjectKey(provisionAction);
         var accessToken = getAccessToken(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
-        var idToken = authenticationProvider.getIdToken();
+        var idToken = authenticationProvider.getAccessToken();
         var location = getLocation(provisionAction);
 
         var catalogItem = componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey);

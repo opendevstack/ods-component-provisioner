@@ -49,7 +49,7 @@ class ProvisionerServiceTest {
         when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,idToken, accessToken);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
 
         // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
