@@ -175,7 +175,7 @@ paths:
                 catalogItemSlug:
                   type: string
                   description: The slug for the provisioned component.
-                  example: "myproject/repo_name"
+                  example: "myproject_repo_name"
                 componentUrl:
                   type: string
                   description: The bitbucket repository url for the provisioned component.
