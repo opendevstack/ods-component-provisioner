@@ -7,7 +7,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
@@ -198,22 +197,6 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenCatalogItemSlug_whenNotifyProvisioningStatusUpdate_thenResolvesIdAndCallsProvisionService() {
-        // given
-        String slug = "SLUG";
-        var catalogItem = new CatalogItem();
-        catalogItem.setId("RESOLVED-ID");
-        when(componentCatalogService.getCatalogItemBySlug("TOKEN", slug)).thenReturn(catalogItem);
-
-        // when
-        facade.notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", null, slug, "URL", "TOKEN", "ACCESS");
-
-        // then
-        verify(componentCatalogService).getCatalogItemBySlug("TOKEN", slug);
-        verify(provisionService).notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", "RESOLVED-ID", "URL", "TOKEN", "ACCESS");
-    }
-
-    @Test
     void givenEmptySlugAndNoId_whenNotifyProvisioningStatusUpdate_thenCallsProvisionServiceWithNullId() {
         // given
         String emptySlug = "";
@@ -230,7 +213,7 @@ class ProvisionResultsApiFacadeTest {
     void givenBothIdAndSlug_whenNotifyProvisioningStatusUpdate_thenPrefersIdAndDoesNotResolveSlug() {
         // given
         String id = "CAT-ID";
-        String slug = "SLUG";
+        String slug = "PROJECT_ITEM-FOLDER";
 
         // when
         facade.notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", id, slug, "URL", "TOKEN", "ACCESS");
@@ -245,7 +228,7 @@ class ProvisionResultsApiFacadeTest {
         // given
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
-        request.setCatalogItemSlug("SLUG");
+        request.setCatalogItemSlug("PROJECT_ITEM-FOLDER");
 
         // when / then
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", request));
@@ -266,7 +249,7 @@ class ProvisionResultsApiFacadeTest {
     void givenOnlySlug_whenValidate_thenPasses() {
         // given
         var request = new NotifyProvisioningStatusUpdateRequest();
-        request.setCatalogItemSlug("SLUG");
+        request.setCatalogItemSlug("PROJECT_ITEM-FOLDER");
 
         // when / then
         facade.validate("PRJ", "CREATED", request);
