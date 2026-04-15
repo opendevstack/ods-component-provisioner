@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
@@ -194,6 +195,22 @@ class ProvisionResultsApiFacadeTest {
         // then
         verify(provisionService).notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", catalogItemId, "URL", "TOKEN", "ACCESS");
         verifyNoInteractions(componentCatalogService);
+    }
+
+    @Test
+    void givenCatalogItemSlug_whenNotifyProvisioningStatusUpdate_thenResolvesIdAndCallsProvisionService() {
+        // given
+        String slug = "PROJECT_ITEM-FOLDER";
+        var catalogItem = new CatalogItem();
+        catalogItem.setId("RESOLVED-ID");
+        when(componentCatalogService.getCatalogItemBySlug("TOKEN", slug)).thenReturn(catalogItem);
+
+        // when
+        facade.notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", null, slug, "URL", "TOKEN", "ACCESS");
+
+        // then
+        verify(componentCatalogService).getCatalogItemBySlug("TOKEN", slug);
+        verify(provisionService).notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", "RESOLVED-ID", "URL", "TOKEN", "ACCESS");
     }
 
     @Test
