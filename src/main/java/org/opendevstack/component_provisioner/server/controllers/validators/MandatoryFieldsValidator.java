@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getAccessToken;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getCatalogItemId;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getParameterString;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getProjectKey;
@@ -35,9 +34,8 @@ public class MandatoryFieldsValidator {
 
     public void validate(ProvisionAction provisionAction) {
         var projectKey = getProjectKey(provisionAction);
-        var accessToken = getAccessToken(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
-        var idToken = authenticationProvider.getAccessToken();
+        var accessToken = authenticationProvider.getAccessToken();
         var location = getLocation(provisionAction);
 
         var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);

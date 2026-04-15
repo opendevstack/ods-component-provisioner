@@ -41,7 +41,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenIdTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
+    void givenBearerTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
         // given
         String accessToken = "test-token";
         String baseUrl = "http://component-catalog";

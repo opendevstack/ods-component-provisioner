@@ -51,12 +51,12 @@ public class ApiClientsBuilder {
         return new CatalogItemsApi(apiClient);
     }
 
-    public ProvisionerActionsApi provisionerActionsApi(String idToken, String baseRestUrl) {
+    public ProvisionerActionsApi provisionerActionsApi(String accessToken, String baseRestUrl) {
         var apiClient = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient(restTemplate);
         apiClient.setBasePath(baseRestUrl);
 
         var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
-        auth.setBearerToken(idToken);
+        auth.setBearerToken(accessToken);
 
         return new ProvisionerActionsApi(apiClient);
     }

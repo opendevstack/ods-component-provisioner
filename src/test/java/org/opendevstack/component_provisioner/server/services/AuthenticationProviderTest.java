@@ -40,21 +40,21 @@ class AuthenticationProviderTest {
     }
 
     @Test
-    void shouldReturnIdTokenWhenAuthenticated() {
+    void shouldReturnAccessTokenWhenAuthenticated() {
         // given
-        String expectedIdToken = "test-id-token";
+        String expectedBearerToken = "test-bearer-token";
         String userName = "test-user";
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getName()).thenReturn(userName);
         when(authentication.getPrincipal()).thenReturn(userPrincipal);
-        when(userPrincipal.getAadIssuedBearerToken()).thenReturn(expectedIdToken);
+        when(userPrincipal.getAadIssuedBearerToken()).thenReturn(expectedBearerToken);
 
         // when
-        String actualIdToken = authenticationProvider.getAccessToken();
+        String actualBearerToken = authenticationProvider.getAccessToken();
 
         // then
-        assertThat(actualIdToken).isEqualTo(expectedIdToken);
+        assertThat(actualBearerToken).isEqualTo(expectedBearerToken);
     }
 
     @Test

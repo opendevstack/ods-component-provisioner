@@ -16,11 +16,11 @@ public class AuthenticationProvider {
 
         var principal = (UserPrincipal) auth.getPrincipal();
 
-        var idToken = principal.getAadIssuedBearerToken();
+        var accessToken = principal.getAadIssuedBearerToken();
 
-        log.debug("Extracted accessToken: {} from request.", idToken);
+        log.debug("Extracted accessToken: {} from request.", accessToken);
 
-        return idToken;
+        return accessToken;
     }
 
     public String getUserPrincipalName() {

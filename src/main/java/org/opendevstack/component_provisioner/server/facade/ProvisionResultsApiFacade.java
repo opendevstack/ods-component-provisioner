@@ -75,8 +75,8 @@ public class ProvisionResultsApiFacade {
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
     }
 
-    public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
-        provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
+    public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
+        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
     public void validate(String projectKey, String status) {

@@ -111,10 +111,6 @@ public class ProvisionerActionsApiValidator {
         return getParameterString(provisionAction, "project_key");
     }
 
-    protected static String getAccessToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "access_token");
-    }
-
     protected static String getCatalogItemId(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "catalog_item_id");
     }

@@ -58,7 +58,6 @@ public class ProvisionerActionsApiFacade {
         var catalogItemId = getCatalogItemId(provisionAction);
         var componentUrl = getComponentUrl(provisionAction);
         var accessToken = getAccessToken(provisionAction);
-        var idToken = getIdToken(provisionAction);
 
         var parameters = provisionAction.getParameters().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -94,10 +93,6 @@ public class ProvisionerActionsApiFacade {
         return getParameterString(provisionAction, "access_token");
     }
 
-    private String getIdToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "id_token");
-    }
-
     private String getParameterString(ProvisionAction provisionAction, String parameterName) {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))
@@ -110,7 +105,7 @@ public class ProvisionerActionsApiFacade {
     public void addSystemParametersToAction(ProvisionAction provisionAction) {
         addClusterLocationToAction(provisionAction);
         addCallerToAction(provisionAction);
-        addIdTokenToActions(provisionAction);
+        addBearerTokenToActions(provisionAction);
     }
 
     private void addCallerToAction(ProvisionAction provisionAction) {
@@ -143,9 +138,9 @@ public class ProvisionerActionsApiFacade {
                 .build());
     }
 
-    private void addIdTokenToActions(ProvisionAction provisionAction) {
+    private void addBearerTokenToActions(ProvisionAction provisionAction) {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
-                .name("id_token")
+                .name("bearer_token")
                 .value(authenticationProvider.getAccessToken())
                 .type(ParameterType.STRING.getValue())
                 .build()

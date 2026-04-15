@@ -218,8 +218,9 @@ class MandatoryFieldsValidatorTest {
         // given
         CatalogItem catalogItem = CatalogItemMother.of();
         catalogItem.setUserActions(null);
+        var bearerToken = "bearer-token";
 
-        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
         when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
@@ -237,8 +238,9 @@ class MandatoryFieldsValidatorTest {
         // given
         CatalogItem catalogItem = CatalogItemMother.of();
         catalogItem.getUserActions().getFirst().setId("DELETE");
+        var bearerToken = "bearer-token";
 
-        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
         when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
@@ -288,6 +290,8 @@ class MandatoryFieldsValidatorTest {
     @Test
     void givenAValidProvisionAction_whenValidate_thenMandatoryFieldsAreProcessed() {
         // given
+        var bearerToken = "bearer-token";
+
         CatalogItem catalogItem = CatalogItemMother.of();
         CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
                 "mandatoryParam",
@@ -295,7 +299,7 @@ class MandatoryFieldsValidatorTest {
         );
         catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("id-token");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
         when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
