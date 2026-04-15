@@ -122,9 +122,10 @@ public class ProvisionerActionsApiFacade {
     private void addClusterLocationToAction(ProvisionAction provisionAction) {
         var projectKey = getParameterString(provisionAction, "project_key");
         var accessToken = getParameterString(provisionAction, "access_token");
+        var idToken = authenticationProvider.getIdToken();
 
         log.debug("Fetching cluster location for project: {}", projectKey);
-        var clusters = projectsInfoService.getProjectClusters(accessToken, projectKey).getClusters();
+        var clusters = projectsInfoService.getProjectClusters(idToken, accessToken, projectKey).getClusters();
         if (clusters.isEmpty()) {
             throw new ProjectConfigurationException("Cannot retrieve the current project location for project: " + projectKey);
         }

@@ -30,8 +30,8 @@ public class ProjectsInfoService {
         return azureGroupsApi.getAzureGroups();
     }
 
-    public ProjectInfo getProjectClusters(String accessToken, String projectKey) {
-        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
+    public ProjectInfo getProjectClusters(String idToken, String accessToken, String projectKey) {
+        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var projectsApi = apiClientsBuilder.projectsApi(apiClient);
 
         return projectsApi.getProjectClusters(projectKey);
