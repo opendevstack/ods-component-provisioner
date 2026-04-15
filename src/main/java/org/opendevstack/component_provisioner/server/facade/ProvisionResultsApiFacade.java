@@ -3,7 +3,9 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -18,6 +20,7 @@ import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
 
@@ -81,7 +84,12 @@ public class ProvisionResultsApiFacade {
         String resolvedCatalogItemId = catalogItemId;
         if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
             log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
-            var catalogItem = componentCatalogService.getCatalogItemBySlug(idToken, catalogItemSlug);
+            CatalogItem catalogItem;
+            try {
+                catalogItem = componentCatalogService.getCatalogItemBySlug(idToken, catalogItemSlug);
+            } catch (RestClientException e) {
+                throw new SlugNotFoundException("Catalog item slug not found: " + catalogItemSlug);
+            }
             resolvedCatalogItemId = catalogItem.getId();
             log.debug("Resolved catalogItemSlug {} to catalogItemId: {}", catalogItemSlug, resolvedCatalogItemId);
         }
