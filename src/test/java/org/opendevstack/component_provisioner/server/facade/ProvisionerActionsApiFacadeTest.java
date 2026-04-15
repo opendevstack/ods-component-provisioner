@@ -109,9 +109,9 @@ class ProvisionerActionsApiFacadeTest {
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-eu-west"));
-        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
-        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
         when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
 
         // when
         facade.addSystemParametersToAction(action);
@@ -151,7 +151,8 @@ class ProvisionerActionsApiFacadeTest {
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of());
-        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
 
         // when / then
         assertThatThrownBy(() -> facade.addSystemParametersToAction(action))
@@ -169,9 +170,9 @@ class ProvisionerActionsApiFacadeTest {
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
-        when(projectsInfoService.getProjectClusters("ACCESS", "PRJ")).thenReturn(projectInfo);
-        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
         when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
+        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
 
         // when
         facade.addSystemParametersToAction(action);
