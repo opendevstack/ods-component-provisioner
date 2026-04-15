@@ -63,7 +63,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
 
-        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId, accessToken, createIncidentAction);
+        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId, accessToken);
 
         if (isInDeletingState) {
             log.debug("Project component already in DELETING state, skipping create of the incident via AWX");

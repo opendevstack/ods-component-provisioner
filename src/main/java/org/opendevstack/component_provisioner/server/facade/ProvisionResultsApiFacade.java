@@ -10,7 +10,6 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Para
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.ProvisionService;
@@ -30,7 +29,6 @@ public class ProvisionResultsApiFacade {
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final ProvisionService provisionService;
-    private final AuthenticationProvider authenticationProvider;
 
 
     @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
@@ -39,19 +37,16 @@ public class ProvisionResultsApiFacade {
     public ProvisionResultsApiFacade(AwxService awxService,
                                      ComponentCatalogService componentCatalogService,
                                      EntitiesMapper entitiesMapper,
-                                     ProvisionService provisionService,
-                                     AuthenticationProvider authenticationProvider) {
+                                     ProvisionService provisionService) {
         this.awxService = awxService;
         this.componentCatalogService = componentCatalogService;
         this.entitiesMapper = entitiesMapper;
         this.provisionService = provisionService;
-        this.authenticationProvider = authenticationProvider;
     }
 
-    public boolean isInDeletingState(String projectKey, String componentId, String idToken, CreateIncidentAction createIncidentAction) {
-        var accessToken = getParameterString(createIncidentAction, ACCESS_TOKEN_PARAMETER_NAME);
+    public boolean isInDeletingState(String projectKey, String componentId, String accessToken) {
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
 
         return projectComponents.stream()
                 .filter(component -> component.getComponentId() != null)

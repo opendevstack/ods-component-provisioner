@@ -78,12 +78,14 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void notifyComponentCatalogProvisionStarts_sendsParametersAsListOfStrings() {
         // given
+        var accessToken = "BEARER-TOKEN";
+
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("component_id", "CID"));
         params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT"));
         params.add(ProvisionActionParameterMother.of("component_url", "http://comp"));
-        params.add(ProvisionActionParameterMother.of("access_token", "TOKEN"));
+        params.add(ProvisionActionParameterMother.of("access_token", accessToken));
         params.add(ProvisionActionParameterMother.of("list_param", List.of("a", "b")));
         params.add(ProvisionActionParameterMother.of("null_param", null));
         var action = ProvisionActionMother.of(params);
@@ -93,14 +95,14 @@ class ProvisionerActionsApiFacadeTest {
 
         // then
         ArgumentCaptor<Map<String, List<String>>> captor = ArgumentCaptor.forClass(Map.class);
-        verify(componentCatalogService).notifyComponentCatalogProvisionStarts(eq("PRJ"), eq("CID"), eq("CAT"), eq("http://comp"), eq(""), eq("TOKEN"), captor.capture());
+        verify(componentCatalogService).notifyComponentCatalogProvisionStarts(eq("PRJ"), eq("CID"), eq("CAT"), eq("http://comp"), eq(accessToken), captor.capture());
         var map = captor.getValue();
         assertThat(map.get("list_param")).containsExactly("a", "b");
         assertThat(map.get("null_param")).containsExactly("");
     }
 
     @Test
-    void addSystemParametersToAction_addsClusterLocationCallerAndIdToken() {
+    void addSystemParametersToAction_addsClusterLocationCallerAndAccessToken() {
         // given
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));

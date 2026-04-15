@@ -74,9 +74,9 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
         var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
-        when(componentCatalogService.getProjectComponents("PRJ", "ID", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
 
-        var result = facade.isInDeletingState("PRJ", "componentId", "ID", action);
+        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
         assertThat(result).isTrue();
     }
 
@@ -131,9 +131,9 @@ class ProvisionResultsApiFacadeTest {
     void isInDeletingState_returnsFalseWhenComponentNotFound() {
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
-        when(componentCatalogService.getProjectComponents("PRJ", "ID", accessToken)).thenReturn(Collections.emptyList());
+        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(Collections.emptyList());
 
-        var result = facade.isInDeletingState("PRJ", "componentId", "ID", action);
+        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
         assertThat(result).isFalse();
     }
 
@@ -143,9 +143,9 @@ class ProvisionResultsApiFacadeTest {
         String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
         pc.setComponentId("componentId");
-        when(componentCatalogService.getProjectComponents("PRJ", "ID", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
 
-        var result = facade.isInDeletingState("PRJ", "componentId", "ID", action);
+        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
         assertThat(result).isFalse();
     }
 }

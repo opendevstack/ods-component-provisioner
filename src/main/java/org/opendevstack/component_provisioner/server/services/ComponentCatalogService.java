@@ -102,7 +102,6 @@ public class ComponentCatalogService {
                                                       String componentId,
                                                       String catalogItemId,
                                                       String componentUrl,
-                                                      String idToken,
                                                       String accessToken,
                                                       Map<String, List<String>> parameters) {
         log.debug("Notifying component catalog about starting provision for project {}, componentId: {}, catalogItemId: {}, componentUrl: {}",
@@ -123,7 +122,7 @@ public class ComponentCatalogService {
                 .parameters(obfuscatedParameters)
                 .build();
 
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisioningStatusUpdateRequest);
@@ -131,16 +130,16 @@ public class ComponentCatalogService {
         provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, "CREATING", provisioningStatusUpdateRequest);
     }
 
-    public List<ProjectComponentInfo> getProjectComponents(String projectKey, String idToken, String accessToken) {
+    public List<ProjectComponentInfo> getProjectComponents(String projectKey, String accessToken) {
         var auth = (HttpBearerAuth) componentCatalogApiClient.getAuthentication("bearerAuth");
-        auth.setBearerToken(idToken);
+        auth.setBearerToken(accessToken);
 
         return projectComponentsApi.getProjectComponents(projectKey, accessToken);
     }
 
     @Cacheable
-    public CatalogItem getCatalogItem(String idToken, String accessToken, String catalogItemId, String projectKey) {
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+    public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
 
         var catalogItem = catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey, accessToken);

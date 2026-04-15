@@ -67,7 +67,6 @@ class ProvisionerActionsApiValidatorTest {
     void validate_throwsProjectComponentAlreadyProvisionedException_whenComponentAlreadyExistsInCatalog() {
         var projectKey = "pkey";
         var componentId = "cid";
-        var idToken = "idToken";
         var accessToken = "accessToken";
 
         var params = List.of(
@@ -82,9 +81,9 @@ class ProvisionerActionsApiValidatorTest {
         var exists = new ProjectComponentInfo();
         exists.setComponentId(componentId);
 
-        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
                 .thenReturn(List.of(exists));
 
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
@@ -97,7 +96,6 @@ class ProvisionerActionsApiValidatorTest {
         var projectKey = "pkey";
         var componentId = "cid";
         var accessToken = "accessToken";
-        var idToken = "idToken";
 
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", projectKey),
@@ -106,10 +104,10 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component catalog empty → no conflict
-        when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
                 .thenReturn(List.of());
 
         // User groups
@@ -135,7 +133,6 @@ class ProvisionerActionsApiValidatorTest {
         var projectKey = "pkey";
         var componentId = "cid";
         var accessToken = "accessToken";
-        var idToken = "idToken";
 
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", projectKey),
@@ -144,10 +141,10 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component does NOT exist
-        when(componentCatalogService.getProjectComponents(projectKey, idToken, accessToken))
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
                 .thenReturn(List.of());
 
         // User groups
@@ -214,8 +211,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
-        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
         when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
@@ -237,8 +234,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
-        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenThrow(new RuntimeException("Service error"));
+        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
@@ -253,8 +250,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
-        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
@@ -270,8 +267,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("idToken");
-        when(componentCatalogService.getProjectComponents(any(), any(), any())).thenReturn(List.of());
+        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 

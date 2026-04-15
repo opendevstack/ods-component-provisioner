@@ -75,7 +75,7 @@ public class ProvisionerActionsApiFacade {
                         }
                 ));
 
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
     }
 
     private String getCatalogItemId(ProvisionAction provisionAction) {

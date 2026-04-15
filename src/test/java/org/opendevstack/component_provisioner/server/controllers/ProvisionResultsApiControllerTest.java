@@ -90,7 +90,7 @@ class ProvisionResultsApiControllerTest {
         var createIncidentAction = CreateIncidentActionMother.of();
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any(), any())).thenReturn(false);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(false);
         var actionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
         when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
@@ -130,7 +130,7 @@ class ProvisionResultsApiControllerTest {
         var createIncidentAction = CreateIncidentActionMother.of();
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any(), any())).thenReturn(true);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(true);
 
         // when
         var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);

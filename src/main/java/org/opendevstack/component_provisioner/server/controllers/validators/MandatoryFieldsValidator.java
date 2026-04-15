@@ -40,7 +40,7 @@ public class MandatoryFieldsValidator {
         var idToken = authenticationProvider.getAccessToken();
         var location = getLocation(provisionAction);
 
-        var catalogItem = componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey);
+        var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
         var provisionUserAction = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
                 .map(userActions -> userActions.stream()

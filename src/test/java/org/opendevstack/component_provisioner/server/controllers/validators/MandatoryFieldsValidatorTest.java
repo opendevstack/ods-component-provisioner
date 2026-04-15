@@ -220,7 +220,7 @@ class MandatoryFieldsValidatorTest {
         catalogItem.setUserActions(null);
 
         when(authenticationProvider.getAccessToken()).thenReturn("id-token");
-        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
         ProvisionAction action =
@@ -239,7 +239,7 @@ class MandatoryFieldsValidatorTest {
         catalogItem.getUserActions().getFirst().setId("DELETE");
 
         when(authenticationProvider.getAccessToken()).thenReturn("id-token");
-        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
         ProvisionAction action =
@@ -296,7 +296,7 @@ class MandatoryFieldsValidatorTest {
         catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
 
         when(authenticationProvider.getAccessToken()).thenReturn("id-token");
-        when(componentCatalogService.getCatalogItem(any(), any(), any(), any()))
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
         ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", null);
