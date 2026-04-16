@@ -62,6 +62,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
+        provisionResultsApiFacade.addSystemParametersToAction(projectKey, createIncidentAction);
 
         var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId, accessToken);
 
