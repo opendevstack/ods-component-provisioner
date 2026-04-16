@@ -82,6 +82,11 @@ public class ProvisionResultsApiFacade {
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
                                                String catalogItemId, String catalogItemSlug, String componentUrl, String idToken, String accessToken) {
         String resolvedCatalogItemId = catalogItemId;
+        resolvedCatalogItemId = resolveCatalogItemId(catalogItemId, catalogItemSlug, idToken, resolvedCatalogItemId);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, idToken, accessToken);
+    }
+
+    private String resolveCatalogItemId(String catalogItemId, String catalogItemSlug, String idToken, String resolvedCatalogItemId) {
         if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
             log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
             CatalogItem catalogItem;
@@ -93,7 +98,7 @@ public class ProvisionResultsApiFacade {
             resolvedCatalogItemId = catalogItem.getId();
             log.debug("Resolved catalogItemSlug {} to catalogItemId: {}", catalogItemSlug, resolvedCatalogItemId);
         }
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, idToken, accessToken);
+        return resolvedCatalogItemId;
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
