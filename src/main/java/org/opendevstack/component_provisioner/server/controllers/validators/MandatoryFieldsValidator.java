@@ -97,9 +97,10 @@ public class MandatoryFieldsValidator {
         return param.getOptions() == null || param.getOptions().isEmpty();
     }
 
-    private boolean isListType(ProvisionActionParameter param) {
-        return MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())
-                || MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
+    private boolean isListTypeAnswer(ProvisionActionParameter param) {
+        // MULTIPLELIST is the only type that stores multiple values as a list for the answers;
+        // SINGLELIST and STRING types store single string values for the answer.
+        return MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
     }
 
     private void applyDefaultValue(
@@ -140,7 +141,7 @@ public class MandatoryFieldsValidator {
             ProvisionActionParameter param,
             CatalogItemUserActionParameter catalogParam
     ) {
-        if (isListType(param)) {
+        if (isListTypeAnswer(param)) {
             validateListValues(param, catalogParam);
         } else {
             validateSingleValue(param, catalogParam);
