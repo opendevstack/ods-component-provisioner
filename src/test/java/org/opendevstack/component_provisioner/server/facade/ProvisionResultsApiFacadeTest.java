@@ -213,6 +213,7 @@ class ProvisionResultsApiFacadeTest {
         verify(provisionService).notifyProvisioningStatusUpdate("PRJ", ProjectComponentStatus.CREATED, "CID", "RESOLVED-ID", "URL", "TOKEN", "ACCESS");
     }
 
+    //The following test is an impossible scenario, just added for coverage
     @Test
     void givenEmptySlugAndNoId_whenNotifyProvisioningStatusUpdate_thenCallsProvisionServiceWithNullId() {
         // given
