@@ -102,6 +102,7 @@ class ProvisionResultsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), eq(componentId), isNull(), isNull(), anyString());
     }
@@ -137,6 +138,7 @@ class ProvisionResultsApiControllerTest {
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
     }
 
