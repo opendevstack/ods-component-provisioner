@@ -140,7 +140,7 @@ public class ProvisionerActionsApiFacade {
 
     private void addBearerTokenToActions(ProvisionAction provisionAction) {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
-                .name("bearer_token")
+                .name("access_token")
                 .value(authenticationProvider.getAccessToken())
                 .type(ParameterType.STRING.getValue())
                 .build()

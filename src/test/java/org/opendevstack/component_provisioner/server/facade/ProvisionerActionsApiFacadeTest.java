@@ -124,7 +124,7 @@ class ProvisionerActionsApiFacadeTest {
         var paramNames = action.getParameters().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
-        assertThat(paramNames).contains("cluster_location", "caller", "bearer_token");
+        assertThat(paramNames).contains("cluster_location", "caller", "access_token");
 
         var clusterLocation = action.getParameters().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
@@ -139,7 +139,7 @@ class ProvisionerActionsApiFacadeTest {
         assertThat(caller).isEqualTo("user@example.com");
 
         var bearerToken = action.getParameters().stream()
-                .filter(p -> "bearer_token".equals(p.getName()))
+                .filter(p -> "access_token".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(bearerToken).isEqualTo(accessToken);
