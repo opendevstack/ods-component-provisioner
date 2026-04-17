@@ -61,7 +61,7 @@ class ProvisionResultsApiControllerTest {
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
         verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
     }
 
@@ -107,7 +107,7 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), eq(componentId), isNull(), isNull(), isNull(), anyString());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), isNull());
     }
 
     @Test

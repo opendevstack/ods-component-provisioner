@@ -191,8 +191,14 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemId(catalogItemId);
+        request.setCatalogItemSlug(catalogItemSlug);
+        request.setComponentUrl(componentUrl);
+
         // when
-        facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken);
+        facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
@@ -204,11 +210,15 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED;
         var componentId = "CID";
-        var catalogItemId = (String) null;
         var catalogItemSlug = "SLUG";
         var resolvedCatalogItemId = "RESOLVED_ID";
         var componentUrl = "http://example.com";
         var accessToken = "token";
+
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemSlug(catalogItemSlug);
+        request.setComponentUrl(componentUrl);
 
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
@@ -216,7 +226,7 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
 
         // when
-        facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken);
+        facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
@@ -228,15 +238,19 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED;
         var componentId = "CID";
-        var catalogItemId = (String) null;
         var catalogItemSlug = "INVALID_SLUG";
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemSlug(catalogItemSlug);
+        request.setComponentUrl(componentUrl);
+
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken));
+        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken));
     }
 
     @Test
@@ -259,6 +273,28 @@ class ProvisionResultsApiFacadeTest {
 
         // when / then
         assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+    }
+
+    @Test
+    void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
+        // given
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setCatalogItemSlug("SLUG");
+
+        // when / then
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+    }
+
+    @Test
+    void givenAValidStatusAndRequest_whenValidateIsCalled_thenDoesNotThrow() {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED.name();
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setCatalogItemId("ID");
+
+        // when / then
+        assertDoesNotThrow(() -> facade.validate(projectKey, status, request));
     }
 
     @Test

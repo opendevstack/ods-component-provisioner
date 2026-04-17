@@ -112,46 +112,60 @@ public class EntitiesMapper {
     }
 
     private static void setupAwxEntitiesTypeMaps() {
-        MAPPER.createTypeMap(AwxWorkflowJobLaunch.class, WorkflowJobLaunch.class, strictConfig)
-                .setPropertyCondition(Conditions.isNotNull());
+        if (MAPPER.getTypeMap(AwxWorkflowJobLaunch.class, WorkflowJobLaunch.class) == null) {
+            MAPPER.createTypeMap(AwxWorkflowJobLaunch.class, WorkflowJobLaunch.class, strictConfig)
+                    .setPropertyCondition(Conditions.isNotNull());
+        }
 
-        MAPPER.createTypeMap(WorkflowJobLaunch.class, AwxWorkflowJob.class, strictConfig);
+        if (MAPPER.getTypeMap(WorkflowJobLaunch.class, AwxWorkflowJob.class) == null) {
+            MAPPER.createTypeMap(WorkflowJobLaunch.class, AwxWorkflowJob.class, strictConfig);
+        }
     }
 
     private static void setupProvisionActionsTypeMaps() {
-        MAPPER.createTypeMap(ProvisionAction.class, AwxWorkflowJobLaunch.class, strictConfig)
-                .addMappings(mapper -> {
-                    mapper
-                            .using(actionParamsToAwxWorkflowTemplateId)
-                            .map(ProvisionAction::getParameters, AwxWorkflowJobLaunch::setJobTemplateId);
-                    mapper
-                            .using(actionParamsToAwxWorkflowTemplateExtraVars)
-                            .map(ProvisionAction::getParameters, AwxWorkflowJobLaunch::setExtraVars);
-                });
+        if (MAPPER.getTypeMap(ProvisionAction.class, AwxWorkflowJobLaunch.class) == null) {
+            MAPPER.createTypeMap(ProvisionAction.class, AwxWorkflowJobLaunch.class, strictConfig)
+                    .addMappings(mapper -> {
+                        mapper
+                                .using(actionParamsToAwxWorkflowTemplateId)
+                                .map(ProvisionAction::getParameters, AwxWorkflowJobLaunch::setJobTemplateId);
+                        mapper
+                                .using(actionParamsToAwxWorkflowTemplateExtraVars)
+                                .map(ProvisionAction::getParameters, AwxWorkflowJobLaunch::setExtraVars);
+                    });
+        }
 
-        MAPPER.createTypeMap(AwxWorkflowJob.class, ProvisionActionResponse.class, strictConfig);
+        if (MAPPER.getTypeMap(AwxWorkflowJob.class, ProvisionActionResponse.class) == null) {
+            MAPPER.createTypeMap(AwxWorkflowJob.class, ProvisionActionResponse.class, strictConfig);
+        }
     }
 
     private static void setupCreateIncidentTypeMaps() {
-        MAPPER.createTypeMap(CreateIncidentAction.class, AwxWorkflowJobLaunch.class, strictConfig)
-                .addMappings(mapper -> {
-                    mapper
-                            .using(createIncidentParamsToAwxWorkflowTemplateId)
-                            .map(CreateIncidentAction::getParameters, AwxWorkflowJobLaunch::setJobTemplateId);
-                    mapper
-                            .using(createIncidentParamsToAwxWorkflowTemplateExtraVars)
-                            .map(CreateIncidentAction::getParameters, AwxWorkflowJobLaunch::setExtraVars);
-                });
+        if (MAPPER.getTypeMap(CreateIncidentAction.class, AwxWorkflowJobLaunch.class) == null) {
+            MAPPER.createTypeMap(CreateIncidentAction.class, AwxWorkflowJobLaunch.class, strictConfig)
+                    .addMappings(mapper -> {
+                        mapper
+                                .using(createIncidentParamsToAwxWorkflowTemplateId)
+                                .map(CreateIncidentAction::getParameters, AwxWorkflowJobLaunch::setJobTemplateId);
+                        mapper
+                                .using(createIncidentParamsToAwxWorkflowTemplateExtraVars)
+                                .map(CreateIncidentAction::getParameters, AwxWorkflowJobLaunch::setExtraVars);
+                    });
+        }
     }
 
     private static void setupComponentCatalogTypeMaps() {
-        MAPPER.createTypeMap(CatalogItemUserActionMessageDefinition.class, ProvisionerMessageDefinition.class, strictConfig);
+        if (MAPPER.getTypeMap(CatalogItemUserActionMessageDefinition.class, ProvisionerMessageDefinition.class) == null) {
+            MAPPER.createTypeMap(CatalogItemUserActionMessageDefinition.class, ProvisionerMessageDefinition.class, strictConfig);
+        }
 
-        MAPPER.createTypeMap(CatalogItemUserActionMessageType.class, ProvisionerMessageDefinitionType.class)
-                .setConverter(ctx -> Optional.ofNullable(ctx.getSource())
-                        .map(CatalogItemUserActionMessageType::getValue)
-                        .map(ProvisionerMessageDefinitionType::fromValue)
-                        .orElse(null));
+        if (MAPPER.getTypeMap(CatalogItemUserActionMessageType.class, ProvisionerMessageDefinitionType.class) == null) {
+            MAPPER.createTypeMap(CatalogItemUserActionMessageType.class, ProvisionerMessageDefinitionType.class)
+                    .setConverter(ctx -> Optional.ofNullable(ctx.getSource())
+                            .map(CatalogItemUserActionMessageType::getValue)
+                            .map(ProvisionerMessageDefinitionType::fromValue)
+                            .orElse(null));
+        }
     }
 
     public WorkflowJobLaunch asWorkflowJobLaunch(AwxWorkflowJobLaunch awxWorkflowJobLaunch) {

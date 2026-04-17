@@ -14,11 +14,7 @@ import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -81,12 +77,23 @@ public class ProvisionResultsApiFacade {
                 .build();
     }
 
-    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId,String catalogItemSlug, String componentUrl,
+    public void notifyProvisioningStatusUpdate(String projectKey,
+                                               ProjectComponentStatus status,
+                                               NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest,
                                                String accessToken) {
-        String resolvedCatalogItemId = catalogItemId;
-        resolvedCatalogItemId = resolveCatalogItemId(accessToken, catalogItemId, catalogItemSlug, resolvedCatalogItemId);
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
+        String resolvedCatalogItemId = notifyProvisioningStatusUpdateRequest.getCatalogItemId();
+
+        resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+                notifyProvisioningStatusUpdateRequest.getCatalogItemId(),
+                notifyProvisioningStatusUpdateRequest.getCatalogItemSlug(),
+                resolvedCatalogItemId);
+
+        provisionService.notifyProvisioningStatusUpdate(projectKey,
+                status,
+                notifyProvisioningStatusUpdateRequest.getComponentId(),
+                resolvedCatalogItemId,
+                notifyProvisioningStatusUpdateRequest.getComponentUrl(),
+                accessToken);
     }
 
     private String resolveCatalogItemId(String accessToken, String catalogItemId, String catalogItemSlug, String resolvedCatalogItemId) {

@@ -34,10 +34,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
                 ProjectComponentStatus.valueOf(status),
-                notifyProvisioningCompletedRequest.getComponentId(),
-                notifyProvisioningCompletedRequest.getCatalogItemId(),
-                notifyProvisioningCompletedRequest.getCatalogItemSlug(),
-                notifyProvisioningCompletedRequest.getComponentUrl(),
+                notifyProvisioningCompletedRequest,
                 accessToken
         );
 
@@ -58,7 +55,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     @Override
     public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
-
+        NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest = new NotifyProvisioningStatusUpdateRequest();
+        notifyProvisioningStatusUpdateRequest.setComponentId(componentId);
         var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
@@ -75,11 +73,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
-                    componentId,
-                    null,
-                    null,
-                    null,
-                    accessToken);
+                    notifyProvisioningStatusUpdateRequest,
+                    null);
 
             log.debug("Creating incident via AWX");
 
