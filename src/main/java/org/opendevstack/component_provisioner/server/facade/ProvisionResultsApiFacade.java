@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
@@ -16,6 +17,7 @@ import org.opendevstack.component_provisioner.server.model.NotifyProvisioningSta
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,13 +30,12 @@ import java.util.Arrays;
 @Slf4j
 public class ProvisionResultsApiFacade {
 
-    public static final String ACCESS_TOKEN_PARAMETER_NAME = "access_token";
-
     private final AwxService awxService;
     private final ComponentCatalogService componentCatalogService;
     private final EntitiesMapper entitiesMapper;
     private final ProvisionService provisionService;
     private final AuthenticationProvider authenticationProvider;
+    private final ProjectsInfoService projectsInfoService;
 
 
     @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
@@ -44,18 +45,19 @@ public class ProvisionResultsApiFacade {
                                      ComponentCatalogService componentCatalogService,
                                      EntitiesMapper entitiesMapper,
                                      ProvisionService provisionService,
-                                     AuthenticationProvider authenticationProvider) {
+                                     AuthenticationProvider authenticationProvider,
+                                     ProjectsInfoService projectsInfoService) {
         this.awxService = awxService;
         this.componentCatalogService = componentCatalogService;
         this.entitiesMapper = entitiesMapper;
         this.provisionService = provisionService;
         this.authenticationProvider = authenticationProvider;
+        this.projectsInfoService = projectsInfoService;
     }
 
-    public boolean isInDeletingState(String projectKey, String componentId, String idToken, CreateIncidentAction createIncidentAction) {
-        var accessToken = getParameterString(createIncidentAction, ACCESS_TOKEN_PARAMETER_NAME);
+    public boolean isInDeletingState(String projectKey, String componentId, String accessToken) {
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
 
         return projectComponents.stream()
                 .filter(component -> component.getComponentId() != null)
@@ -80,7 +82,7 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String catalogItemSlug, String componentUrl, String idToken, String accessToken) {
+                                               String catalogItemId, String componentUrl, String accessToken) {
         String resolvedCatalogItemId = catalogItemId;
         resolvedCatalogItemId = resolveCatalogItemId(catalogItemId, catalogItemSlug, idToken, resolvedCatalogItemId);
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, idToken, accessToken);
@@ -105,8 +107,8 @@ public class ProvisionResultsApiFacade {
         provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
     }
 
-    public String getIdToken() {
-        return authenticationProvider.getIdToken();
+    public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
+        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
     public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
@@ -130,30 +132,49 @@ public class ProvisionResultsApiFacade {
     }
 
     public void validate(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
-        var caller = getParameterString(createIncidentAction, "caller");
-        var clusterLocation = getParameterString(createIncidentAction, "cluster_location");
         var isDeployed = getParameterString(createIncidentAction, "is_deployed");
         var changeNumber = getParameterString(createIncidentAction, "change_number");
         var reason = getParameterString(createIncidentAction, "reason");
 
-        var accessToken = getParameterString(createIncidentAction, ACCESS_TOKEN_PARAMETER_NAME);
-
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
-        var extraParamsAreEmtpy = StringUtils.isBlank(caller) || StringUtils.isBlank(clusterLocation) || StringUtils.isBlank(isDeployed)
+        var extraParamsAreEmtpy = StringUtils.isBlank(isDeployed)
                 || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
-        var tokenIsEmpty = StringUtils.isBlank(accessToken);
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
         }
 
         if (extraParamsAreEmtpy) {
-            throw new InvalidRestEntityException("caller, cluster_location, is_deployed, change_number and reason are required.");
+            throw new InvalidRestEntityException("is_deployed, change_number and reason are required.");
         }
+    }
 
-        if (tokenIsEmpty) {
-            throw new InvalidRestEntityException("access_token is required.");
+    public void addSystemParametersToAction(String projectKey, CreateIncidentAction action) {
+        addClusterLocationParameter(projectKey, action);
+        addCallerParameter(action);
+    }
+
+    private void addClusterLocationParameter(String projectKey, CreateIncidentAction action) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var clusters = projectsInfoService.getProjectClusters(accessToken, projectKey).getClusters();
+        if (clusters.isEmpty()) {
+            throw new ProjectConfigurationException("Cannot retrieve the current project location for project: " + projectKey);
         }
+        var clusterLocation = clusters.getFirst();
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("cluster_location")
+                .type(ParameterType.STRING.getValue())
+                .value(clusterLocation)
+                .build());
+    }
+
+    private void addCallerParameter(CreateIncidentAction action) {
+        var caller = authenticationProvider.getUserPrincipalName();
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("caller")
+                .type(ParameterType.STRING.getValue())
+                .value(caller)
+                .build());
     }
 
     public String getParameterString(CreateIncidentAction createIncidentAction, String parameterName) {

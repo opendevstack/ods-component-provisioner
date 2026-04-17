@@ -78,12 +78,14 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void notifyComponentCatalogProvisionStarts_sendsParametersAsListOfStrings() {
         // given
+        var accessToken = "BEARER-TOKEN";
+
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("component_id", "CID"));
         params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT"));
         params.add(ProvisionActionParameterMother.of("component_url", "http://comp"));
-        params.add(ProvisionActionParameterMother.of("access_token", "TOKEN"));
+        params.add(ProvisionActionParameterMother.of("access_token", accessToken));
         params.add(ProvisionActionParameterMother.of("list_param", List.of("a", "b")));
         params.add(ProvisionActionParameterMother.of("null_param", null));
         var action = ProvisionActionMother.of(params);
@@ -93,25 +95,27 @@ class ProvisionerActionsApiFacadeTest {
 
         // then
         ArgumentCaptor<Map<String, List<String>>> captor = ArgumentCaptor.forClass(Map.class);
-        verify(componentCatalogService).notifyComponentCatalogProvisionStarts(eq("PRJ"), eq("CID"), eq("CAT"), eq("http://comp"), eq(""), eq("TOKEN"), captor.capture());
+        verify(componentCatalogService).notifyComponentCatalogProvisionStarts(eq("PRJ"), eq("CID"), eq("CAT"), eq("http://comp"), eq(accessToken), captor.capture());
         var map = captor.getValue();
         assertThat(map.get("list_param")).containsExactly("a", "b");
         assertThat(map.get("null_param")).containsExactly("");
     }
 
     @Test
-    void addSystemParametersToAction_addsClusterLocationCallerAndIdToken() {
+    void addSystemParametersToAction_addsClusterLocationCallerAndAccessToken() {
         // given
+        var accessToken = "BEARER-TOKEN";
+
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
-        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        params.add(ProvisionActionParameterMother.of("access_token", accessToken));
         var action = ProvisionActionMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-eu-west"));
-        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
-        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(projectsInfoService.getProjectClusters(accessToken, "PRJ")).thenReturn(projectInfo);
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
         facade.addSystemParametersToAction(action);
@@ -120,7 +124,7 @@ class ProvisionerActionsApiFacadeTest {
         var paramNames = action.getParameters().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
-        assertThat(paramNames).contains("cluster_location", "caller", "id_token");
+        assertThat(paramNames).contains("cluster_location", "caller", "access_token");
 
         var clusterLocation = action.getParameters().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
@@ -134,25 +138,27 @@ class ProvisionerActionsApiFacadeTest {
                 .findFirst().orElseThrow();
         assertThat(caller).isEqualTo("user@example.com");
 
-        var idToken = action.getParameters().stream()
-                .filter(p -> "id_token".equals(p.getName()))
+        var bearerToken = action.getParameters().stream()
+                .filter(p -> "access_token".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
-        assertThat(idToken).isEqualTo("id-token-value");
+        assertThat(bearerToken).isEqualTo(accessToken);
     }
 
     @Test
     void addSystemParametersToAction_throwsIllegalStateException_whenClustersIsEmpty() {
         // given
+        var bearerToken = "BEARER";
+
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
-        params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
+        params.add(ProvisionActionParameterMother.of("access_token", bearerToken));
         var action = ProvisionActionMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of());
-        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
-        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(projectsInfoService.getProjectClusters(bearerToken, "PRJ")).thenReturn(projectInfo);
 
         // when / then
         assertThatThrownBy(() -> facade.addSystemParametersToAction(action))
@@ -163,6 +169,7 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void addSystemParametersToAction_usesFirstCluster_whenMultipleClustersAreReturned() {
         // given
+        var bearerToken = "bearer-token";
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
@@ -170,9 +177,9 @@ class ProvisionerActionsApiFacadeTest {
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
-        when(authenticationProvider.getIdToken()).thenReturn("id-token-value");
-        when(projectsInfoService.getProjectClusters("id-token-value", "ACCESS", "PRJ")).thenReturn(projectInfo);
+        when(projectsInfoService.getProjectClusters(bearerToken, "PRJ")).thenReturn(projectInfo);
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
 
         // when
         facade.addSystemParametersToAction(action);

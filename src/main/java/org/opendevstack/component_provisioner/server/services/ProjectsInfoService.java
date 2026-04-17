@@ -23,18 +23,18 @@ public class ProjectsInfoService {
     private ApiClientsBuilder apiClientsBuilder;
 
     @Cacheable
-    public List<String> getProjectGroups(String idToken, String accessToken) {
-        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
+    public List<String> getProjectGroups(String accessToken) {
+        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var azureGroupsApi = apiClientsBuilder.azureGroupsApi(apiClient);
 
-        return azureGroupsApi.getAzureGroups(accessToken);
+        return azureGroupsApi.getAzureGroups();
     }
 
-    public ProjectInfo getProjectClusters(String idToken, String accessToken, String projectKey) {
-        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(idToken, projectsInfoServiceProps.getBaseRestUrl().toString());
+    public ProjectInfo getProjectClusters(String accessToken, String projectKey) {
+        var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var projectsApi = apiClientsBuilder.projectsApi(apiClient);
 
-        return projectsApi.getProjectClusters(accessToken, projectKey);
+        return projectsApi.getProjectClusters(projectKey);
     }
 
 }

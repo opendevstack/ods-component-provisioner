@@ -41,15 +41,14 @@ class ProvisionerServiceTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
-        var idToken = "idToken";
         var accessToken = "accessToken";
         var baseUrl = "http://localhost";
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl,idToken, accessToken);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
 
         // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
@@ -65,18 +64,18 @@ class ProvisionerServiceTest {
         // given
         var projectKey = "projectKey";
         var componentId = "componentId";
-        var idToken = "idToken";
         var baseUrl = "http://localhost";
+        var accessToken = "accessToken";
 
         var provisionDeleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
                 .build();
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
 
         // then
         verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, provisionDeleteRequest);

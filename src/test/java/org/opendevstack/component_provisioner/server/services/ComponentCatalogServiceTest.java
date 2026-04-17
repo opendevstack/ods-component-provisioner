@@ -180,7 +180,6 @@ class ComponentCatalogServiceTest {
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
         String componentUrl = "component-url";
-        String idToken = "id-token";
         String accessToken = "secret";
         Map<String, List<String>> parameters = Map.of(
                 "access_token", List.of("secret"),
@@ -189,7 +188,7 @@ class ComponentCatalogServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
-        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -197,7 +196,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         //when
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
 
         //then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(
@@ -232,17 +231,16 @@ class ComponentCatalogServiceTest {
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
-        String idToken = "id-token";
         String accessToken = "secret";
 
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(idToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
 
         //when
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, idToken, accessToken, null);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, accessToken, null);
 
         //then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq("CREATING"), requestCaptor.capture());
@@ -321,7 +319,6 @@ class ComponentCatalogServiceTest {
     @Test
     void givenValidInput_whenGetCatalogItem_thenCatalogItemIsReturned() throws MalformedURLException {
         // given
-        String idToken = "id-token";
         String accessToken = "access-token";
         String catalogItemId = "CAT-123";
         String projectKey = "PRJ-1";
@@ -331,7 +328,7 @@ class ComponentCatalogServiceTest {
         CatalogItem expectedCatalogItem = new CatalogItem();
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.componentCatalogApiClient(idToken, baseUrl.toString()))
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
                 .thenReturn(componentCatalogApiClient);
         when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
                 .thenReturn(catalogItemsApi);
@@ -341,13 +338,13 @@ class ComponentCatalogServiceTest {
 
         // when
         CatalogItem result = componentCatalogService.getCatalogItem(
-                idToken, accessToken, catalogItemId, projectKey);
+                accessToken, catalogItemId, projectKey);
 
         // then
         assertThat(result).isSameAs(expectedCatalogItem);
 
         verify(apiClientsBuilder)
-                .componentCatalogApiClient(idToken, baseUrl.toString());
+                .componentCatalogApiClient(accessToken, baseUrl.toString());
         verify(apiClientsBuilder)
                 .catalogItemsApi(componentCatalogApiClient);
         verify(catalogItemsApi)
@@ -365,7 +362,6 @@ class ComponentCatalogServiceTest {
     void givenValidInput_whenGetProjectComponents_thenProjectComponentsAreReturned() {
         // given
         String projectKey = "PRJ-1";
-        String idToken = "id-token";
         String accessToken = "access-token";
 
         HttpBearerAuth auth = mock(HttpBearerAuth.class);
@@ -375,11 +371,11 @@ class ComponentCatalogServiceTest {
         when(projectComponentsApi.getProjectComponents(projectKey, accessToken)).thenReturn(expectedComponents);
 
         // when
-        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
+        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, accessToken);
 
         // then
         assertThat(result).isSameAs(expectedComponents);
-        verify(auth).setBearerToken(idToken);
+        verify(auth).setBearerToken(accessToken);
         verify(projectComponentsApi).getProjectComponents(projectKey, accessToken);
     }
 

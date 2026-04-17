@@ -24,37 +24,37 @@ class ApiClientsBuilderTest {
     private ApiClientsBuilder builder;
 
     @Test
-    void givenIdTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
+    void givenAccessTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
         // given
-        String idToken = "test-token";
+        String accessToken = "test-token";
         String baseUrl = "http://example.com";
 
         // when
-        ApiClient client = builder.projectsInfoServiceApiClient(idToken, baseUrl);
+        ApiClient client = builder.projectsInfoServiceApiClient(accessToken, baseUrl);
 
         // then
         assertThat(client).isNotNull();
         assertThat(client.getBasePath()).isEqualTo(baseUrl);
 
         var auth = (org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.auth.HttpBearerAuth) client.getAuthentication("bearerAuth");
-        assertThat(auth.getBearerToken()).isEqualTo(idToken);
+        assertThat(auth.getBearerToken()).isEqualTo(accessToken);
     }
 
     @Test
-    void givenIdTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
+    void givenBearerTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
         // given
-        String idToken = "test-token";
+        String accessToken = "test-token";
         String baseUrl = "http://component-catalog";
 
         // when
-        var client = builder.componentCatalogApiClient(idToken, baseUrl);
+        var client = builder.componentCatalogApiClient(accessToken, baseUrl);
 
         // then
         assertThat(client).isNotNull();
         assertThat(client.getBasePath()).isEqualTo(baseUrl);
 
         var auth = (org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth) client.getAuthentication("bearerAuth");
-        assertThat(auth.getBearerToken()).isEqualTo(idToken);
+        assertThat(auth.getBearerToken()).isEqualTo(accessToken);
     }
 
     @Test
@@ -99,11 +99,11 @@ class ApiClientsBuilderTest {
     @Test
     void givenIdTokenAndBaseUrl_whenProvisionerActionsApi_thenReturnsProvisionerActionsApiInstance() {
         // given
-        String idToken = "test-token";
+        String accessToken = "test-token";
         String baseUrl = "http://component-catalog";
 
         // when
-        ProvisionerActionsApi api = builder.provisionerActionsApi(idToken, baseUrl);
+        ProvisionerActionsApi api = builder.provisionerActionsApi(accessToken, baseUrl);
 
         // then
         assertThat(api).isNotNull();
