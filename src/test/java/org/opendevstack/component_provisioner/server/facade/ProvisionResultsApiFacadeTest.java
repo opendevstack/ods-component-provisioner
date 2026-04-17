@@ -70,6 +70,7 @@ class ProvisionResultsApiFacadeTest {
 
     @Test
     void givenAProjectKeyAndAComponentId_whenRequestProvisionToAwxIsCalled_thenMapsResponseCorrectly() {
+        // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
         var job = new AwxWorkflowJob();
@@ -79,67 +80,100 @@ class ProvisionResultsApiFacadeTest {
         when(awxService.triggerWorkflowJob("CREATE_INCIDENT", launch)).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
         when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
 
+        // when
         var result = facade.requestProvisionToAwx("PRJ", "CID", action);
 
+        // then
         assertEquals(HttpStatus.OK, result.httpStatusCode());
         assertEquals(response, result.awxResponseBody());
     }
 
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsTrueWhenMatchingComponentFound() {
+        // given
         var action = CreateIncidentActionMother.of();
         var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
         when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
 
+        // when
         var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+
+        // then
         assertThat(result).isTrue();
     }
 
     @Test
     void givenAnInvalidStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "invalid"));
+        // given
+        var projectKey = "PRJ";
+        var status = "invalid";
+
+        // when / then
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, status));
         assertThat(ex.getMessage()).contains("Status is not valid");
     }
 
     @Test
     void givenAMissingProjectKeyOrStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CREATED"));
+        // given
+        var projectKey = (String) null;
+        var status = "CREATED";
+
+        // when / then
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, status));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null));
     }
 
     @Test
     void givenAMissingMainParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
         var action = CreateIncidentActionMother.of();
+
+        // when / then
         assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", action));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, action));
     }
 
     @Test
     void givenAMissingParameter_whenGetParameterStringIsCalled_thenReturnsEmptyString() {
+        // given
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
-        assertThat(facade.getParameterString(action, "missing")).isEmpty();
+
+        // when
+        var result = facade.getParameterString(action, "missing");
+
+        // then
+        assertThat(result).isEmpty();
     }
 
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
+        // given
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
         when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(Collections.emptyList());
 
+        // when
         var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+
+        // then
         assertThat(result).isFalse();
     }
 
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotDeleting() {
+        // given
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
         pc.setComponentId("componentId");
         when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
 
+        // when
         var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+
+        // then
         assertThat(result).isFalse();
     }
 

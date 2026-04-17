@@ -81,12 +81,9 @@ public class ProvisionResultsApiFacade {
                                                ProjectComponentStatus status,
                                                NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest,
                                                String accessToken) {
-        String resolvedCatalogItemId = notifyProvisioningStatusUpdateRequest.getCatalogItemId();
-
-        resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+        String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
                 notifyProvisioningStatusUpdateRequest.getCatalogItemId(),
-                notifyProvisioningStatusUpdateRequest.getCatalogItemSlug(),
-                resolvedCatalogItemId);
+                notifyProvisioningStatusUpdateRequest.getCatalogItemSlug());
 
         provisionService.notifyProvisioningStatusUpdate(projectKey,
                 status,
@@ -96,7 +93,10 @@ public class ProvisionResultsApiFacade {
                 accessToken);
     }
 
-    private String resolveCatalogItemId(String accessToken, String catalogItemId, String catalogItemSlug, String resolvedCatalogItemId) {
+    private String resolveCatalogItemId(String accessToken,
+                                        String catalogItemId,
+                                        String catalogItemSlug) {
+        String resolvedCatalogItemId = catalogItemId;
         if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
             log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
             CatalogItem catalogItem;
