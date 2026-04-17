@@ -38,20 +38,19 @@ public class ProvisionerActionsApiValidator {
         log.debug("Start validation for provisionActions: {}", provisionAction);
 
         var projectKey = getProjectKey(provisionAction);
-        var accessToken = getAccessToken(provisionAction);
         var componentId = getComponentId(provisionAction);
-        var idToken = authenticationProvider.getIdToken();
+        var accessToken = authenticationProvider.getAccessToken();
 
         validateInputParams(projectKey, accessToken, componentId);
 
-        validateComponentIsNotProvisioned(projectKey, idToken, accessToken, componentId);
+        validateComponentIsNotProvisioned(projectKey, accessToken, componentId);
 
-        validateUserHasPermissionsToProvision(projectKey, idToken, accessToken);
+        validateUserHasPermissionsToProvision(projectKey, accessToken);
 
         mandatoryFieldsValidator.validate(provisionAction);
     }
 
-    private void validateUserHasPermissionsToProvision(String projectKey, String idToken, String accessToken) {
+    private void validateUserHasPermissionsToProvision(String projectKey, String accessToken) {
         log.debug("Validating user has permissions to provision. projectKey: {}", projectKey);
 
         CatalogItemUserActionGroupsRestriction catalogItemUserActionGroupsRestriction = CatalogItemUserActionGroupsRestriction.builder()
@@ -63,7 +62,7 @@ public class ProvisionerActionsApiValidator {
                 .build();
         EvaluationRestrictions restrictions = new EvaluationRestrictions(projectKey, userActionEntityRestrictions);
 
-        List<String> userGroups = projectsInfoService.getProjectGroups(idToken, accessToken);
+        List<String> userGroups = projectsInfoService.getProjectGroups(accessToken);
         RestrictionsParams params = RestrictionsParams.builder()
                 .projectKey(projectKey)
                 .userGroups(userGroups)
@@ -82,10 +81,10 @@ public class ProvisionerActionsApiValidator {
         }
     }
 
-    private void validateComponentIsNotProvisioned(String projectKey, String idToken, String accessToken, String componentId) {
+    private void validateComponentIsNotProvisioned(String projectKey, String accessToken, String componentId) {
         log.debug("Validating component is not provisioned. projectKey: {}, componentId: {}", projectKey, componentId);
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, idToken, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
 
         var componentIdAlreadyProvisioned = projectComponents.stream()
                 .filter(projectComponent -> projectComponent.getComponentId() != null)
@@ -110,10 +109,6 @@ public class ProvisionerActionsApiValidator {
 
     protected static String getProjectKey(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "project_key");
-    }
-
-    protected static String getAccessToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "access_token");
     }
 
     protected static String getCatalogItemId(ProvisionAction provisionAction) {

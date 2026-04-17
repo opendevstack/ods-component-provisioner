@@ -13,6 +13,7 @@ import org.opendevstack.component_provisioner.server.model.CreateIncidentActionM
 import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +26,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProvisionResultsApiControllerTest {
     String exceptionMsg = "Status is not valid. It can only be CREATING, CREATED, FAILED, DELETING, UNKNOWN";
+
+    @Mock
+    private AuthenticationProvider authenticationProvider;
 
     @Mock
     private ProvisionResultsApiFacade provisionResultsApiFacade;
@@ -40,23 +44,21 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
-        var idToken = "idToken";
         var accessToken = "accessToken";
 
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setComponentUrl(componentUrl);
-        request.setAccessToken(accessToken);
 
-        when(provisionResultsApiFacade.getIdToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, idToken, accessToken);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
         verify(provisionResultsApiFacade).validate(projectKey, status.name());
     }
 
@@ -65,18 +67,18 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var idToken = "idToken";
+        var accessToken = "accessToken";
 
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder().componentId(componentId).build();
 
-        when(provisionResultsApiFacade.getIdToken()).thenReturn(idToken);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
         var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId, idToken);
+        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
     @Test
@@ -84,10 +86,11 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
+        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(provisionResultsApiFacade.getIdToken()).thenReturn("id-token");
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any(), any())).thenReturn(false);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(false);
         var actionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
         when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
@@ -99,8 +102,9 @@ class ProvisionResultsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), eq(componentId), isNull(), isNull(), anyString(), isNull());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), eq(componentId), isNull(), isNull(), anyString());
     }
 
     @Test
@@ -123,16 +127,18 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
+        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(provisionResultsApiFacade.getIdToken()).thenReturn("id-token");
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any(), any())).thenReturn(true);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(true);
 
         // when
         var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
     }
 

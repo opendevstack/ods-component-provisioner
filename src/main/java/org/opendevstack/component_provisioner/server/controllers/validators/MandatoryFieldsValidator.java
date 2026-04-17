@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getAccessToken;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getCatalogItemId;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getParameterString;
 import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getProjectKey;
@@ -35,12 +34,11 @@ public class MandatoryFieldsValidator {
 
     public void validate(ProvisionAction provisionAction) {
         var projectKey = getProjectKey(provisionAction);
-        var accessToken = getAccessToken(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
-        var idToken = authenticationProvider.getIdToken();
+        var accessToken = authenticationProvider.getAccessToken();
         var location = getLocation(provisionAction);
 
-        var catalogItem = componentCatalogService.getCatalogItem(idToken, accessToken, catalogItemId, projectKey);
+        var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
         var provisionUserAction = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
                 .map(userActions -> userActions.stream()
@@ -99,9 +97,10 @@ public class MandatoryFieldsValidator {
         return param.getOptions() == null || param.getOptions().isEmpty();
     }
 
-    private boolean isListType(ProvisionActionParameter param) {
-        return MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())
-                || MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
+    private boolean isListTypeAnswer(ProvisionActionParameter param) {
+        // MULTIPLELIST is the only type that stores multiple values as a list for the answers;
+        // SINGLELIST and STRING types store single string values for the answer.
+        return MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
     }
 
     private void applyDefaultValue(
@@ -142,7 +141,7 @@ public class MandatoryFieldsValidator {
             ProvisionActionParameter param,
             CatalogItemUserActionParameter catalogParam
     ) {
-        if (isListType(param)) {
+        if (isListTypeAnswer(param)) {
             validateListValues(param, catalogParam);
         } else {
             validateSingleValue(param, catalogParam);

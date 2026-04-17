@@ -9,18 +9,18 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class AuthenticationProvider {
-    public String getIdToken() {
+    public String getAccessToken() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         log.debug("Authenticated user '{}'", auth.getName());
 
         var principal = (UserPrincipal) auth.getPrincipal();
 
-        var idToken = principal.getAadIssuedBearerToken();
+        var accessToken = principal.getAadIssuedBearerToken();
 
-        log.debug("Extracted idToken: {} from request.", idToken);
+        log.debug("Extracted accessToken: {} from request.", accessToken);
 
-        return idToken;
+        return accessToken;
     }
 
     public String getUserPrincipalName() {

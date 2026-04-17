@@ -58,7 +58,6 @@ public class ProvisionerActionsApiFacade {
         var catalogItemId = getCatalogItemId(provisionAction);
         var componentUrl = getComponentUrl(provisionAction);
         var accessToken = getAccessToken(provisionAction);
-        var idToken = getIdToken(provisionAction);
 
         var parameters = provisionAction.getParameters().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -75,7 +74,7 @@ public class ProvisionerActionsApiFacade {
                         }
                 ));
 
-        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, idToken, accessToken, parameters);
+        componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
     }
 
     private String getCatalogItemId(ProvisionAction provisionAction) {
@@ -94,10 +93,6 @@ public class ProvisionerActionsApiFacade {
         return getParameterString(provisionAction, "access_token");
     }
 
-    private String getIdToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "id_token");
-    }
-
     private String getParameterString(ProvisionAction provisionAction, String parameterName) {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))
@@ -110,7 +105,7 @@ public class ProvisionerActionsApiFacade {
     public void addSystemParametersToAction(ProvisionAction provisionAction) {
         addClusterLocationToAction(provisionAction);
         addCallerToAction(provisionAction);
-        addIdTokenToActions(provisionAction);
+        addBearerTokenToActions(provisionAction);
     }
 
     private void addCallerToAction(ProvisionAction provisionAction) {
@@ -126,15 +121,14 @@ public class ProvisionerActionsApiFacade {
 
     private void addClusterLocationToAction(ProvisionAction provisionAction) {
         var projectKey = getParameterString(provisionAction, "project_key");
-        var accessToken = getParameterString(provisionAction, "access_token");
-        var idToken = authenticationProvider.getIdToken();
+        var accessToken = authenticationProvider.getAccessToken();
 
         log.debug("Fetching cluster location for project: {}", projectKey);
-        var clusters = projectsInfoService.getProjectClusters(idToken, accessToken, projectKey).getClusters();
+        var clusters = projectsInfoService.getProjectClusters(accessToken, projectKey).getClusters();
         if (clusters.isEmpty()) {
             throw new ProjectConfigurationException("Cannot retrieve the current project location for project: " + projectKey);
         }
-        var clusterLocation = clusters.get(0);
+        var clusterLocation = clusters.getFirst();
 
         log.debug("Adding cluster_location parameter with value: {}", clusterLocation);
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
@@ -144,10 +138,10 @@ public class ProvisionerActionsApiFacade {
                 .build());
     }
 
-    private void addIdTokenToActions(ProvisionAction provisionAction) {
+    private void addBearerTokenToActions(ProvisionAction provisionAction) {
         provisionAction.addParametersItem(ProvisionActionParameter.builder()
-                .name("id_token")
-                .value(authenticationProvider.getIdToken())
+                .name("access_token")
+                .value(authenticationProvider.getAccessToken())
                 .type(ParameterType.STRING.getValue())
                 .build()
         );
