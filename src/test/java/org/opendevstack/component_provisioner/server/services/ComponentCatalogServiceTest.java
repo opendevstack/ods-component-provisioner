@@ -382,14 +382,14 @@ class ComponentCatalogServiceTest {
     @Test
     void givenValidInput_whenGetCatalogItemBySlug_thenCatalogItemIsReturned() throws MalformedURLException {
         // given
-        String idToken = "id-token";
-        String slug = "my-slug";
+        String accessToken = "access-token";
+        String slug = "myproject_repo-name";
         URL baseUrl = URI.create("http://component-catalog").toURL();
         CatalogItem expectedCatalogItem = new CatalogItem();
         expectedCatalogItem.setId("CAT-123");
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.componentCatalogApiClient(idToken, baseUrl.toString()))
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
                 .thenReturn(componentCatalogApiClient);
         when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
                 .thenReturn(catalogItemsApi);
@@ -397,7 +397,7 @@ class ComponentCatalogServiceTest {
                 .thenReturn(expectedCatalogItem);
 
         // when
-        CatalogItem result = componentCatalogService.getCatalogItemBySlug(idToken, slug);
+        CatalogItem result = componentCatalogService.getCatalogItemBySlug(accessToken, slug);
 
         // then
         assertThat(result).isSameAs(expectedCatalogItem);

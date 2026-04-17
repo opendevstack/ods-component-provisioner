@@ -11,6 +11,10 @@ import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.mo
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
+import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
@@ -65,7 +69,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void requestProvisionToAwx_mapsResponseCorrectly() {
+    void givenAProjectKeyAndAComponentId_whenRequestProvisionToAwxIsCalled_thenMapsResponseCorrectly() {
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
         var job = new AwxWorkflowJob();
@@ -82,7 +86,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void isInDeletingState_returnsTrueWhenMatchingComponentFound() {
+    void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsTrueWhenMatchingComponentFound() {
         var action = CreateIncidentActionMother.of();
         var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
@@ -93,32 +97,32 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void validate_status_throwsOnInvalid() {
+    void givenAnInvalidStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "invalid"));
         assertThat(ex.getMessage()).contains("Status is not valid");
     }
 
     @Test
-    void validate_throwsOnMissingProjectKeyOrStatus() {
+    void givenAMissingProjectKeyOrStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CREATED"));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null));
     }
 
     @Test
-    void validate_createIncident_throwsOnMissingMainParams() {
+    void givenAMissingMainParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         var action = CreateIncidentActionMother.of();
         assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", action));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, action));
     }
 
     @Test
-    void getParameterString_returnsEmptyOnMissing() {
+    void givenAMissingParameter_whenGetParameterStringIsCalled_thenReturnsEmptyString() {
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
         assertThat(facade.getParameterString(action, "missing")).isEmpty();
     }
 
     @Test
-    void isInDeletingState_returnsFalseWhenComponentNotFound() {
+    void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
         when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(Collections.emptyList());
@@ -128,7 +132,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void isInDeletingState_returnsFalseWhenComponentNotDeleting() {
+    void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotDeleting() {
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
@@ -140,7 +144,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void validate_status_doesNotThrowWhenValid() {
+    void givenAValidStatus_whenValidateIsCalled_thenDoesNotThrow() {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
@@ -150,7 +154,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void validate_createIncident_throwsOnMissingExtraParams() {
+    void givenAMissingExtraParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
@@ -160,7 +164,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void requestProvisionToAwx_returnsNullBodyWhenAwxResponseIsEmpty() {
+    void givenAnEmptyAwxResponse_whenRequestProvisionToAwxIsCalled_thenReturnsNullBody() {
         // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
@@ -177,24 +181,88 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void notifyProvisioningStatusUpdate_delegatesToProvisionService() {
+    void givenAProvisionService_whenNotifyProvisioningStatusUpdateIsCalled_thenDelegatesToProvisionService() {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED;
         var componentId = "CID";
         var catalogItemId = "CAT";
+        var catalogItemSlug = "SLUG";
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
         // when
-        facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+        facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
     }
 
     @Test
-    void deleteProvisioningStatus_delegatesToProvisionService() {
+    void givenACatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenResolvesSlugToId() {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "CID";
+        var catalogItemId = (String) null;
+        var catalogItemSlug = "SLUG";
+        var resolvedCatalogItemId = "RESOLVED_ID";
+        var componentUrl = "http://example.com";
+        var accessToken = "token";
+
+        var catalogItem = new CatalogItem();
+        catalogItem.setId(resolvedCatalogItemId);
+
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+
+        // when
+        facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken);
+
+        // then
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
+    }
+
+    @Test
+    void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsSlugNotFoundException() {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "CID";
+        var catalogItemId = (String) null;
+        var catalogItemSlug = "INVALID_SLUG";
+        var componentUrl = "http://example.com";
+        var accessToken = "token";
+
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
+
+        // when / then
+        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, catalogItemSlug, componentUrl, accessToken));
+    }
+
+    @Test
+    void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setCatalogItemId("ID");
+        request.setCatalogItemSlug("SLUG");
+
+        // when / then
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", request));
+        assertThat(ex.getMessage()).contains("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
+    }
+
+    @Test
+    void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
+        // given
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setCatalogItemId("ID");
+
+        // when / then
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenDeleteProvisioningStatusIsCalled_thenDelegatesToProvisionService() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -208,7 +276,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_addsClusterAndCallerToAction() {
+    void givenAProjectKeyAndAnAction_whenAddSystemParametersToActionIsCalled_thenAddsClusterAndCallerToAction() {
         // given
         var projectKey = "PRJ";
         var accessToken = "token123";
@@ -232,7 +300,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_throwsWhenClustersEmpty() {
+    void givenAProjectWithNoClusters_whenAddSystemParametersToActionIsCalled_thenThrowsProjectConfigurationException() {
         // given
         var projectKey = "PRJ";
         var accessToken = "token123";

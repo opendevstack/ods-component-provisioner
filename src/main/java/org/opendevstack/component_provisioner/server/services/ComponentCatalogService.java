@@ -150,8 +150,8 @@ public class ComponentCatalogService {
     }
 
     @Cacheable
-    public CatalogItem getCatalogItemBySlug(String idToken, String slug) {
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(idToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+    public CatalogItem getCatalogItemBySlug(String accessToken, String slug) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
 
         var catalogItem = catalogItemsApi.getCatalogItemBySlug(slug);

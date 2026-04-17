@@ -82,18 +82,19 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String accessToken) {
+                                               String catalogItemId,String catalogItemSlug, String componentUrl,
+                                               String accessToken) {
         String resolvedCatalogItemId = catalogItemId;
-        resolvedCatalogItemId = resolveCatalogItemId(catalogItemId, catalogItemSlug, idToken, resolvedCatalogItemId);
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, idToken, accessToken);
+        resolvedCatalogItemId = resolveCatalogItemId(accessToken, catalogItemId, catalogItemSlug, resolvedCatalogItemId);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
     }
 
-    private String resolveCatalogItemId(String catalogItemId, String catalogItemSlug, String idToken, String resolvedCatalogItemId) {
+    private String resolveCatalogItemId(String accessToken, String catalogItemId, String catalogItemSlug, String resolvedCatalogItemId) {
         if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
             log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
             CatalogItem catalogItem;
             try {
-                catalogItem = componentCatalogService.getCatalogItemBySlug(idToken, catalogItemSlug);
+                catalogItem = componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug);
             } catch (RestClientException e) {
                 throw new SlugNotFoundException("Catalog item slug not found: " + catalogItemSlug);
             }
@@ -101,10 +102,6 @@ public class ProvisionResultsApiFacade {
             log.debug("Resolved catalogItemSlug {} to catalogItemId: {}", catalogItemSlug, resolvedCatalogItemId);
         }
         return resolvedCatalogItemId;
-    }
-
-    public void deleteProvisioningStatus(String projectKey, String componentId, String idToken) {
-        provisionService.deleteProvisioningStatus(projectKey, componentId, idToken);
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {

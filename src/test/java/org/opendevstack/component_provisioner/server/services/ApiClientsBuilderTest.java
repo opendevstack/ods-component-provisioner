@@ -97,7 +97,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenIdTokenAndBaseUrl_whenProvisionerActionsApi_thenReturnsProvisionerActionsApiInstance() {
+    void givenAccessTokenAndBaseUrl_whenProvisionerActionsApi_thenReturnsProvisionerActionsApiInstance() {
         // given
         String accessToken = "test-token";
         String baseUrl = "http://component-catalog";

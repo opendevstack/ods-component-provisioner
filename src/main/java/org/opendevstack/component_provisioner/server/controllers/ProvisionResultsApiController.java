@@ -23,11 +23,6 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     private final AuthenticationProvider authenticationProvider;
     private final ProvisionResultsApiFacade provisionResultsApiFacade;
 
-    public ProvisionResultsApiController(AuthenticationProvider authenticationProvider, ProvisionResultsApiFacade provisionResultsApiFacade) {
-        this.authenticationProvider = authenticationProvider;
-        this.provisionResultsApiFacade = provisionResultsApiFacade;
-    }
-
     @Override
     public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest notifyProvisioningCompletedRequest) {
         log.debug("Notifying provision status update. ProjectKey: {}, Status: {}, notifyProvisioningCompletedRequest: {}", projectKey, status, notifyProvisioningCompletedRequest);
@@ -36,13 +31,15 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         provisionResultsApiFacade.validate(projectKey, status, notifyProvisioningCompletedRequest);
 
-        provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
+        provisionResultsApiFacade.notifyProvisioningStatusUpdate(
+                projectKey,
                 ProjectComponentStatus.valueOf(status),
                 notifyProvisioningCompletedRequest.getComponentId(),
                 notifyProvisioningCompletedRequest.getCatalogItemId(),
                 notifyProvisioningCompletedRequest.getCatalogItemSlug(),
                 notifyProvisioningCompletedRequest.getComponentUrl(),
-                accessToken);
+                accessToken
+        );
 
         return ResponseEntity.ok().build();
     }
