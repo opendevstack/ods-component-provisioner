@@ -67,7 +67,7 @@ class ComponentCatalogServiceTest {
     private ComponentCatalogService componentCatalogService;
 
     @Test
-    void givenValidInputs_whenGetCatalogItemUserActionMessageDefinition_thenReturnsBodyAndStatus() {
+    void givenValidInputs_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsBodyAndStatus() {
         //given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
@@ -96,7 +96,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenNullBody_whenGetCatalogItemUserActionMessageDefinition_thenReturnsEmptyOptionalAndStatus() {
+    void givenNullBody_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsEmptyOptionalAndStatus() {
         //given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
@@ -125,7 +125,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenApiReturns404_whenGetCatalogItemUserActionMessageDefinition_thenReturnsStatusAndEmptyOptional() {
+    void givenApiReturns404_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsStatusAndEmptyOptional() {
         //given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
@@ -151,7 +151,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenRestClientException_whenGetCatalogItemUserActionMessageDefinition_thenThrowsCatalogClientException() {
+    void givenRestClientException_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenThrowsCatalogClientException() {
         //given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
@@ -174,7 +174,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenNotifyComponentCatalogProvisionStarts_thenInvokesProvisionerActionsApiWithCreating() throws MalformedURLException {
+    void givenValidInput_whenNotifyComponentCatalogProvisionStartsIsCalled_thenInvokesProvisionerActionsApiWithCreating() throws MalformedURLException {
         //given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -226,7 +226,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenNullParameters_whenNotifyComponentCatalogProvisionStarts_thenEmptyMapIsUsed() throws MalformedURLException {
+    void givenNullParameters_whenNotifyComponentCatalogProvisionStartsIsCalled_thenEmptyMapIsUsed() throws MalformedURLException {
         //given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -248,7 +248,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenEmptyBlacklist_whenObfuscateParameters_thenNoParametersAreMasked() {
+    void givenEmptyBlacklist_whenObfuscateParametersIsCalled_thenNoParametersAreMasked() {
         // given
         when(parametersProps.getBlacklist()).thenReturn(new String[0]);
         Map<String, List<String>> input = Map.of("key", List.of("value"));
@@ -268,7 +268,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenNullBlacklist_whenObfuscateParameters_thenNoParametersAreMasked() {
+    void givenNullBlacklist_whenObfuscateParametersIsCalled_thenNoParametersAreMasked() {
         // given
         when(parametersProps.getBlacklist()).thenReturn(null);
         Map<String, List<String>> input = Map.of("key", List.of("value"));
@@ -288,7 +288,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenParameters_whenMaskParameters_thenCorrectParametersAreMasked() {
+    void givenParameters_whenMaskParametersIsCalled_thenCorrectParametersAreMasked() {
         // given
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"password", "token"});
         Map<String, List<String>> input = Map.of(
@@ -317,7 +317,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetCatalogItem_thenCatalogItemIsReturned() throws MalformedURLException {
+    void givenValidInput_whenGetCatalogItemIsCalled_thenCatalogItemIsReturned() throws MalformedURLException {
         // given
         String accessToken = "access-token";
         String catalogItemId = "CAT-123";
@@ -359,7 +359,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponents_thenProjectComponentsAreReturned() {
+    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() {
         // given
         String projectKey = "PRJ-1";
         String accessToken = "access-token";
@@ -377,5 +377,30 @@ class ComponentCatalogServiceTest {
         assertThat(result).isSameAs(expectedComponents);
         verify(auth).setBearerToken(accessToken);
         verify(projectComponentsApi).getProjectComponents(projectKey, accessToken);
+    }
+
+    @Test
+    void givenValidInput_whenGetCatalogItemBySlugIsCalled_thenCatalogItemIsReturned() throws MalformedURLException {
+        // given
+        String accessToken = "access-token";
+        String slug = "myproject_repo-name";
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        CatalogItem expectedCatalogItem = new CatalogItem();
+        expectedCatalogItem.setId("CAT-123");
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
+                .thenReturn(catalogItemsApi);
+        when(catalogItemsApi.getCatalogItemBySlug(slug))
+                .thenReturn(expectedCatalogItem);
+
+        // when
+        CatalogItem result = componentCatalogService.getCatalogItemBySlug(accessToken, slug);
+
+        // then
+        assertThat(result).isSameAs(expectedCatalogItem);
+        verify(catalogItemsApi).getCatalogItemBySlug(slug);
     }
 }

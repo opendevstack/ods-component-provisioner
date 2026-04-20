@@ -1,11 +1,6 @@
 package org.opendevstack.component_provisioner.config;
 
-import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.*;
 import org.opendevstack.component_provisioner.server.model.RestErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -59,6 +54,11 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(UserNotAllowedException.class)
     public ResponseEntity<RestErrorMessage> handleUserNotAllowedException(UserNotAllowedException ex) {
         return defaultErrResponse(ex, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(SlugNotFoundException.class)
+    public ResponseEntity<RestErrorMessage> handleSlugNotFoundException(SlugNotFoundException ex) {
+        return defaultErrResponse(ex, HttpStatus.NOT_FOUND);
     }
 
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {

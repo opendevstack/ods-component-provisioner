@@ -1,5 +1,6 @@
 package org.opendevstack.component_provisioner.server.controllers;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.api.ProvisionResultsApi;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
@@ -16,15 +17,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("${openapi.componentProvisionerREST.base-path:/v1}")
 @Slf4j
+@AllArgsConstructor
 public class ProvisionResultsApiController implements ProvisionResultsApi {
 
     private final AuthenticationProvider authenticationProvider;
     private final ProvisionResultsApiFacade provisionResultsApiFacade;
-
-    public ProvisionResultsApiController(AuthenticationProvider authenticationProvider, ProvisionResultsApiFacade provisionResultsApiFacade) {
-        this.authenticationProvider = authenticationProvider;
-        this.provisionResultsApiFacade = provisionResultsApiFacade;
-    }
 
     @Override
     public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest notifyProvisioningCompletedRequest) {
@@ -32,14 +29,14 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         var accessToken = authenticationProvider.getAccessToken();
 
-        provisionResultsApiFacade.validate(projectKey, status);
+        provisionResultsApiFacade.validate(projectKey, status, notifyProvisioningCompletedRequest);
 
-        provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
+        provisionResultsApiFacade.notifyProvisioningStatusUpdate(
+                projectKey,
                 ProjectComponentStatus.valueOf(status),
-                notifyProvisioningCompletedRequest.getComponentId(),
-                notifyProvisioningCompletedRequest.getCatalogItemId(),
-                notifyProvisioningCompletedRequest.getComponentUrl(),
-                accessToken);
+                notifyProvisioningCompletedRequest,
+                accessToken
+        );
 
         return ResponseEntity.ok().build();
     }
@@ -58,7 +55,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     @Override
     public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
-
+        NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest = new NotifyProvisioningStatusUpdateRequest();
+        notifyProvisioningStatusUpdateRequest.setComponentId(componentId);
         var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
@@ -75,10 +73,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
-                    componentId,
-                    null,
-                    null,
-                    accessToken);
+                    notifyProvisioningStatusUpdateRequest,
+                    null);
 
             log.debug("Creating incident via AWX");
 

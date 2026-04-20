@@ -3,22 +3,22 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
+import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
 
@@ -77,13 +77,49 @@ public class ProvisionResultsApiFacade {
                 .build();
     }
 
-    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String accessToken) {
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+    public void notifyProvisioningStatusUpdate(String projectKey,
+                                               ProjectComponentStatus status,
+                                               NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest,
+                                               String accessToken) {
+        String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+                notifyProvisioningStatusUpdateRequest.getCatalogItemId(),
+                notifyProvisioningStatusUpdateRequest.getCatalogItemSlug());
+
+        provisionService.notifyProvisioningStatusUpdate(projectKey,
+                status,
+                notifyProvisioningStatusUpdateRequest.getComponentId(),
+                resolvedCatalogItemId,
+                notifyProvisioningStatusUpdateRequest.getComponentUrl(),
+                accessToken);
+    }
+
+    private String resolveCatalogItemId(String accessToken,
+                                        String catalogItemId,
+                                        String catalogItemSlug) {
+        String resolvedCatalogItemId = catalogItemId;
+        if (StringUtils.isNotBlank(catalogItemSlug) && StringUtils.isBlank(catalogItemId)) {
+            log.debug("Resolving catalogItemId for catalogItemSlug: {}", catalogItemSlug);
+            CatalogItem catalogItem;
+            try {
+                catalogItem = componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug);
+            } catch (RestClientException e) {
+                throw new SlugNotFoundException("Catalog item slug not found: " + catalogItemSlug);
+            }
+            resolvedCatalogItemId = catalogItem.getId();
+            log.debug("Resolved catalogItemSlug {} to catalogItemId: {}", catalogItemSlug, resolvedCatalogItemId);
+        }
+        return resolvedCatalogItemId;
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
         provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+    }
+
+    public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
+        validate(projectKey, status);
+        if (StringUtils.isNotBlank(request.getCatalogItemId()) && StringUtils.isNotBlank(request.getCatalogItemSlug())) {
+            throw new InvalidRestEntityException("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
+        }
     }
 
     public void validate(String projectKey, String status) {

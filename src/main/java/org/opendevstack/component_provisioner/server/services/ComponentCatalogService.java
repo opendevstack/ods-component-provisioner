@@ -149,6 +149,18 @@ public class ComponentCatalogService {
         return catalogItem;
     }
 
+    @Cacheable
+    public CatalogItem getCatalogItemBySlug(String accessToken, String slug) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
+
+        var catalogItem = catalogItemsApi.getCatalogItemBySlug(slug);
+
+        log.debug("Retrieved catalog item with slug {}: {}", slug, catalogItem);
+
+        return catalogItem;
+    }
+
     private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {
         if (parameters == null) {
             return Collections.emptyMap();

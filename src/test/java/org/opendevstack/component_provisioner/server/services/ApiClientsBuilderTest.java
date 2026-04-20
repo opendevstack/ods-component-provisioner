@@ -24,7 +24,7 @@ class ApiClientsBuilderTest {
     private ApiClientsBuilder builder;
 
     @Test
-    void givenAccessTokenAndBaseUrl_whenProjectsInfoServiceApiClient_thenClientConfiguredCorrectly() {
+    void givenAccessTokenAndBaseUrl_whenProjectsInfoServiceApiClientIsCalled_thenClientIsConfiguredCorrectly() {
         // given
         String accessToken = "test-token";
         String baseUrl = "http://example.com";
@@ -41,7 +41,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenBearerTokenAndBaseUrl_whenComponentCatalogApiClient_thenClientConfiguredCorrectly() {
+    void givenBearerTokenAndBaseUrl_whenComponentCatalogApiClientIsCalled_thenClientIsConfiguredCorrectly() {
         // given
         String accessToken = "test-token";
         String baseUrl = "http://component-catalog";
@@ -58,7 +58,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenProjectsApi_thenReturnProjectsApiInstance() {
+    void givenApiClient_whenProjectsApiIsCalled_thenReturnsProjectsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -71,7 +71,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenAzureGroupsApi_thenReturnAzureGroupsApiInstance() {
+    void givenApiClient_whenAzureGroupsApiIsCalled_thenReturnsAzureGroupsApiInstance() {
         // given
         ApiClient client = new ApiClient();
 
@@ -84,7 +84,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenCatalogItemsApi_thenReturnCatalogItemsApiInstance() {
+    void givenApiClient_whenCatalogItemsApiIsCalled_thenReturnsCatalogItemsApiInstance() {
         // given
         var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
 
@@ -97,7 +97,7 @@ class ApiClientsBuilderTest {
     }
 
     @Test
-    void givenApiClient_whenProvisionerActionsApi_thenReturnProvisionerActionsApiInstance() {
+    void givenAccessTokenAndBaseUrl_whenProvisionerActionsApiIsCalled_thenReturnsProvisionerActionsApiInstance() {
         // given
         String accessToken = "test-token";
         String baseUrl = "http://component-catalog";

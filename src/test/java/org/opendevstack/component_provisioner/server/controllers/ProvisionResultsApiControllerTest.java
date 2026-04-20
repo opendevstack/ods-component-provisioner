@@ -9,6 +9,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
 import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
@@ -43,12 +44,14 @@ class ProvisionResultsApiControllerTest {
         var status = ProjectComponentStatus.CREATED;
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
+        var catalogItemSlug = "catalogItemSlug";
         var componentUrl = "componentUrl";
         var accessToken = "accessToken";
 
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
+        request.setCatalogItemSlug(catalogItemSlug);
         request.setComponentUrl(componentUrl);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
@@ -58,12 +61,12 @@ class ProvisionResultsApiControllerTest {
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
     }
 
     @Test
-    void givenAProjectKey_AndAComponentId_whenDeleteProvisioningStatus_thenReturnsOk() {
+    void givenAProjectKeyAndAComponentId_whenDeleteProvisioningStatusIsCalled_thenReturnsOk() {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
@@ -82,7 +85,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenAProjectKey_AndAComponentId_AndCreateIncidentAction_whenCreateIncident_thenReturnsOk() {
+    void givenAProjectKeyAndAComponentIdAndCreateIncidentAction_whenCreateIncidentIsCalled_thenReturnsOk() {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
@@ -104,18 +107,18 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), eq(componentId), isNull(), isNull(), anyString());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), isNull());
     }
 
     @Test
-    void givenInvalidComponentId_whenCreateIncident_thenThrowsInvalidRestEntityException() {
+    void givenInvalidComponentId_whenCreateIncidentIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         String projectKey = "PRJ";
         String componentId = "";
 
         var action = CreateIncidentActionMother.of();
 
-        doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(), any(), any());
+        doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
 
         // when / then
         var ex = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.createIncident(projectKey, componentId, action));
@@ -123,7 +126,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenAProjectKey_AndAComponentId_AndCreateIncidentAction_whenCreateIncident_AndComponentAlreadyInDeletingState_thenReturnsOk_andIgnoreAWXCall() {
+    void givenAProjectKeyAndAComponentIdAndCreateIncidentAction_whenCreateIncidentIsCalledAndComponentAlreadyInDeletingState_thenReturnsOkAndIgnoreAWXCall() {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
@@ -143,7 +146,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenInvalidStatus_whenNotifyProvisioningStatusUpdate_then400OrInvalidRestEntityException() {
+    void givenInvalidStatus_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "project-key";
         var invalidStatus = "NOT_A_STATUS";
@@ -152,7 +155,7 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemId("cat-1");
         request.setComponentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
         // when / then
         var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request));
@@ -161,7 +164,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenLowercaseStatus_whenNotifyProvisioningStatusUpdate_thenEitherOkOrReject() {
+    void givenLowercaseStatus_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "project-key";
         var statusLowercase = "created";
@@ -170,7 +173,7 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemId("cat-1");
         request.setComponentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
         // when / then
         var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
