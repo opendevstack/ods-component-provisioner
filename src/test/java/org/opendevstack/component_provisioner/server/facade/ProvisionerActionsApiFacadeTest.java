@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
@@ -62,7 +63,8 @@ class ProvisionerActionsApiFacadeTest {
         var job = new AwxWorkflowJob();
         var response = new ProvisionActionResponse();
 
-        when(entitiesMapper.asAwxWorkflowJobLaunch(action)).thenReturn(launch);
+        ArgumentCaptor<ProvisionAction> actionCaptor = ArgumentCaptor.forClass(ProvisionAction.class);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(actionCaptor.capture())).thenReturn(launch);
         when(awxService.triggerWorkflowJob(action.getId(), launch))
                 .thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
         when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
@@ -73,6 +75,10 @@ class ProvisionerActionsApiFacadeTest {
         // then
         assertEquals(HttpStatus.OK, result.httpStatusCode());
         assertEquals(response, result.awxResponseBody());
+
+        var capturedAction = actionCaptor.getValue();
+        assertThat(capturedAction.getParameters())
+                .anyMatch(p -> "action_id".equals(p.getName()) && action.getId().equals(p.getValue()));
     }
 
     @Test
@@ -192,4 +198,31 @@ class ProvisionerActionsApiFacadeTest {
         assertThat(clusterLocation).isEqualTo("cluster-primary");
     }
 
+    @Test
+    void requestProvisionToAwx_addsActionIdParameter_whenParametersIsNull() {
+        // given
+        var action = ProvisionActionMother.of(null);
+
+        var launch = new AwxWorkflowJobLaunch();
+        var job = new AwxWorkflowJob();
+        var response = new ProvisionActionResponse();
+
+        ArgumentCaptor<ProvisionAction> actionCaptor = ArgumentCaptor.forClass(ProvisionAction.class);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(actionCaptor.capture())).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(action.getId(), launch))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
+
+        // when
+        var result = facade.requestProvisionToAwx(action);
+
+        // then
+        assertEquals(HttpStatus.OK, result.httpStatusCode());
+        assertEquals(response, result.awxResponseBody());
+
+        var capturedAction = actionCaptor.getValue();
+        assertThat(capturedAction.getParameters())
+                .hasSize(1)
+                .anyMatch(p -> "action_id".equals(p.getName()) && action.getId().equals(p.getValue()));
+    }
 }
