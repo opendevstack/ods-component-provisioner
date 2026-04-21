@@ -38,7 +38,8 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
         var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);
         provisionerActionsApiFacade.notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholders);
 
-        var awxResponse = provisionerActionsApiFacade.requestProvisionToAwx(updateProvisionActionWithoutPlaceholders);
+        var updatedProvisionActionWithOdsApiParameters = provisionerActionsApiFacade.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholders);
+        var awxResponse = provisionerActionsApiFacade.requestProvisionToAwx(updatedProvisionActionWithOdsApiParameters);
 
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())

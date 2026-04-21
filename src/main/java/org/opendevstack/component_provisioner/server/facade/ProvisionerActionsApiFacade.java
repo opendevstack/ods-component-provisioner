@@ -12,14 +12,20 @@ import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.OdsApiService;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectFlavour;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.setProjectFlavour;
 
 @Service
 @Slf4j
@@ -31,6 +37,7 @@ public class ProvisionerActionsApiFacade {
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
+    private final OdsApiService odsApiService;
 
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
@@ -179,5 +186,30 @@ public class ProvisionerActionsApiFacade {
                             .build();
                 })
         .orElse(provisionAction);
+    }
+
+    public ProvisionAction replaceProvisioningParametersFromOdsApi(ProvisionAction provisionAction) {
+        var projectKey = getProjectKey(provisionAction);
+        var accessToken = authenticationProvider.getAccessToken();
+
+        var projectKeyData = odsApiService.getProject(accessToken, projectKey);
+
+        //TODO: get it from configuration, but at the moment, let's try with hardcoded value
+        var originalProjectFlavour = getProjectFlavour(provisionAction);
+        var odsProjectFlavour = projectKeyData.getProjectFlavor();
+
+        var overridedProjectFlavour = overrideOriginalValueWithOdsApiValue(originalProjectFlavour, odsProjectFlavour);
+
+        setProjectFlavour(provisionAction, overridedProjectFlavour);
+
+        return provisionAction;
+    }
+
+    private String overrideOriginalValueWithOdsApiValue(String originalValue, String odsApiValue) {
+        if (Strings.isBlank(odsApiValue)) {
+            return originalValue;
+        } else {
+            return odsApiValue;
+        }
     }
 }
