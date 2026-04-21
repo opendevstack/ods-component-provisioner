@@ -18,6 +18,7 @@ import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -97,6 +98,7 @@ public class ProvisionerActionsApiFacade {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))
                 .map(ProvisionActionParameter::getValue)
+                .filter(Objects::nonNull)
                 .map(Object::toString)
                 .findAny()
                 .orElse(Strings.EMPTY);
@@ -156,8 +158,25 @@ public class ProvisionerActionsApiFacade {
                 .value(provisionAction.getId())
                 .build();
 
-        provisionAction.addParametersItem(parameterItem);
+        var updatedProvisionAction = addParametersItem(provisionAction, parameterItem);
 
-        return entitiesMapper.asAwxWorkflowJobLaunch(provisionAction);
+        return entitiesMapper.asAwxWorkflowJobLaunch(updatedProvisionAction);
+    }
+
+    // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
+    private ProvisionAction addParametersItem(ProvisionAction provisionAction, ProvisionActionParameter parameterItem) {
+        if (parameterItem == null) {
+            return provisionAction;
+        } else {
+            var newParameters = provisionAction.getParameters() == null
+                    ? List.of(parameterItem)
+                    : java.util.stream.Stream.concat(provisionAction.getParameters().stream(), java.util.stream.Stream.of(parameterItem))
+                            .toList();
+
+            return provisionAction.toBuilder()
+                    .id(provisionAction.getId())
+                    .parameters(newParameters)
+                    .build();
+        }
     }
 }
