@@ -32,14 +32,7 @@ public class ProvisionerActionsApiController implements ProvisionerActionsApi {
                 authInfo.getCurrentPrincipalName(),
                 provisionAction);
 
-        provisionerActionsApiFacade.addSystemParametersToAction(provisionAction);
-
-        provisionerActionsApiValidator.validate(provisionAction);
-        var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);
-        provisionerActionsApiFacade.notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholders);
-
-        var updatedProvisionActionWithOdsApiParameters = provisionerActionsApiFacade.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholders);
-        var awxResponse = provisionerActionsApiFacade.requestProvisionToAwx(updatedProvisionActionWithOdsApiParameters);
+        var awxResponse = provisionerActionsApiFacade.triggerProvisionAction(provisionAction);
 
         return ResponseEntity
                 .status(awxResponse.httpStatusCode())

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
@@ -13,9 +15,11 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.OdsApiService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +42,25 @@ public class ProvisionerActionsApiFacade {
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
     private final OdsApiService odsApiService;
+    private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final PlaceholderPostProcessor placeholderPostProcessor;
 
+    public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
+        log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
+
+        addSystemParametersToAction(provisionAction);
+
+        provisionerActionsApiValidator.validate(provisionAction);
+        var updateProvisionActionWithoutPlaceholders = placeholderPostProcessor.process(provisionAction);
+        notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholders);
+
+        var updatedProvisionActionWithOdsApiParameters = replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholders);
+        var awxResponse = requestProvisionToAwx(updatedProvisionActionWithOdsApiParameters);
+
+        log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
+
+        return awxResponse;
+    }
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
         log.debug("Triggering AWX workflow job for provision action with id: {}", provisionAction.getId());
