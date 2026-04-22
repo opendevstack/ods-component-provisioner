@@ -11,6 +11,8 @@ servers:
       baseurl:
         default: localhost:8080
         description: Development environment
+security:
+  - bearerAuth: []
 tags:
 - name: Project
   description: API for manage EDP projects.
@@ -111,6 +113,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/CreateProjectResponse'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: >
+        Authorization via bearer token.
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RestErrorMessage:
       properties:
