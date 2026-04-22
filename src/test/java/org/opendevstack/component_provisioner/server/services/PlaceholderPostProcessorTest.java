@@ -62,11 +62,9 @@ class PlaceholderPostProcessorTest {
         ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        var parameterValues = new ArrayList<>(result.getParametersMap().values());
-
-        assertThat(parameterValues).hasSize(2);
-        assertThat(parameterValues.get(0).getValue()).isEqualTo("value");
-        assertThat(parameterValues.get(1).getValue()).isEqualTo("Hello value!");
+        assertThat(result.getParametersMap()).hasSize(2);
+        assertThat(result.getParametersMap().get("key").getValue()).isEqualTo("value");
+        assertThat(result.getParametersMap().get("message").getValue()).isEqualTo("Hello value!");
     }
 
     @Test
@@ -124,11 +122,9 @@ class PlaceholderPostProcessorTest {
         ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        var parameterValues = new ArrayList<>(result.getParametersMap().values());
-
-        assertThat(parameterValues).hasSize(2);
+        assertThat(result.getParametersMap()).hasSize(2);
         @SuppressWarnings("unchecked")
-        List<String> replacedList = (List<String>) parameterValues.get(1).getValue();
+        List<String> replacedList = (List<String>) result.getParametersMap().get("items").getValue();
         assertThat(replacedList).containsExactly("First value", "Second value");
     }
 
@@ -143,11 +139,9 @@ class PlaceholderPostProcessorTest {
         ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        var parameterValues = new ArrayList<>(result.getParametersMap().values());
-
-        assertThat(parameterValues).hasSize(2);
+        assertThat(result.getParametersMap()).hasSize(2);
         @SuppressWarnings("unchecked")
-        List<Object> replacedList = (List<Object>) parameterValues.get(1).getValue();
+        List<Object> replacedList = (List<Object>) result.getParametersMap().get("mixed").getValue();
         assertThat(replacedList).containsExactly("First value", 42, "Second value");
     }
 
@@ -205,15 +199,12 @@ class PlaceholderPostProcessorTest {
         ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        var parameterValues = new ArrayList<>(result.getParametersMap().values());
-        var sourceParameterValues = new ArrayList<>(provisionAction.getParametersMap().values());
-
-        assertThat(parameterValues).hasSize(3);
-        assertThat(parameterValues.get(0).getValue()).isEqualTo("value1");
-        assertThat(parameterValues.get(1).getValue()).isEqualTo("value2");
-        assertThat(parameterValues.get(2).getValue()).isEqualTo("value1 and value2");
+        assertThat(result.getParametersMap()).hasSize(3);
+        assertThat(result.getParametersMap().get("key1").getValue()).isEqualTo("value1");
+        assertThat(result.getParametersMap().get("key2").getValue()).isEqualTo("value2");
+        assertThat(result.getParametersMap().get("template").getValue()).isEqualTo("value1 and value2");
         // Verify immutability: original action should be unchanged
-        assertThat(sourceParameterValues.get(2).getValue()).isEqualTo("${key1} and ${key2}");
+        assertThat(provisionAction.getParametersMap().get("template").getValue()).isEqualTo("${key1} and ${key2}");
     }
 }
 

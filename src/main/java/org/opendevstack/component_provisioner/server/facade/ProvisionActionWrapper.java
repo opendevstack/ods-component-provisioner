@@ -7,7 +7,6 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -30,19 +29,15 @@ public class ProvisionActionWrapper {
 
     public ProvisionActionWrapper(String provisionActionId, Map<String, ProvisionActionParameter> parametersMap) {
         this.provisionActionId = provisionActionId;
-        this.parametersMap = Collections.unmodifiableMap(parametersMap);
+        this.parametersMap = parametersMap == null
+                ? Collections.emptyMap()
+                : Collections.unmodifiableMap(parametersMap);
+
     }
 
     public ProvisionActionWrapper cloneWithParameter(ProvisionActionParameter provisionActionParameter) {
         var newParametersMap = new java.util.HashMap<>(parametersMap);
         newParametersMap.put(provisionActionParameter.getName(), provisionActionParameter);
-
-        return new ProvisionActionWrapper(provisionActionId, newParametersMap);
-    }
-
-    public ProvisionActionWrapper cloneWithParameters(Map<String, ProvisionActionParameter> provisionActionParametersMap) {
-        var newParametersMap = new java.util.HashMap<>(parametersMap);
-        newParametersMap.putAll(provisionActionParametersMap);
 
         return new ProvisionActionWrapper(provisionActionId, newParametersMap);
     }
@@ -72,10 +67,6 @@ public class ProvisionActionWrapper {
 
     public String getAccessToken() {
         return getParameterValue("access_token");
-    }
-
-    public String getProjectFlavour() {
-        return getParameterValue("project_flavour");
     }
 
     public String getParameterValue(String parameterName) {
