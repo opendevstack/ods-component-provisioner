@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.SortOrder;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,10 @@ public class ProvisionService {
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
         log.info("Deleting provisioning completed. Project Key: {}, componentId: {}", projectKey, componentId);
+
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
+        catalogItemsApi.getCatalogItemsForProjectKey(null, accessToken, SortOrder.DESC, projectKey);
 
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)

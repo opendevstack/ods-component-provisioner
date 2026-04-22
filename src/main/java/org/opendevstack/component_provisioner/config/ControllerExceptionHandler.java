@@ -61,6 +61,11 @@ public class ControllerExceptionHandler {
         return defaultErrResponse(ex, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(ComponentNotFoundException.class)
+    public ResponseEntity<RestErrorMessage> handleComponentNotFoundException(ComponentNotFoundException ex) {
+        return defaultErrResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {
         // Explicitly setting MediaType.APPLICATION_JSON contentType is required, 
         // due to clients sending miscellaneous Accept headers on the request, 
