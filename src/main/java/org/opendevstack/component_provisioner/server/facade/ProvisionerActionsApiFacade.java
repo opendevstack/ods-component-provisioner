@@ -1,36 +1,35 @@
 package org.opendevstack.component_provisioner.server.facade;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
-import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.facade.exceptions.IllegalConfigurationException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.OdsApiService;
 import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.SnakeCaseExtractor;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectFlavour;
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.setProjectFlavour;
-
 @Service
 @Slf4j
-@AllArgsConstructor
 public class ProvisionerActionsApiFacade {
 
     private final AwxService awxService;
@@ -41,6 +40,27 @@ public class ProvisionerActionsApiFacade {
     private final OdsApiService odsApiService;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
+    private final SnakeCaseExtractor snakeCaseExtractor;
+
+    private final List<String> paramsToOverrideFromOdsApi;
+
+    public ProvisionerActionsApiFacade(AwxService awxService, ComponentCatalogService componentCatalogService,
+                                       EntitiesMapper entitiesMapper, AuthenticationProvider authenticationProvider,
+                                       ProjectsInfoService projectsInfoService, OdsApiService odsApiService,
+                                       ProvisionerActionsApiValidator provisionerActionsApiValidator,
+                                       PlaceholderPostProcessor placeholderPostProcessor, SnakeCaseExtractor snakeCaseExtractor,
+                                       @Value("${component-provisioner.ods-api-service.params.override}") String paramsToOverrideFromOdsApiConfig) {
+        this.awxService = awxService;
+        this.componentCatalogService = componentCatalogService;
+        this.entitiesMapper = entitiesMapper;
+        this.authenticationProvider = authenticationProvider;
+        this.projectsInfoService = projectsInfoService;
+        this.odsApiService = odsApiService;
+        this.provisionerActionsApiValidator = provisionerActionsApiValidator;
+        this.placeholderPostProcessor = placeholderPostProcessor;
+        this.snakeCaseExtractor = snakeCaseExtractor;
+        this.paramsToOverrideFromOdsApi = Arrays.stream(paramsToOverrideFromOdsApiConfig.split(",")).toList();
+    }
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
@@ -104,32 +124,6 @@ public class ProvisionerActionsApiFacade {
                 ));
 
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
-    }
-
-    private String getCatalogItemId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "catalog_item_id");
-    }
-
-    private String getComponentId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "component_id");
-    }
-
-    private String getComponentUrl(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "component_url");
-    }
-
-    private String getAccessToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "access_token");
-    }
-
-    private String getParameterString(ProvisionAction provisionAction, String parameterName) {
-        return provisionAction.getParameters().stream()
-                .filter(parameter -> parameterName.equals(parameter.getName()))
-                .map(ProvisionActionParameter::getValue)
-                .filter(Objects::nonNull)
-                .map(Object::toString)
-                .findAny()
-                .orElse(Strings.EMPTY);
     }
 
     public ProvisionActionWrapper addSystemParametersToAction(ProvisionActionWrapper provisionActionWrapper) {
@@ -222,24 +216,62 @@ public class ProvisionerActionsApiFacade {
         var accessToken = authenticationProvider.getAccessToken();
 
         var projectKeyData = odsApiService.getProject(accessToken, projectKey);
+        var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
+        var parametersMap = provisionActionWrapper.getParametersMap();
 
-        //TODO: get it from configuration, but at the moment, let's try with hardcoded value
-        var originalProjectFlavour = provisionActionWrapper.getProjectFlavour();
-        var odsProjectFlavour = projectKeyData.getProjectFlavor();
+        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
 
-        var overridedProjectFlavour = overrideOriginalValueWithOdsApiValue(originalProjectFlavour, odsProjectFlavour);
-
-        // TODO: Get proper parametersMap with new projectFlavour
-        //setProjectFlavour(provisionAction, overridedProjectFlavour);
-
-        return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), provisionActionWrapper.getParametersMap());
+        return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
     }
 
-    private String overrideOriginalValueWithOdsApiValue(String originalValue, String odsApiValue) {
-        if (Strings.isBlank(odsApiValue)) {
-            return originalValue;
-        } else {
-            return odsApiValue;
+    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
+        Map<String, ProvisionActionParameter> updatedParameters = new HashMap<>();
+
+        // Iterate over all parameters and set update value if required, otherwise keep the same value
+        for (Map.Entry<String, ProvisionActionParameter> entry : parametersMap.entrySet()) {
+            if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
+                log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
+
+                if (entry.getValue().getType().equals(ParameterType.STRING.getValue())) {
+                    var parameter = ProvisionActionParameter.builder()
+                            .name(entry.getValue().getName())
+                            .type(entry.getValue().getType())
+                            .value(odsApiSnakeCaseValuesMap.get(entry.getKey()).toString())
+                            .build();
+
+                    updatedParameters.put(entry.getKey(), parameter);
+                } else {
+                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of type String. Only type string are supported for overriding from ODS API.");
+                }
+            } else {
+                log.debug("Found parameter, but not in ods, keeping it as it is: {}", entry.getKey());
+
+                var parameter = ProvisionActionParameter.builder()
+                        .name(entry.getValue().getName())
+                        .type(entry.getValue().getType())
+                        .value(entry.getValue())
+                        .build();
+
+                updatedParameters.put(entry.getKey(), parameter);
+            }
         }
+
+        // If there are required ODS parameters not in the request, we add them with value from ODS API
+        for (String odsApiParameterToOverride : paramsToOverrideFromOdsApi) {
+            if (!parametersMap.containsKey(odsApiParameterToOverride) && odsApiSnakeCaseValuesMap.containsKey(odsApiParameterToOverride)) {
+                log.debug("Adding missing parameter from ODS API: {}", odsApiParameterToOverride);
+
+                var parameter = ProvisionActionParameter.builder()
+                        .name(odsApiParameterToOverride)
+                        .type(ParameterType.STRING.getValue())
+                        .value(odsApiSnakeCaseValuesMap.get(odsApiParameterToOverride).toString())
+                        .build();
+
+                updatedParameters.put(odsApiParameterToOverride, parameter);
+            }
+        }
+
+        return updatedParameters;
     }
+
 }
