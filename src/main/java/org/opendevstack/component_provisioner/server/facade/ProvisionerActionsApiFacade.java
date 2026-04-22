@@ -1,7 +1,6 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -25,7 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -212,21 +210,29 @@ public class ProvisionerActionsApiFacade {
     }
 
     public ProvisionActionWrapper replaceProvisioningParametersFromOdsApi(ProvisionActionWrapper provisionActionWrapper) {
-        var projectKey = provisionActionWrapper.getProjectKey();
-
-        var projectKeyData = odsApiService.getProject(projectKey);
-
-        if (projectKeyData == null) {
-            log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
+        if (paramsToOverrideFromOdsApi == null || paramsToOverrideFromOdsApi.isEmpty()) {
+            log.debug("No ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
 
             return provisionActionWrapper;
         } else {
-            var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
-            var parametersMap = provisionActionWrapper.getParametersMap();
+            log.debug("Overriding provisioning parameters from ODS API for parameters: {}", paramsToOverrideFromOdsApi);
 
-            var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+            var projectKey = provisionActionWrapper.getProjectKey();
 
-            return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
+            var projectKeyData = odsApiService.getProject(projectKey);
+
+            if (projectKeyData == null) {
+                log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
+
+                return provisionActionWrapper;
+            } else {
+                var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
+                var parametersMap = provisionActionWrapper.getParametersMap();
+
+                var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+
+                return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
+            }
         }
     }
 
