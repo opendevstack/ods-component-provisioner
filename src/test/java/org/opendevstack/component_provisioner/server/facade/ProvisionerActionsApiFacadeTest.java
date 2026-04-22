@@ -1,14 +1,16 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.util.Strings;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
@@ -18,7 +20,10 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.OdsApiService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.SnakeCaseExtractor;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -40,17 +45,42 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private AwxService awxService;
+
     @Mock
     private ComponentCatalogService componentCatalogService;
+
     @Mock
     private EntitiesMapper entitiesMapper;
+
     @Mock
     private AuthenticationProvider authenticationProvider;
+
     @Mock
     private ProjectsInfoService projectsInfoService;
 
-    @InjectMocks
+    @Mock
+    private OdsApiService odsApiService;
+
+    @Mock
+    private ProvisionerActionsApiValidator provisionerActionsApiValidator;
+
+    @Mock
+    private PlaceholderPostProcessor placeholderPostProcessor;
+
+    @Mock
+    private SnakeCaseExtractor snakeCaseExtractor;
+
     private ProvisionerActionsApiFacade facade;
+
+    @BeforeEach
+    void setUp() {
+        String paramsToOverrideFromOdsApiConfig = Strings.EMPTY;
+
+        facade = new ProvisionerActionsApiFacade(awxService, componentCatalogService, entitiesMapper,
+                authenticationProvider, projectsInfoService, odsApiService, provisionerActionsApiValidator,
+                placeholderPostProcessor, snakeCaseExtractor,
+                paramsToOverrideFromOdsApiConfig);
+    }
 
     @Test
     void requestProvisionToAwx_mapsResponseCorrectly() {
@@ -124,27 +154,27 @@ class ProvisionerActionsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
-        facade.addSystemParametersToAction(action);
+        var resultingAction = facade.addSystemParametersToAction(action);
 
         // then
-        var paramNames = action.getParametersMap().values().stream()
+        var paramNames = resultingAction.getParametersMap().values().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
         assertThat(paramNames).contains("cluster_location", "caller", "access_token");
 
-        var clusterLocation = action.getParametersMap().values().stream()
+        var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(clusterLocation).isEqualTo("cluster-eu-west");
 
-        var caller = action.getParametersMap().values().stream()
+        var caller = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "caller".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(caller).isEqualTo("user@example.com");
 
-        var bearerToken = action.getParametersMap().values().stream()
+        var bearerToken = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "access_token".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
@@ -188,10 +218,10 @@ class ProvisionerActionsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
 
         // when
-        facade.addSystemParametersToAction(action);
+        var resultingAction = facade.addSystemParametersToAction(action);
 
         // then
-        var clusterLocation = action.getParametersMap().values().stream()
+        var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
