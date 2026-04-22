@@ -213,15 +213,21 @@ public class ProvisionerActionsApiFacade {
 
     public ProvisionActionWrapper replaceProvisioningParametersFromOdsApi(ProvisionActionWrapper provisionActionWrapper) {
         var projectKey = provisionActionWrapper.getProjectKey();
-        var accessToken = authenticationProvider.getAccessToken();
 
-        var projectKeyData = odsApiService.getProject(accessToken, projectKey);
-        var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
-        var parametersMap = provisionActionWrapper.getParametersMap();
+        var projectKeyData = odsApiService.getProject(projectKey);
 
-        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+        if (projectKeyData == null) {
+            log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
 
-        return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
+            return provisionActionWrapper;
+        } else {
+            var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
+            var parametersMap = provisionActionWrapper.getParametersMap();
+
+            var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+
+            return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
+        }
     }
 
     private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
