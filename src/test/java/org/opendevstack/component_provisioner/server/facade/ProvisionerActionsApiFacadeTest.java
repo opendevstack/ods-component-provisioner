@@ -94,7 +94,7 @@ class ProvisionerActionsApiFacadeTest {
         params.add(ProvisionActionParameterMother.of("access_token", accessToken));
         params.add(ProvisionActionParameterMother.of("list_param", List.of("a", "b")));
         params.add(ProvisionActionParameterMother.of("null_param", null));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         // when
         facade.notifyComponentCatalogProvisionStarts(action);
@@ -115,7 +115,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", accessToken));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-eu-west"));
@@ -127,24 +127,24 @@ class ProvisionerActionsApiFacadeTest {
         facade.addSystemParametersToAction(action);
 
         // then
-        var paramNames = action.getParameters().stream()
+        var paramNames = action.getParametersMap().values().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
         assertThat(paramNames).contains("cluster_location", "caller", "access_token");
 
-        var clusterLocation = action.getParameters().stream()
+        var clusterLocation = action.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(clusterLocation).isEqualTo("cluster-eu-west");
 
-        var caller = action.getParameters().stream()
+        var caller = action.getParametersMap().values().stream()
                 .filter(p -> "caller".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(caller).isEqualTo("user@example.com");
 
-        var bearerToken = action.getParameters().stream()
+        var bearerToken = action.getParametersMap().values().stream()
                 .filter(p -> "access_token".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
@@ -159,7 +159,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", bearerToken));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of());
@@ -179,7 +179,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
@@ -191,7 +191,7 @@ class ProvisionerActionsApiFacadeTest {
         facade.addSystemParametersToAction(action);
 
         // then
-        var clusterLocation = action.getParameters().stream()
+        var clusterLocation = action.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
