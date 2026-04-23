@@ -21,6 +21,10 @@ public class ProvisionActionWrapperMother {
                         Function.identity()
                 ));
 
+        return of(parametersMap);
+    }
+
+    public static ProvisionActionWrapper of(Map<String, ProvisionActionParameter> parametersMap) {
         return of("action-id", parametersMap);
     }
 
