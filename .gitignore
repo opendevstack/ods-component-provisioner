@@ -46,3 +46,4 @@ out/
 ### secrets skip for token generation ###
 /openshift/*.key
 /openshift/*.p12
+/src/main/generated/

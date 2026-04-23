@@ -118,7 +118,6 @@ public class ComponentCatalogService {
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
-                .accessToken(accessToken)
                 .parameters(obfuscatedParameters)
                 .build();
 
@@ -134,7 +133,14 @@ public class ComponentCatalogService {
         var auth = (HttpBearerAuth) componentCatalogApiClient.getAuthentication("bearerAuth");
         auth.setBearerToken(accessToken);
 
-        return projectComponentsApi.getProjectComponents(projectKey, accessToken);
+        return projectComponentsApi.getProjectComponents(projectKey);
+    }
+
+    public ProjectComponentExtendedInfo getProjectComponentExtendedInfo(String projectKey, String componentId, String accessToken) {
+        var auth = (HttpBearerAuth) componentCatalogApiClient.getAuthentication("bearerAuth");
+        auth.setBearerToken(accessToken);
+
+        return projectComponentsApi.getProjectComponentById(projectKey, componentId);
     }
 
     @Cacheable
@@ -142,7 +148,7 @@ public class ComponentCatalogService {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
 
-        var catalogItem = catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey, accessToken);
+        var catalogItem = catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey);
 
         log.debug("Retrieved catalog item with id {} for project key {}: {}", catalogItemId, projectKey, catalogItem);
 

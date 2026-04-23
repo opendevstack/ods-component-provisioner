@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ComponentNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
@@ -113,19 +112,11 @@ public class ProvisionResultsApiFacade {
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken);
 
-        var projectComponent = projectComponents.stream()
-                .filter(component -> component.getComponentId().equals(componentId))
-                .findFirst()
-                .orElseThrow(() ->
-                        new ComponentNotFoundException(
-                                "Component with ID " + componentId + " not found in project " + projectKey
-                        )
-                );
-
-        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId, projectComponents, accessToken);
     }
+
 
     public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
         validate(projectKey, status);

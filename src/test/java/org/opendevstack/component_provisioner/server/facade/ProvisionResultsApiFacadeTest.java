@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -320,15 +322,18 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAValidStatusAndRequest_whenValidateIsCalled_thenDoesNotThrow() {
+    void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
+        request.setCatalogItemSlug("SLUG");
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate(projectKey, status, request));
+        assertThatThrownBy(() -> facade.validate(projectKey, status, request))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessage("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
     }
 
     @Test
@@ -338,11 +343,17 @@ class ProvisionResultsApiFacadeTest {
         var componentId = "CID";
         var accessToken = "token";
 
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setComponentId(componentId);
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+
         // when
         facade.deleteProvisioningStatus(projectKey, componentId, accessToken);
 
         // then
-        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, accessToken);
+        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, projectComponent, accessToken);
     }
 
     @Test
