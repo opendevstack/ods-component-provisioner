@@ -22,16 +22,20 @@ public class ReplaceParametersService {
 
     private final List<String> paramsToOverrideFromOdsApi;
 
+    private final Boolean odsApiServiceEnabled;
+
     public ReplaceParametersService(OdsApiService odsApiService, SnakeCaseExtractor snakeCaseExtractor,
-                                    @Value("${component-provisioner.ods-api-service.params.override}") String paramsToOverrideFromOdsApiConfig) {
+                                    @Value("${component-provisioner.ods-api-service.params.override}") String paramsToOverrideFromOdsApiConfig,
+                                    @Value("${component-provisioner.ods-api-service.enabled}") Boolean odsApiServiceEnabled) {
         this.odsApiService = odsApiService;
         this.snakeCaseExtractor = snakeCaseExtractor;
 
         this.paramsToOverrideFromOdsApi = Arrays.stream(paramsToOverrideFromOdsApiConfig.split(",")).toList();
+        this.odsApiServiceEnabled = odsApiServiceEnabled;
     }
 
     public ProvisionActionWrapper replaceProvisioningParametersFromOdsApi(ProvisionActionWrapper provisionActionWrapper) {
-        if (paramsToOverrideFromOdsApi == null || paramsToOverrideFromOdsApi.isEmpty()) {
+        if (Boolean.FALSE.equals(odsApiServiceEnabled) || paramsToOverrideFromOdsApi == null || paramsToOverrideFromOdsApi.isEmpty()) {
             log.debug("No ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
 
             return provisionActionWrapper;
