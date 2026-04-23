@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.ods_api_server.v1.model.CreateProjectResponse;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;

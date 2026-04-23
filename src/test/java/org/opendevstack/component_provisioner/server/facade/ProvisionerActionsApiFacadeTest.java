@@ -1,11 +1,10 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.util.Strings;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
@@ -20,10 +19,9 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.OdsApiService;
 import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.SnakeCaseExtractor;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -59,28 +57,16 @@ class ProvisionerActionsApiFacadeTest {
     private ProjectsInfoService projectsInfoService;
 
     @Mock
-    private OdsApiService odsApiService;
-
-    @Mock
     private ProvisionerActionsApiValidator provisionerActionsApiValidator;
 
     @Mock
     private PlaceholderPostProcessor placeholderPostProcessor;
 
     @Mock
-    private SnakeCaseExtractor snakeCaseExtractor;
+    private ReplaceParametersService replaceParametersService;
 
+    @InjectMocks
     private ProvisionerActionsApiFacade facade;
-
-    @BeforeEach
-    void setUp() {
-        String paramsToOverrideFromOdsApiConfig = Strings.EMPTY;
-
-        facade = new ProvisionerActionsApiFacade(awxService, componentCatalogService, entitiesMapper,
-                authenticationProvider, projectsInfoService, odsApiService, provisionerActionsApiValidator,
-                placeholderPostProcessor, snakeCaseExtractor,
-                paramsToOverrideFromOdsApiConfig);
-    }
 
     @Test
     void requestProvisionToAwx_mapsResponseCorrectly() {

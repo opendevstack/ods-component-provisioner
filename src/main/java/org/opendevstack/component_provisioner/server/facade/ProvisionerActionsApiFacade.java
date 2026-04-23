@@ -1,32 +1,28 @@
 package org.opendevstack.component_provisioner.server.facade;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
-import org.opendevstack.component_provisioner.server.facade.exceptions.IllegalConfigurationException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.OdsApiService;
 import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.SnakeCaseExtractor;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 @Slf4j
 public class ProvisionerActionsApiFacade {
 
@@ -35,30 +31,9 @@ public class ProvisionerActionsApiFacade {
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
-    private final OdsApiService odsApiService;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
-    private final SnakeCaseExtractor snakeCaseExtractor;
-
-    private final List<String> paramsToOverrideFromOdsApi;
-
-    public ProvisionerActionsApiFacade(AwxService awxService, ComponentCatalogService componentCatalogService,
-                                       EntitiesMapper entitiesMapper, AuthenticationProvider authenticationProvider,
-                                       ProjectsInfoService projectsInfoService, OdsApiService odsApiService,
-                                       ProvisionerActionsApiValidator provisionerActionsApiValidator,
-                                       PlaceholderPostProcessor placeholderPostProcessor, SnakeCaseExtractor snakeCaseExtractor,
-                                       @Value("${component-provisioner.ods-api-service.params.override}") String paramsToOverrideFromOdsApiConfig) {
-        this.awxService = awxService;
-        this.componentCatalogService = componentCatalogService;
-        this.entitiesMapper = entitiesMapper;
-        this.authenticationProvider = authenticationProvider;
-        this.projectsInfoService = projectsInfoService;
-        this.odsApiService = odsApiService;
-        this.provisionerActionsApiValidator = provisionerActionsApiValidator;
-        this.placeholderPostProcessor = placeholderPostProcessor;
-        this.snakeCaseExtractor = snakeCaseExtractor;
-        this.paramsToOverrideFromOdsApi = Arrays.stream(paramsToOverrideFromOdsApiConfig.split(",")).toList();
-    }
+    private final ReplaceParametersService replaceParametersService;
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
@@ -70,7 +45,7 @@ public class ProvisionerActionsApiFacade {
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(systemParametersActionWrapper);
         notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholdersWrapper);
 
-        var updatedProvisionActionWithOdsApiParametersWrapper = replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
+        var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
         var awxResponse = requestProvisionToAwx(updatedProvisionActionWithOdsApiParametersWrapper.toProvisionAction());
 
         log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
@@ -207,83 +182,6 @@ public class ProvisionerActionsApiFacade {
                             .build();
                 })
         .orElse(provisionAction);
-    }
-
-    public ProvisionActionWrapper replaceProvisioningParametersFromOdsApi(ProvisionActionWrapper provisionActionWrapper) {
-        if (paramsToOverrideFromOdsApi == null || paramsToOverrideFromOdsApi.isEmpty()) {
-            log.debug("No ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
-
-            return provisionActionWrapper;
-        } else {
-            log.debug("Overriding provisioning parameters from ODS API for parameters: {}", paramsToOverrideFromOdsApi);
-
-            var projectKey = provisionActionWrapper.getProjectKey();
-
-            var projectKeyData = odsApiService.getProject(projectKey);
-
-            if (projectKeyData == null) {
-                log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
-
-                return provisionActionWrapper;
-            } else {
-                var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
-                var parametersMap = provisionActionWrapper.getParametersMap();
-
-                var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
-
-                return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
-            }
-        }
-    }
-
-    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
-        Map<String, ProvisionActionParameter> updatedParameters = new HashMap<>();
-
-        // Iterate over all parameters and set update value if required, otherwise keep the same value
-        for (Map.Entry<String, ProvisionActionParameter> entry : parametersMap.entrySet()) {
-            if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
-                log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
-
-                if (entry.getValue().getType().equals(ParameterType.STRING.getValue())) {
-                    var parameter = ProvisionActionParameter.builder()
-                            .name(entry.getValue().getName())
-                            .type(entry.getValue().getType())
-                            .value(odsApiSnakeCaseValuesMap.get(entry.getKey()).toString())
-                            .build();
-
-                    updatedParameters.put(entry.getKey(), parameter);
-                } else {
-                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of type String. Only type string are supported for overriding from ODS API.");
-                }
-            } else {
-                log.debug("Found parameter, but not in ods, keeping it as it is: {}", entry.getKey());
-
-                var parameter = ProvisionActionParameter.builder()
-                        .name(entry.getValue().getName())
-                        .type(entry.getValue().getType())
-                        .value(entry.getValue())
-                        .build();
-
-                updatedParameters.put(entry.getKey(), parameter);
-            }
-        }
-
-        // If there are required ODS parameters not in the request, we add them with value from ODS API
-        for (String odsApiParameterToOverride : paramsToOverrideFromOdsApi) {
-            if (!parametersMap.containsKey(odsApiParameterToOverride) && odsApiSnakeCaseValuesMap.containsKey(odsApiParameterToOverride)) {
-                log.debug("Adding missing parameter from ODS API: {}", odsApiParameterToOverride);
-
-                var parameter = ProvisionActionParameter.builder()
-                        .name(odsApiParameterToOverride)
-                        .type(ParameterType.STRING.getValue())
-                        .value(odsApiSnakeCaseValuesMap.get(odsApiParameterToOverride).toString())
-                        .build();
-
-                updatedParameters.put(odsApiParameterToOverride, parameter);
-            }
-        }
-
-        return updatedParameters;
     }
 
 }
