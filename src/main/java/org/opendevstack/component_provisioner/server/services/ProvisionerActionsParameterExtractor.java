@@ -6,6 +6,10 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 
 public class ProvisionerActionsParameterExtractor {
 
+    private ProvisionerActionsParameterExtractor() {
+        /* This utility class should not be instantiated */
+    }
+
     public static String getComponentId(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "component_id");
     }
@@ -20,28 +24,6 @@ public class ProvisionerActionsParameterExtractor {
 
     public static String getLocation(ProvisionAction provisionAction) {
         return getParameterString(provisionAction, "cluster_location");
-    }
-
-    public static String getProjectFlavour(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "project_flavour");
-    }
-
-    public static void setProjectFlavour(ProvisionAction provisionAction, String projectFlavour) {
-        setParameterString(provisionAction, "project_flavour", projectFlavour);
-    }
-
-    public static void setParameterString(ProvisionAction provisionAction, String paramName, String paramValue) {
-        var parameter = provisionAction.getParameters().stream()
-                .filter(p -> paramName.equals(p.getName()))
-                .findAny()
-                .orElseGet(() -> {
-                    var newParameter = new ProvisionActionParameter();
-                    newParameter.setName(paramName);
-                    provisionAction.getParameters().add(newParameter);
-                    return newParameter;
-                });
-
-        parameter.setValue(paramValue);
     }
 
     public static String getParameterString(ProvisionAction provisionAction, String parameterName) {

@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.server.services.exceptions.UnableToExtractMethodException;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
@@ -33,7 +34,7 @@ public class SnakeCaseExtractor {
                         result.put(snakeCaseKey, value);
                     }
                 } catch (Exception e) {
-                    throw new RuntimeException("Failed to extract getter: " + method.getName(), e);
+                    throw new UnableToExtractMethodException("Failed to extract getter: " + method.getName(), e);
                 }
             }
         }
