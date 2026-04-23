@@ -3,7 +3,6 @@ package org.opendevstack.component_provisioner.server.services;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
-import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.springframework.stereotype.Service;
@@ -39,8 +38,23 @@ public class ApiClientsBuilder {
         return apiClient;
     }
 
-    public ProjectsApi projectsApi(org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient apiClient) {
-        return new ProjectsApi(apiClient);
+    public org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient odsApiServerApiClient(String accessToken, String baseRestUrl) {
+        var apiClient = new org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient(restTemplate);
+
+        apiClient.setBasePath(baseRestUrl);
+
+        var auth = (org.opendevstack.component_provisioner.client.ods_api_server.v1.auth.HttpBearerAuth) apiClient.getAuthentication(BEARER_TOKEN);
+        auth.setBearerToken(accessToken);
+
+        return apiClient;
+    }
+
+    public org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi projectsApi(org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient apiClient) {
+        return new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi(apiClient);
+    }
+
+    public org.opendevstack.component_provisioner.client.ods_api_server.v1.api.ProjectsApi projectsApi(org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient apiClient) {
+        return new org.opendevstack.component_provisioner.client.ods_api_server.v1.api.ProjectsApi(apiClient);
     }
 
     public AzureGroupsApi azureGroupsApi(org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient apiClient) {

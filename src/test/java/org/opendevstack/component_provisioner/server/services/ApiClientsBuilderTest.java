@@ -110,4 +110,30 @@ class ApiClientsBuilderTest {
         assertThat(api.getApiClient()).isNotNull();
         assertThat(api.getApiClient().getBasePath()).isEqualTo(baseUrl);
     }
+
+    @Test
+    void givenAccessTokenAndBaseUrl_whenOdsApiServerApiClient_thenReturnsConfiguredApiClient() {
+        // given
+        String accessToken = "test-token";
+        String baseRestUrl = "http://test.url";
+
+        // when
+        var result = builder.odsApiServerApiClient(accessToken, baseRestUrl);
+
+        // then
+        assertThat(result.getBasePath()).isEqualTo(baseRestUrl);
+    }
+
+    @Test
+    void givenApiClient_whenProjectsApiForOds_thenReturnsProjectsApi() {
+        // given
+        var client = new org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient();
+
+        // when
+        var result = builder.projectsApi(client);
+
+        // then
+        assertThat(result).isNotNull();
+    }
+
 }

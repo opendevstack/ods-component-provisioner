@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
@@ -18,7 +19,9 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionRespon
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -40,14 +43,27 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private AwxService awxService;
+
     @Mock
     private ComponentCatalogService componentCatalogService;
+
     @Mock
     private EntitiesMapper entitiesMapper;
+
     @Mock
     private AuthenticationProvider authenticationProvider;
+
     @Mock
     private ProjectsInfoService projectsInfoService;
+
+    @Mock
+    private ProvisionerActionsApiValidator provisionerActionsApiValidator;
+
+    @Mock
+    private PlaceholderPostProcessor placeholderPostProcessor;
+
+    @Mock
+    private ReplaceParametersService replaceParametersService;
 
     @InjectMocks
     private ProvisionerActionsApiFacade facade;
@@ -94,7 +110,7 @@ class ProvisionerActionsApiFacadeTest {
         params.add(ProvisionActionParameterMother.of("access_token", accessToken));
         params.add(ProvisionActionParameterMother.of("list_param", List.of("a", "b")));
         params.add(ProvisionActionParameterMother.of("null_param", null));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         // when
         facade.notifyComponentCatalogProvisionStarts(action);
@@ -115,7 +131,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", accessToken));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-eu-west"));
@@ -124,27 +140,27 @@ class ProvisionerActionsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
-        facade.addSystemParametersToAction(action);
+        var resultingAction = facade.addSystemParametersToAction(action);
 
         // then
-        var paramNames = action.getParameters().stream()
+        var paramNames = resultingAction.getParametersMap().values().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
         assertThat(paramNames).contains("cluster_location", "caller", "access_token");
 
-        var clusterLocation = action.getParameters().stream()
+        var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(clusterLocation).isEqualTo("cluster-eu-west");
 
-        var caller = action.getParameters().stream()
+        var caller = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "caller".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(caller).isEqualTo("user@example.com");
 
-        var bearerToken = action.getParameters().stream()
+        var bearerToken = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "access_token".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
@@ -159,7 +175,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", bearerToken));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of());
@@ -179,7 +195,7 @@ class ProvisionerActionsApiFacadeTest {
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
         params.add(ProvisionActionParameterMother.of("access_token", "ACCESS"));
-        var action = ProvisionActionMother.of(params);
+        var action = ProvisionActionWrapperMother.of(params);
 
         var projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster-primary", "cluster-secondary"));
@@ -188,10 +204,10 @@ class ProvisionerActionsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
 
         // when
-        facade.addSystemParametersToAction(action);
+        var resultingAction = facade.addSystemParametersToAction(action);
 
         // then
-        var clusterLocation = action.getParameters().stream()
+        var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();

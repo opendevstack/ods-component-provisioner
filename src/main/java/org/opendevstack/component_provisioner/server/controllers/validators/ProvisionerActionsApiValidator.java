@@ -3,14 +3,12 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
 import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.CatalogItemUserActionGroupsRestriction;
@@ -21,6 +19,9 @@ import org.opendevstack.component_provisioner.server.services.restrictions.evalu
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
 
 @Service
 @AllArgsConstructor
@@ -101,27 +102,6 @@ public class ProvisionerActionsApiValidator {
         if (StringUtils.isBlank(projectKey) || StringUtils.isBlank(accessToken) || StringUtils.isBlank(componentId)) {
             throw new InvalidRestEntityException("project_key, access_token, component_id are required.");
         }
-    }
-
-    protected static String getComponentId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "component_id");
-    }
-
-    protected static String getProjectKey(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "project_key");
-    }
-
-    protected static String getCatalogItemId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "catalog_item_id");
-    }
-
-    protected static String getParameterString(ProvisionAction provisionAction, String parameterName) {
-        return provisionAction.getParameters().stream()
-                .filter(parameter -> parameterName.equals(parameter.getName()))
-                .map(ProvisionActionParameter::getValue)
-                .map(Object::toString)
-                .findAny()
-                .orElse(Strings.EMPTY);
     }
 
 }
