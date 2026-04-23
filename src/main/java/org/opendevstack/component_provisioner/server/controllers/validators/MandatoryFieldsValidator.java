@@ -20,9 +20,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getCatalogItemId;
-import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getParameterString;
-import static org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator.getProjectKey;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getCatalogItemId;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
 @Service
 @AllArgsConstructor
@@ -184,7 +184,4 @@ public class MandatoryFieldsValidator {
         ));
     }
 
-    private String getLocation(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "cluster_location");
-    }
 }

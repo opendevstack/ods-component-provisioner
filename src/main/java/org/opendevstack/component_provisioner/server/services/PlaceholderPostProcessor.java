@@ -2,6 +2,7 @@ package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.text.StringSubstitutor.replace;
 
@@ -18,30 +21,35 @@ import static org.apache.commons.text.StringSubstitutor.replace;
 @Slf4j
 public class PlaceholderPostProcessor {
 
-    public ProvisionAction process(ProvisionAction provisionAction) {
-        if (provisionAction == null || provisionAction.getParameters() == null) {
-            return provisionAction;
+    public ProvisionActionWrapper process(ProvisionActionWrapper provisionActionWrapper) {
+        if (provisionActionWrapper == null || provisionActionWrapper.getParametersMap() == null) {
+            return provisionActionWrapper;
         }
 
-        Map<String, String> paramValues = extractStringParameters(provisionAction);
+        var parameters = provisionActionWrapper.getParametersMap().values().stream().toList();
+        Map<String, String> paramValues = extractStringParameters(parameters);
 
         List<ProvisionActionParameter> newParameters =
-                provisionAction.getParameters().stream()
+                parameters.stream()
                         .map(p -> replaceParameterValue(p, paramValues))
                         .toList();
 
         // If nothing changed, return the original instance
-        if (newParameters.equals(provisionAction.getParameters())) {
-            return provisionAction;
+        if (newParameters.equals(parameters)) {
+            return provisionActionWrapper;
         }
 
-        return provisionAction.toBuilder()
-                .parameters(newParameters)
-                .build();
+        var newParametersMap = newParameters.stream()
+                .collect(Collectors.toMap(
+                        ProvisionActionParameter::getName,
+                        Function.identity()
+                ));
+
+        return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), newParametersMap);
     }
 
-    private Map<String, String> extractStringParameters(ProvisionAction action) {
-        return action.getParameters().stream()
+    private Map<String, String> extractStringParameters(List<ProvisionActionParameter> provisionActionParameters) {
+        return provisionActionParameters.stream()
                 .filter(p -> p.getValue() instanceof String)
                 .collect(HashMap::new,
                         (m, p) -> m.put(p.getName(), (String) p.getValue()),

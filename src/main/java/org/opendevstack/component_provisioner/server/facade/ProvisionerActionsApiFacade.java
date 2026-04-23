@@ -2,28 +2,28 @@ package org.opendevstack.component_provisioner.server.facade;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
-import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
-
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
-@Slf4j
 @AllArgsConstructor
+@Slf4j
 public class ProvisionerActionsApiFacade {
 
     private final AwxService awxService;
@@ -31,7 +31,27 @@ public class ProvisionerActionsApiFacade {
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
+    private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final PlaceholderPostProcessor placeholderPostProcessor;
+    private final ReplaceParametersService replaceParametersService;
 
+    public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
+        log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
+
+        var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
+        var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
+
+        provisionerActionsApiValidator.validate(systemParametersActionWrapper.toProvisionAction());
+        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(systemParametersActionWrapper);
+        notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholdersWrapper);
+
+        var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
+        var awxResponse = requestProvisionToAwx(updatedProvisionActionWithOdsApiParametersWrapper.toProvisionAction());
+
+        log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
+
+        return awxResponse;
+    }
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
         log.debug("Triggering AWX workflow job for provision action with id: {}", provisionAction.getId());
@@ -51,17 +71,17 @@ public class ProvisionerActionsApiFacade {
                 .build();
     }
 
-    public void notifyComponentCatalogProvisionStarts(ProvisionAction provisionAction) {
-        var projectKey = getParameterString(provisionAction, "project_key");
+    public void notifyComponentCatalogProvisionStarts(ProvisionActionWrapper provisionActionWrapper) {
+        var projectKey = provisionActionWrapper.getProjectKey();
 
-        log.debug("Notifying component catalog about starting provision for project {} and action with id: {}", projectKey, provisionAction.getId());
+        log.debug("Notifying component catalog about starting provision for project {} and action with id: {}", projectKey, provisionActionWrapper.getProvisionActionId());
 
-        var componentId = getComponentId(provisionAction);
-        var catalogItemId = getCatalogItemId(provisionAction);
-        var componentUrl = getComponentUrl(provisionAction);
-        var accessToken = getAccessToken(provisionAction);
+        var componentId = provisionActionWrapper.getComponentId();
+        var catalogItemId = provisionActionWrapper.getCatalogItemId();
+        var componentUrl = provisionActionWrapper.getComponentUrl();
+        var accessToken = provisionActionWrapper.getAccessToken();
 
-        var parameters = provisionAction.getParameters().stream()
+        var parameters = provisionActionWrapper.getParametersMap().values().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
                         p -> {
@@ -79,51 +99,31 @@ public class ProvisionerActionsApiFacade {
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
     }
 
-    private String getCatalogItemId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "catalog_item_id");
+    public ProvisionActionWrapper addSystemParametersToAction(ProvisionActionWrapper provisionActionWrapper) {
+        var locationProvisionWrapper = addClusterLocationToAction(provisionActionWrapper);
+        var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
+        var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
+
+        log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
+
+        return bearerTokenWrapper;
     }
 
-    private String getComponentId(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "component_id");
-    }
-
-    private String getComponentUrl(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "component_url");
-    }
-
-    private String getAccessToken(ProvisionAction provisionAction) {
-        return getParameterString(provisionAction, "access_token");
-    }
-
-    private String getParameterString(ProvisionAction provisionAction, String parameterName) {
-        return provisionAction.getParameters().stream()
-                .filter(parameter -> parameterName.equals(parameter.getName()))
-                .map(ProvisionActionParameter::getValue)
-                .filter(Objects::nonNull)
-                .map(Object::toString)
-                .findAny()
-                .orElse(Strings.EMPTY);
-    }
-
-    public void addSystemParametersToAction(ProvisionAction provisionAction) {
-        addClusterLocationToAction(provisionAction);
-        addCallerToAction(provisionAction);
-        addBearerTokenToActions(provisionAction);
-    }
-
-    private void addCallerToAction(ProvisionAction provisionAction) {
+    private ProvisionActionWrapper addCallerToAction(ProvisionActionWrapper provisionActionWrapper) {
         var caller = authenticationProvider.getUserPrincipalName();
 
         log.debug("Adding caller parameter with value: {}", caller);
-        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+        var callerParameter = ProvisionActionParameter.builder()
                 .name("caller")
                 .value(caller)
                 .type(ParameterType.STRING.getValue())
-                .build());
+                .build();
+
+        return provisionActionWrapper.cloneWithParameter(callerParameter);
     }
 
-    private void addClusterLocationToAction(ProvisionAction provisionAction) {
-        var projectKey = getParameterString(provisionAction, "project_key");
+    private ProvisionActionWrapper addClusterLocationToAction(ProvisionActionWrapper provisionActionWrapper) {
+        var projectKey = provisionActionWrapper.getProjectKey();
         var accessToken = authenticationProvider.getAccessToken();
 
         log.debug("Fetching cluster location for project: {}", projectKey);
@@ -134,20 +134,23 @@ public class ProvisionerActionsApiFacade {
         var clusterLocation = clusters.getFirst();
 
         log.debug("Adding cluster_location parameter with value: {}", clusterLocation);
-        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+        var locationParameter = ProvisionActionParameter.builder()
                 .name("cluster_location")
                 .value(clusterLocation)
                 .type(ParameterType.STRING.getValue())
-                .build());
+                .build();
+
+        return provisionActionWrapper.cloneWithParameter(locationParameter);
     }
 
-    private void addBearerTokenToActions(ProvisionAction provisionAction) {
-        provisionAction.addParametersItem(ProvisionActionParameter.builder()
+    private ProvisionActionWrapper addBearerTokenToActions(ProvisionActionWrapper provisionActionWrapper) {
+        var bearerTokenParameter = ProvisionActionParameter.builder()
                 .name("access_token")
                 .value(authenticationProvider.getAccessToken())
                 .type(ParameterType.STRING.getValue())
-                .build()
-        );
+                .build();
+
+        return provisionActionWrapper.cloneWithParameter(bearerTokenParameter);
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(ProvisionAction provisionAction) {
@@ -180,4 +183,5 @@ public class ProvisionerActionsApiFacade {
                 })
         .orElse(provisionAction);
     }
+
 }

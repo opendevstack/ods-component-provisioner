@@ -28,6 +28,12 @@ public class ApplicationPropertiesConfiguration {
         return ComponentCatalogServiceProps.builder().build();
     }
 
+    @Bean("odsApiServerServiceConfig")
+    @ConfigurationProperties(prefix = "component-provisioner.ods-api-service.service")
+    public OdsApiServerServiceProps odsApiServerServiceProps() {
+        return OdsApiServerServiceProps.builder().build();
+    }
+
     @Bean("componentProvisionerParametersConfig")
     @ConfigurationProperties(prefix = "component-provisioner.parameters")
     public ComponentProvisionerParametersProps componentProvisionerParametersProps() {
@@ -99,6 +105,12 @@ public class ApplicationPropertiesConfiguration {
     @Builder // useful for unit testing
     @Data
     public static class ComponentCatalogServiceProps {
+        private URL baseRestUrl;
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class OdsApiServerServiceProps {
         private URL baseRestUrl;
     }
 

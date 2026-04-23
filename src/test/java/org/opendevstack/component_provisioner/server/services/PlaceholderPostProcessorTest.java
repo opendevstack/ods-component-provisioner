@@ -1,11 +1,12 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import org.junit.jupiter.api.Test;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
+import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
+import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapperMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,10 +18,10 @@ class PlaceholderPostProcessorTest {
     @Test
     void givenNullProvisionAction_whenProcess_thenReturnsNull() {
         //given
-        ProvisionAction provisionAction = null;
+        ProvisionActionWrapper provisionAction = null;
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isNull();
@@ -29,13 +30,10 @@ class PlaceholderPostProcessorTest {
     @Test
     void givenProvisionActionWithNullParameters_whenProcess_thenReturnsOriginalAction() {
         //given
-        ProvisionAction provisionAction = ProvisionAction.builder()
-                .id("action-id")
-                .parameters(null)
-                .build();
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of("action-id", null);
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -44,10 +42,10 @@ class PlaceholderPostProcessorTest {
     @Test
     void givenProvisionActionWithEmptyParameters_whenProcess_thenReturnsOriginalAction() {
         //given
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of());
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of());
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -58,15 +56,15 @@ class PlaceholderPostProcessorTest {
         //given
         ProvisionActionParameter param = ProvisionActionParameterMother.of("key", "value");
         ProvisionActionParameter paramWithPlaceholder = ProvisionActionParameterMother.of("message", "Hello ${key}!");
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(param, paramWithPlaceholder));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(param, paramWithPlaceholder));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(2);
-        assertThat(result.getParameters().get(0).getValue()).isEqualTo("value");
-        assertThat(result.getParameters().get(1).getValue()).isEqualTo("Hello value!");
+        assertThat(result.getParametersMap()).hasSize(2);
+        assertThat(result.getParametersMap().get("key").getValue()).isEqualTo("value");
+        assertThat(result.getParametersMap().get("message").getValue()).isEqualTo("Hello value!");
     }
 
     @Test
@@ -75,24 +73,26 @@ class PlaceholderPostProcessorTest {
         ProvisionActionParameter firstName = ProvisionActionParameterMother.of("firstName", "John");
         ProvisionActionParameter lastName = ProvisionActionParameterMother.of("lastName", "Doe");
         ProvisionActionParameter greeting = ProvisionActionParameterMother.of("greeting", "Hello ${firstName} ${lastName}!");
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(firstName, lastName, greeting));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(firstName, lastName, greeting));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(3);
-        assertThat(result.getParameters().get(2).getValue()).isEqualTo("Hello John Doe!");
+        var parameterValues = new ArrayList<>(result.getParametersMap().values());
+
+        assertThat(parameterValues).hasSize(3);
+        assertThat(parameterValues.get(2).getValue()).isEqualTo("Hello John Doe!");
     }
 
     @Test
     void givenStringParameterWithoutPlaceholder_whenProcess_thenReturnsOriginalAction() {
         //given
         ProvisionActionParameter param = ProvisionActionParameterMother.of("message", "Hello World!");
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(param));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(param));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -102,10 +102,10 @@ class PlaceholderPostProcessorTest {
     void givenNonStringParameter_whenProcess_thenReturnsOriginalParameter() {
         //given
         ProvisionActionParameter intParam = ProvisionActionParameterMother.of("number", 42);
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(intParam));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(intParam));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -116,15 +116,15 @@ class PlaceholderPostProcessorTest {
         //given
         ProvisionActionParameter key = ProvisionActionParameterMother.of("key", "value");
         ProvisionActionParameter listParam = ProvisionActionParameterMother.of("items", List.of("First ${key}", "Second ${key}"));
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(key, listParam));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(key, listParam));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(2);
+        assertThat(result.getParametersMap()).hasSize(2);
         @SuppressWarnings("unchecked")
-        List<String> replacedList = (List<String>) result.getParameters().get(1).getValue();
+        List<String> replacedList = (List<String>) result.getParametersMap().get("items").getValue();
         assertThat(replacedList).containsExactly("First value", "Second value");
     }
 
@@ -133,15 +133,15 @@ class PlaceholderPostProcessorTest {
         //given
         ProvisionActionParameter key = ProvisionActionParameterMother.of("key", "value");
         ProvisionActionParameter mixedParam = ProvisionActionParameterMother.of("mixed", List.of("First ${key}", 42, "Second ${key}"));
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(key, mixedParam));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(key, mixedParam));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(2);
+        assertThat(result.getParametersMap()).hasSize(2);
         @SuppressWarnings("unchecked")
-        List<Object> replacedList = (List<Object>) result.getParameters().get(1).getValue();
+        List<Object> replacedList = (List<Object>) result.getParametersMap().get("mixed").getValue();
         assertThat(replacedList).containsExactly("First value", 42, "Second value");
     }
 
@@ -149,10 +149,10 @@ class PlaceholderPostProcessorTest {
     void givenListParameterWithoutPlaceholders_whenProcess_thenReturnsOriginalAction() {
         //given
         ProvisionActionParameter listParam = ProvisionActionParameterMother.of("items", List.of("First", "Second"));
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(listParam));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(listParam));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -162,10 +162,10 @@ class PlaceholderPostProcessorTest {
     void givenEmptyListParameter_whenProcess_thenReturnsOriginalAction() {
         //given
         ProvisionActionParameter listParam = ProvisionActionParameterMother.of("items", List.of());
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(listParam));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(listParam));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
         assertThat(result).isEqualTo(provisionAction);
@@ -175,14 +175,16 @@ class PlaceholderPostProcessorTest {
     void givenPlaceholderNotDefined_whenProcess_thenLeavesPlaceholderUnchanged() {
         //given
         ProvisionActionParameter param = ProvisionActionParameterMother.of("greeting", "Hello ${undefined}!");
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(param));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(param));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(1);
-        assertThat(result.getParameters().getFirst().getValue()).isEqualTo("Hello ${undefined}!");
+        var parameterValues = new ArrayList<>(result.getParametersMap().values());
+
+        assertThat(parameterValues).hasSize(1);
+        assertThat(parameterValues.getFirst().getValue()).isEqualTo("Hello ${undefined}!");
     }
 
     @Test
@@ -191,18 +193,18 @@ class PlaceholderPostProcessorTest {
         ProvisionActionParameter key1 = ProvisionActionParameterMother.of("key1", "value1");
         ProvisionActionParameter key2 = ProvisionActionParameterMother.of("key2", "value2");
         ProvisionActionParameter template = ProvisionActionParameterMother.of("template", "${key1} and ${key2}");
-        ProvisionAction provisionAction = ProvisionActionMother.of(List.of(key1, key2, template));
+        ProvisionActionWrapper provisionAction = ProvisionActionWrapperMother.of(List.of(key1, key2, template));
 
         //when
-        ProvisionAction result = processor.process(provisionAction);
+        ProvisionActionWrapper result = processor.process(provisionAction);
 
         //then
-        assertThat(result.getParameters()).hasSize(3);
-        assertThat(result.getParameters().get(0).getValue()).isEqualTo("value1");
-        assertThat(result.getParameters().get(1).getValue()).isEqualTo("value2");
-        assertThat(result.getParameters().get(2).getValue()).isEqualTo("value1 and value2");
+        assertThat(result.getParametersMap()).hasSize(3);
+        assertThat(result.getParametersMap().get("key1").getValue()).isEqualTo("value1");
+        assertThat(result.getParametersMap().get("key2").getValue()).isEqualTo("value2");
+        assertThat(result.getParametersMap().get("template").getValue()).isEqualTo("value1 and value2");
         // Verify immutability: original action should be unchanged
-        assertThat(provisionAction.getParameters().get(2).getValue()).isEqualTo("${key1} and ${key2}");
+        assertThat(provisionAction.getParametersMap().get("template").getValue()).isEqualTo("${key1} and ${key2}");
     }
 }
 

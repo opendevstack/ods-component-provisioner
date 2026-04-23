@@ -71,6 +71,14 @@ component-provisioner:
     project-components:
       username: ${COMPONENT_CATALOG_PROVISIONER_USERNAME}
       password: ${COMPONENT_CATALOG_PROVISIONER_PASSWORD}
+  ods-api-service:
+    service:
+      base-rest-url: ${ODS_API_SERVICE_SERVICE_BASE_REST_URL}
+    params:
+      client_id: ${ODS_API_SERVICE_SERVICE_PARAMS_CLIENT_ID}
+      client_secret: ${ODS_API_SERVICE_SERVICE_PARAMS_CLIENT_SECRET}
+      scope: ${ODS_API_SERVICE_SERVICE_PARAMS_SCOPE}
+      override: ${ODS_API_SERVICE_SERVICE_PARAMS_OVERRIDE}
   support:
     create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
   parameters:
