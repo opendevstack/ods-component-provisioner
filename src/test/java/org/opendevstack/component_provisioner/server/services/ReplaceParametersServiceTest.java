@@ -31,7 +31,7 @@ class ReplaceParametersServiceTest {
     private ReplaceParametersService replaceParametersService;
 
     private void initializeService(String paramsToOverride) {
-        replaceParametersService = new ReplaceParametersService(odsApiService, snakeCaseExtractor, paramsToOverride);
+        replaceParametersService = new ReplaceParametersService(odsApiService, snakeCaseExtractor, paramsToOverride, true);
     }
 
     @Test
