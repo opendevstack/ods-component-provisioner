@@ -72,6 +72,7 @@ component-provisioner:
       username: ${COMPONENT_CATALOG_PROVISIONER_USERNAME}
       password: ${COMPONENT_CATALOG_PROVISIONER_PASSWORD}
   ods-api-service:
+    enabled: ${ODS_API_SERVICE_ENABLED}
     service:
       base-rest-url: ${ODS_API_SERVICE_SERVICE_BASE_REST_URL}
     params:
