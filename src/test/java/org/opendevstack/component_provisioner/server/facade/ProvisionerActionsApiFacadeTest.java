@@ -8,8 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
@@ -34,7 +38,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -212,6 +219,139 @@ class ProvisionerActionsApiFacadeTest {
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(clusterLocation).isEqualTo("cluster-primary");
+    }
+
+    @Test
+    void triggerProvisionAction_givenNoCatalogItemIdNorSlug_thenThrowsBadRequestException() {
+        // given
+        var action = ProvisionActionMother.of(List.of(ProvisionActionParameterMother.of("project_key", "PRJ")));
+        setupSystemParameterMocks();
+
+        // when / then
+        assertThatThrownBy(() -> facade.triggerProvisionAction(action))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("catalog_item_id")
+                .hasMessageContaining("catalog_item_slug");
+    }
+
+    @Test
+    void triggerProvisionAction_givenBothCatalogItemIdAndSlug_thenThrowsBadRequestException() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-id"),
+                ProvisionActionParameterMother.of("catalog_item_slug", "my-slug")
+        ));
+        setupSystemParameterMocks();
+
+        // when / then
+        assertThatThrownBy(() -> facade.triggerProvisionAction(action))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("catalog_item_id")
+                .hasMessageContaining("catalog_item_slug");
+    }
+
+    @Test
+    void triggerProvisionAction_givenOnlyCatalogItemId_thenDoesNotCallGetCatalogItemBySlug() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-id")
+        ));
+        setupSystemParameterMocks();
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(componentCatalogService, never()).getCatalogItemBySlug(any(), any());
+    }
+
+    @Test
+    void triggerProvisionAction_givenOnlyCatalogItemSlug_thenResolvesCatalogItemIdAndRenamesParameter() {
+        // given
+        var catalogItemSlug = "my-catalog-slug";
+        var resolvedCatalogItemId = "resolved-catalog-id";
+        var accessToken = "token";
+
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_slug", catalogItemSlug)
+        ));
+        setupSystemParameterMocks();
+
+        var catalogItem = new CatalogItem();
+        catalogItem.setId(resolvedCatalogItemId);
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(componentCatalogService).getCatalogItemBySlug(accessToken, catalogItemSlug);
+        ArgumentCaptor<ProvisionActionWrapper> wrapperCaptor = ArgumentCaptor.forClass(ProvisionActionWrapper.class);
+        verify(replaceParametersService).replaceProvisioningParametersFromOdsApi(wrapperCaptor.capture());
+        var capturedWrapper = wrapperCaptor.getValue();
+        assertThat(capturedWrapper.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
+        assertThat(capturedWrapper.getCatalogItemSlug()).isNull();
+    }
+
+    @Test
+    void triggerProvisionAction_givenCatalogItemSlugNotFound_thenThrowsSlugNotFoundException() {
+        // given
+        var catalogItemSlug = "unknown-slug";
+        var accessToken = "token";
+
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_slug", catalogItemSlug)
+        ));
+        setupSystemParameterMocks();
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug))
+                .thenThrow(new RestClientException("Not found"));
+
+        // when / then
+        assertThatThrownBy(() -> facade.triggerProvisionAction(action))
+                .isInstanceOf(SlugNotFoundException.class)
+                .hasMessageContaining(catalogItemSlug);
+    }
+
+    @Test
+    void triggerProvisionAction_notifiesCatalogAfterReplaceParameters() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-id")
+        ));
+        setupSystemParameterMocks();
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        var order = inOrder(replaceParametersService, componentCatalogService);
+        order.verify(replaceParametersService).replaceProvisioningParametersFromOdsApi(any());
+        order.verify(componentCatalogService).notifyComponentCatalogProvisionStarts(any(), any(), any(), any(), any(), any());
+    }
+
+    private void setupSystemParameterMocks() {
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster-eu-west"));
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user@example.com");
+        when(projectsInfoService.getProjectClusters("token", "PRJ")).thenReturn(projectInfo);
     }
 
     @Test
