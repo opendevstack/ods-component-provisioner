@@ -56,7 +56,23 @@ public class ProvisionerActionsApiFacade {
 
         log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
 
+        updateAwxJobIdIntoProjectComponents(provisionActionWrapper, awxResponse);
+
         return awxResponse;
+    }
+
+    private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
+        if (awxResponse.httpStatusCode().is2xxSuccessful()) {
+            var awxJobId = awxResponse.awxResponseBody() != null ? awxResponse.awxResponseBody().getId() : null;
+            var componentId = provisionActionWrapper.getComponentId();
+            var catalogItemId = provisionActionWrapper.getCatalogItemId();
+            var componentUrl = provisionActionWrapper.getComponentUrl();
+            var accessToken = provisionActionWrapper.getAccessToken();
+
+            //componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
+        } else {
+            log.debug("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
+        }
     }
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
