@@ -42,6 +42,13 @@ public class ProvisionActionWrapper {
         return new ProvisionActionWrapper(provisionActionId, newParametersMap);
     }
 
+    public ProvisionActionWrapper cloneWithoutParameterByName(String provisionActionParameterName) {
+        var newParametersMap = new java.util.HashMap<>(parametersMap);
+        newParametersMap.remove(provisionActionParameterName);
+
+        return new ProvisionActionWrapper(provisionActionId, newParametersMap);
+    }
+
     public ProvisionAction toProvisionAction() {
         return ProvisionAction.builder()
                 .id(provisionActionId)
@@ -59,6 +66,10 @@ public class ProvisionActionWrapper {
 
     public String getCatalogItemId() {
         return getParameterValue("catalog_item_id");
+    }
+
+    public String getCatalogItemSlug() {
+        return getParameterValue("catalog_item_slug");
     }
 
     public String getComponentUrl() {
