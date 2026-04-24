@@ -120,6 +120,10 @@ public class ProvisionResultsApiFacade {
         if (StringUtils.isNotBlank(request.getCatalogItemId()) && StringUtils.isNotBlank(request.getCatalogItemSlug())) {
             throw new InvalidRestEntityException("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
         }
+
+        if (StringUtils.isBlank(request.getCatalogItemId()) && StringUtils.isBlank(request.getCatalogItemSlug())) {
+            throw new InvalidRestEntityException("Either catalogItemId or catalogItemSlug must be defined.");
+        }
     }
 
     public void validate(String projectKey, String status) {
