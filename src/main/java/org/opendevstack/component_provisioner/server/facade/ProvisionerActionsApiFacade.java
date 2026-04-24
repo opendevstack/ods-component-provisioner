@@ -208,8 +208,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        var wrapperWithId = wrapper.cloneWithParameter(catalogItemIdParameterItem);
-        return wrapperWithId.cloneWithoutParameter("catalog_item_slug");
+        return wrapper.cloneWithoutParameter("catalog_item_slug").cloneWithParameter(catalogItemIdParameterItem);
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
