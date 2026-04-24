@@ -160,7 +160,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithoutParameter_removesParameter_withoutMutatingOriginal() {
+    void cloneWithoutParameterByName_removesParameter_withoutMutatingOriginal() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -168,7 +168,7 @@ class ProvisionActionWrapperTest {
         ));
 
         // when
-        var cloned = original.cloneWithoutParameter("catalog_item_slug");
+        var cloned = original.cloneWithoutParameterByName("catalog_item_slug");
 
         // then
         assertThat(cloned.getCatalogItemSlug()).isNull();
@@ -177,14 +177,14 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithoutParameter_whenParameterAbsent_returnsSameParameters() {
+    void cloneWithoutParameterByName_whenParameterAbsent_returnsSameParameters() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")
         ));
 
         // when
-        var cloned = original.cloneWithoutParameter("nonexistent");
+        var cloned = original.cloneWithoutParameterByName("nonexistent");
 
         // then
         assertThat(cloned.getParametersMap()).containsKey("project_key");
