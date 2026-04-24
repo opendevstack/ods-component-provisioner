@@ -61,6 +61,10 @@ public class ProvisionActionWrapper {
         return getParameterValue("catalog_item_id");
     }
 
+    public String getCatalogItemSlug() {
+        return getParameterValue("catalog_item_slug");
+    }
+
     public String getComponentUrl() {
         return getParameterValue("component_url");
     }
