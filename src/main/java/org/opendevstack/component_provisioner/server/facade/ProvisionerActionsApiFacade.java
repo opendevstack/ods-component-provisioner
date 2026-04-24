@@ -208,10 +208,8 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        var updatedProvisionAction = addParametersItem(wrapper.toProvisionAction(), catalogItemIdParameterItem);
-        updatedProvisionAction = removeParametersItemByName(updatedProvisionAction, "catalog_item_slug");
-
-        return new ProvisionActionWrapper(updatedProvisionAction);
+        var wrapperWithId = wrapper.cloneWithParameter(catalogItemIdParameterItem);
+        return wrapperWithId.cloneWithoutParameter("catalog_item_slug");
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
@@ -230,22 +228,4 @@ public class ProvisionerActionsApiFacade {
                 })
         .orElse(provisionAction);
     }
-
-    // In order to be safe, we create a new ProvisionAction instance without the specified parameter instead of modifying the existing one (which might be immutable or shared).
-    private ProvisionAction removeParametersItemByName(ProvisionAction provisionAction, String parameterName) {
-        return Optional.ofNullable(parameterName)
-                .filter(name -> provisionAction.getParameters() != null)
-                .map(name -> {
-                    var newParameters = provisionAction.getParameters().stream()
-                            .filter(p -> !p.getName().equals(name))
-                            .toList();
-
-                    return provisionAction.toBuilder()
-                            .id(provisionAction.getId())
-                            .parameters(newParameters)
-                            .build();
-                })
-        .orElse(provisionAction);
-    }
-
 }

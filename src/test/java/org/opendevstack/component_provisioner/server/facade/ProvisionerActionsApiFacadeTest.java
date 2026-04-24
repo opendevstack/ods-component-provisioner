@@ -40,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -321,6 +322,28 @@ class ProvisionerActionsApiFacadeTest {
         assertThatThrownBy(() -> facade.triggerProvisionAction(action))
                 .isInstanceOf(SlugNotFoundException.class)
                 .hasMessageContaining(catalogItemSlug);
+    }
+
+    @Test
+    void triggerProvisionAction_notifiesCatalogAfterReplaceParameters() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-id")
+        ));
+        setupSystemParameterMocks();
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        var order = inOrder(replaceParametersService, componentCatalogService);
+        order.verify(replaceParametersService).replaceProvisioningParametersFromOdsApi(any());
+        order.verify(componentCatalogService).notifyComponentCatalogProvisionStarts(any(), any(), any(), any(), any(), any());
     }
 
     private void setupSystemParameterMocks() {

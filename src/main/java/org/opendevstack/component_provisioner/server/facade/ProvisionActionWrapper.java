@@ -42,6 +42,13 @@ public class ProvisionActionWrapper {
         return new ProvisionActionWrapper(provisionActionId, newParametersMap);
     }
 
+    public ProvisionActionWrapper cloneWithoutParameter(String provisionActionParameterName) {
+        var newParametersMap = new java.util.HashMap<>(parametersMap);
+        newParametersMap.remove(provisionActionParameterName);
+
+        return new ProvisionActionWrapper(provisionActionId, newParametersMap);
+    }
+
     public ProvisionAction toProvisionAction() {
         return ProvisionAction.builder()
                 .id(provisionActionId)
