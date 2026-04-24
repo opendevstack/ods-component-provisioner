@@ -180,4 +180,40 @@ class ProvisionResultsApiControllerTest {
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
+
+    @Test
+    void givenBothCatalogItemIdAndCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var statusLowercase = "created";
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setCatalogItemId("cat-1");
+        request.setCatalogItemSlug("slug");
+        request.setComponentUrl("http://example");
+
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+
+        // when / then
+        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
+    }
+
+    @Test
+    void givenNeitherCatalogItemIdNorCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var statusLowercase = "created";
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setComponentUrl("http://example");
+
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+
+        // when / then
+        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
+    }
 }
