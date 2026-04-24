@@ -202,15 +202,16 @@ public class ProvisionerActionsApiFacade {
         var resolvedId = catalogItem.getId();
         log.debug("Resolved catalog_item_slug {} to catalog_item_id: {}", catalogItemSlug, resolvedId);
 
-        var newParametersMap = new HashMap<>(wrapper.getParametersMap());
-        newParametersMap.remove("catalog_item_slug");
-        newParametersMap.put("catalog_item_id", ProvisionActionParameter.builder()
+        var catalogItemIdParameterItem = ProvisionActionParameter.builder()
                 .name("catalog_item_id")
                 .value(resolvedId)
                 .type(ParameterType.STRING.getValue())
-                .build());
+                .build();
 
-        return new ProvisionActionWrapper(wrapper.getProvisionActionId(), newParametersMap);
+        var updatedProvisionAction = addParametersItem(wrapper.toProvisionAction(), catalogItemIdParameterItem);
+        updatedProvisionAction = removeParametersItemByName(updatedProvisionAction, "catalog_item_slug");
+
+        return new ProvisionActionWrapper(updatedProvisionAction);
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
@@ -220,6 +221,23 @@ public class ProvisionerActionsApiFacade {
                     var newParameters = provisionAction.getParameters() == null
                             ? List.of(item)
                             : java.util.stream.Stream.concat(provisionAction.getParameters().stream(), java.util.stream.Stream.of(item))
+                            .toList();
+
+                    return provisionAction.toBuilder()
+                            .id(provisionAction.getId())
+                            .parameters(newParameters)
+                            .build();
+                })
+        .orElse(provisionAction);
+    }
+
+    // In order to be safe, we create a new ProvisionAction instance without the specified parameter instead of modifying the existing one (which might be immutable or shared).
+    private ProvisionAction removeParametersItemByName(ProvisionAction provisionAction, String parameterName) {
+        return Optional.ofNullable(parameterName)
+                .filter(name -> provisionAction.getParameters() != null)
+                .map(name -> {
+                    var newParameters = provisionAction.getParameters().stream()
+                            .filter(p -> !p.getName().equals(name))
                             .toList();
 
                     return provisionAction.toBuilder()
