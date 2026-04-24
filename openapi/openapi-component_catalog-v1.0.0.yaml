@@ -1230,6 +1230,12 @@ components:
           example: "some-access-token"
           nullable: false
 
+        workflowJobId:
+          type: string
+          description: the workflow job id from AWX to correlate provisioning status with AWX job status updates
+          example: "123456"
+          nullable: true
+
         parameters:
           type: array
           description: List of name/value string parameters.

@@ -5,9 +5,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
@@ -42,20 +44,22 @@ public class ComponentCatalogService {
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     private final ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
+    private final ProvisionerActionsApi provisionerActionsApi;
 
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
             ApiClient componentCatalogApiClient,
             ProjectComponentsApi projectComponentsApi, ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
-            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps
-    ) {
+            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps,
+            ProvisionerActionsApi provisionerActionsApi) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
         this.componentCatalogApiClient = componentCatalogApiClient;
         this.projectComponentsApi = projectComponentsApi;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
+        this.provisionerActionsApi = provisionerActionsApi;
     }
 
     public Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> getCatalogItemUserActionMessageDefinition(
@@ -127,7 +131,21 @@ public class ComponentCatalogService {
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisioningStatusUpdateRequest);
 
-        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, "CREATING", provisioningStatusUpdateRequest);
+        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, ProjectComponentStatus.CREATING.name(), provisioningStatusUpdateRequest);
+    }
+
+    public void setWorkflowJobId(String projectKey,
+                                 String componentId,
+                                 String workflowJobId,
+                                 String accessToken) {
+
+        var provisionStatusUpdateRequest = ProvisioningStatusUpdateRequest.builder()
+                .componentId(componentId)
+                .accessToken(accessToken)
+                .workflowJobId(workflowJobId)
+                .build();
+
+        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
     }
 
     public List<ProjectComponentInfo> getProjectComponents(String projectKey, String accessToken) {

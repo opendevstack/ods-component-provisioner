@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -22,7 +24,6 @@ import org.opendevstack.component_provisioner.server.services.ReplaceParametersS
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,13 +64,17 @@ public class ProvisionerActionsApiFacade {
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
         if (awxResponse.httpStatusCode().is2xxSuccessful()) {
-            var awxJobId = awxResponse.awxResponseBody() != null ? awxResponse.awxResponseBody().getId() : null;
+            var awxJobId = Optional.of(awxResponse)
+                    .map(AwxResponse::awxResponseBody)
+                    .map(ProvisionActionResponse::getId)
+                    .map(Object::toString)
+                    .orElseThrow(() -> new RestEntityNotFoundException("AWX job id not found in AWX response body"));
+
+            var projectKey = provisionActionWrapper.getProjectKey();
             var componentId = provisionActionWrapper.getComponentId();
-            var catalogItemId = provisionActionWrapper.getCatalogItemId();
-            var componentUrl = provisionActionWrapper.getComponentUrl();
             var accessToken = provisionActionWrapper.getAccessToken();
 
-            //componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
+            componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
         } else {
             log.debug("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
         }

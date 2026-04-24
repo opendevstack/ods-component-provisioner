@@ -13,6 +13,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.model.AwxResponseMother;
 import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
@@ -262,7 +263,7 @@ class ProvisionerActionsApiFacadeTest {
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
         when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxResponseMother.of())));
 
         // when
         facade.triggerProvisionAction(action);
@@ -290,7 +291,7 @@ class ProvisionerActionsApiFacadeTest {
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
         when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxResponseMother.of())));
 
         // when
         facade.triggerProvisionAction(action);
@@ -335,7 +336,7 @@ class ProvisionerActionsApiFacadeTest {
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
         when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxResponseMother.of())));
 
         // when
         facade.triggerProvisionAction(action);
