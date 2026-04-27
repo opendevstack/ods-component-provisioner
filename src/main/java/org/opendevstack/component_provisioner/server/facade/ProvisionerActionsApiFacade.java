@@ -123,7 +123,7 @@ public class ProvisionerActionsApiFacade {
 
             componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
         } else {
-            log.debug("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
+            log.warn("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
         }
     }
 
