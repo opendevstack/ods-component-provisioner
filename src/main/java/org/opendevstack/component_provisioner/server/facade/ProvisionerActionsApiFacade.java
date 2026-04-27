@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
@@ -10,22 +11,22 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Slug
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
 @Service
 @AllArgsConstructor
@@ -40,13 +41,15 @@ public class ProvisionerActionsApiFacade {
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
+    private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
-        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper);
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(requiredCatalogItemParamsWrapper);
         provisionerActionsApiValidator.validate(resolvedActionWrapper.toProvisionAction());
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(resolvedActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
@@ -150,7 +153,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(callerParameter);
+        return provisionActionWrapper.cloneWithParameters(callerParameter);
     }
 
     private ProvisionActionWrapper addClusterLocationToAction(ProvisionActionWrapper provisionActionWrapper) {
@@ -171,7 +174,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(locationParameter);
+        return provisionActionWrapper.cloneWithParameters(locationParameter);
     }
 
     private ProvisionActionWrapper addBearerTokenToActions(ProvisionActionWrapper provisionActionWrapper) {
@@ -181,7 +184,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(bearerTokenParameter);
+        return provisionActionWrapper.cloneWithParameters(bearerTokenParameter);
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(ProvisionAction provisionAction) {
@@ -233,7 +236,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameter(catalogItemIdParameterItem);
+        return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameters(catalogItemIdParameterItem);
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
@@ -252,4 +255,43 @@ public class ProvisionerActionsApiFacade {
                 })
         .orElse(provisionAction);
     }
+
+    public ProvisionActionWrapper addMandatoryCatalogItemParamsIfMissing(ProvisionActionWrapper provisionActionWrapper) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var catalogItemId = provisionActionWrapper.getCatalogItemId();
+        var projectKey = provisionActionWrapper.getProjectKey();
+
+        CatalogItem catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
+
+        var mandatoryParams = Optional.ofNullable(catalogItem.getUserActions())
+                .orElse(List.of())
+                .stream()
+                .filter(action -> provisionActionWrapper.getProvisionActionId().equals(action.getId()))
+                .findFirst()
+                .map(CatalogItemUserAction::getParameters)
+                .orElse(List.of())
+                .stream()
+                .filter(userActionParam -> Boolean.TRUE.equals(userActionParam.getRequired()))
+                .toList();
+        var includedParams = new HashSet<>(provisionActionWrapper.getParametersMap().keySet());
+        var missingParams = mandatoryParams.stream()
+                .filter(p -> !includedParams.contains(p.getName()))
+                .map(userActionParam -> {
+                    var param = ProvisionActionParameter.builder()
+                            .name(userActionParam.getName())
+                            .type(userActionParam.getType())
+                            .build();
+
+                    mandatoryFieldsValidator.updateParam(param, userActionParam, getLocation(provisionActionWrapper.toProvisionAction()));
+
+                    return param;
+                })
+                .toArray(ProvisionActionParameter[]::new);
+
+        var res = provisionActionWrapper.cloneWithParameters(missingParams);
+
+        log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
+        return res;
+    }
+
 }
