@@ -62,24 +62,6 @@ public class ProvisionerActionsApiFacade {
         return awxResponse;
     }
 
-    private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
-        if (awxResponse.httpStatusCode().is2xxSuccessful()) {
-            var awxJobId = Optional.of(awxResponse)
-                    .map(AwxResponse::awxResponseBody)
-                    .map(ProvisionActionResponse::getId)
-                    .map(Object::toString)
-                    .orElseThrow(() -> new RestEntityNotFoundException("AWX job id not found in AWX response body"));
-
-            var projectKey = provisionActionWrapper.getProjectKey();
-            var componentId = provisionActionWrapper.getComponentId();
-            var accessToken = provisionActionWrapper.getAccessToken();
-
-            componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
-        } else {
-            log.debug("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
-        }
-    }
-
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
         log.debug("Triggering AWX workflow job for provision action with id: {}", provisionAction.getId());
 
@@ -111,16 +93,7 @@ public class ProvisionerActionsApiFacade {
         var parameters = provisionActionWrapper.getParametersMap().values().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
-                        p -> {
-                            Object val = p.getValue();
-                            if (val == null) {
-                                return List.of("");
-                            }
-                            if (val instanceof List<?> list) {
-                                return list.stream().map(Object::toString).toList();
-                            }
-                            return List.of(val.toString());
-                        }
+                        this::extractParameterValue
                 ));
 
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
@@ -134,6 +107,37 @@ public class ProvisionerActionsApiFacade {
         log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
 
         return bearerTokenWrapper;
+    }
+
+    private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
+        if (awxResponse.httpStatusCode().is2xxSuccessful()) {
+            var awxJobId = Optional.of(awxResponse)
+                    .map(AwxResponse::awxResponseBody)
+                    .map(ProvisionActionResponse::getId)
+                    .map(Object::toString)
+                    .orElseThrow(() -> new RestEntityNotFoundException("AWX job id not found in AWX response body"));
+
+            var projectKey = provisionActionWrapper.getProjectKey();
+            var componentId = provisionActionWrapper.getComponentId();
+            var accessToken = provisionActionWrapper.getAccessToken();
+
+            componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
+        } else {
+            log.debug("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
+        }
+    }
+
+    private List<String> extractParameterValue(ProvisionActionParameter provisionActionParameter) {
+        Object val = provisionActionParameter.getValue();
+        if (val == null) {
+            return List.of("");
+        }
+        if (val instanceof List<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+        return List.of(val.toString());
     }
 
     private ProvisionActionWrapper addCallerToAction(ProvisionActionWrapper provisionActionWrapper) {
