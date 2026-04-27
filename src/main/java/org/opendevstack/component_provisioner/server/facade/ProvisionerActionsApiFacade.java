@@ -6,7 +6,10 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -57,6 +60,8 @@ public class ProvisionerActionsApiFacade {
 
         log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
 
+        updateAwxJobIdIntoProjectComponents(provisionActionWrapper, awxResponse);
+
         return awxResponse;
     }
 
@@ -91,16 +96,7 @@ public class ProvisionerActionsApiFacade {
         var parameters = provisionActionWrapper.getParametersMap().values().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         ProvisionActionParameter::getName,
-                        p -> {
-                            Object val = p.getValue();
-                            if (val == null) {
-                                return List.of("");
-                            }
-                            if (val instanceof List<?> list) {
-                                return list.stream().map(Object::toString).toList();
-                            }
-                            return List.of(val.toString());
-                        }
+                        this::extractParameterValue
                 ));
 
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
@@ -114,6 +110,37 @@ public class ProvisionerActionsApiFacade {
         log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
 
         return bearerTokenWrapper;
+    }
+
+    private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
+        if (awxResponse.httpStatusCode().is2xxSuccessful()) {
+            var awxJobId = Optional.of(awxResponse)
+                    .map(AwxResponse::awxResponseBody)
+                    .map(ProvisionActionResponse::getId)
+                    .map(Object::toString)
+                    .orElseThrow(() -> new RestEntityNotFoundException("AWX job id not found in AWX response body"));
+
+            var projectKey = provisionActionWrapper.getProjectKey();
+            var componentId = provisionActionWrapper.getComponentId();
+            var accessToken = provisionActionWrapper.getAccessToken();
+
+            componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
+        } else {
+            log.warn("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
+        }
+    }
+
+    private List<String> extractParameterValue(ProvisionActionParameter provisionActionParameter) {
+        Object val = provisionActionParameter.getValue();
+        if (val == null) {
+            return List.of("");
+        }
+        if (val instanceof List<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .toList();
+        }
+        return List.of(val.toString());
     }
 
     private ProvisionActionWrapper addCallerToAction(ProvisionActionWrapper provisionActionWrapper) {
