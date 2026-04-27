@@ -75,7 +75,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenInvalidIdInProjectComponent_whenDeleteProvisioningStatusIsCalled_thenThrowsRuntimeException() throws Exception {
+    void givenInvalidIdInProjectComponent_whenDeleteProvisioningStatusIsCalled_thenThrowsInvalidIdException() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -85,8 +85,7 @@ class ProvisionServiceTest {
 
         // when / then
         assertThatThrownBy(() -> provisionService.deleteProvisioningStatus(projectKey, componentId, projectComponent, accessToken))
-                .isInstanceOf(RuntimeException.class)
-                .hasCauseInstanceOf(InvalidIdException.class);
+                .isInstanceOf(InvalidIdException.class);
     }
 
     @Test

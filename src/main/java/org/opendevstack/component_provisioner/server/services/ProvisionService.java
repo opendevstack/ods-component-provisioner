@@ -1,13 +1,13 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
-import org.opendevstack.component_provisioner.server.services.exceptions.InvalidIdException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -76,15 +76,11 @@ public class ProvisionService {
         provisionerActionsApi.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
     }
 
+    @SneakyThrows
     private String composeCatalogItemId(ProjectComponentExtendedInfo projectComponents) {
-        try {
-            var decodedCatalogItemId = idDecode(projectComponents.getCatalogItemId());
-            var decodedCatalogItemRef = idDecode(projectComponents.getCatalogItemRef());
-            return idEncode(Strings.concat(decodedCatalogItemId, decodedCatalogItemRef));
-
-        } catch (InvalidIdException e) {
-            throw new RuntimeException(e);
-        }
+        var decodedCatalogItemId = idDecode(projectComponents.getCatalogItemId());
+        var decodedCatalogItemRef = idDecode(projectComponents.getCatalogItemRef());
+        return idEncode(Strings.concat(decodedCatalogItemId, decodedCatalogItemRef));
     }
 
     private List<ProvisioningStatusUpdateRequestParametersInner> extractDeletionParameters(
