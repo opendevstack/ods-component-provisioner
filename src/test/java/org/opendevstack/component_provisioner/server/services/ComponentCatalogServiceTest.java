@@ -188,7 +188,7 @@ class ComponentCatalogServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
         when(parametersProps.getBlacklist()).thenReturn(new String[]{"access_token"});
-        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
@@ -237,7 +237,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq("http://component-catalog"))).thenReturn(provisionerActionsApi);
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
 
         //when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, accessToken, null);
@@ -310,7 +310,7 @@ class ComponentCatalogServiceTest {
             assertThat(result.get("password")).containsExactly("<PRIVATE>");
             assertThat(result.get("token")).containsExactly("<PRIVATE>");
             assertThat(result.get("env")).containsExactly("prod");
-            assertThat(result.size()).isEqualTo(4);
+            assertThat(result).hasSize(4);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -402,5 +402,40 @@ class ComponentCatalogServiceTest {
         // then
         assertThat(result).isSameAs(expectedCatalogItem);
         verify(catalogItemsApi).getCatalogItemBySlug(slug);
+    }
+
+    @Test
+    void givenValidInput_whenSetWorkflowJobIdIsCalled_thenInvokesProvisionerActionsApiWithPartialUpdate() throws MalformedURLException {
+        // given
+        String projectKey = "PRJ-KEY";
+        String componentId = "CMP-001";
+        String workflowJobId = "WFJ-123";
+        String accessToken = "secret";
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
+
+        ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
+                ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
+
+        // when
+        componentCatalogService.setWorkflowJobId(projectKey, componentId, workflowJobId, accessToken);
+
+        // then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(
+                projectKeyCaptor.capture(),
+                statusCaptor.capture(),
+                requestCaptor.capture()
+        );
+
+        assertThat(projectKeyCaptor.getValue()).isEqualTo(projectKey);
+        assertThat(statusCaptor.getValue()).isEqualTo("CREATING");
+
+        ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
+        assertThat(captured.getComponentId()).isEqualTo(componentId);
+        assertThat(captured.getAccessToken()).isEqualTo(accessToken);
+        assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
 }
