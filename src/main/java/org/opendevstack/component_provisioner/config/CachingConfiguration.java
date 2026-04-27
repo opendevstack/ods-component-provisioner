@@ -74,7 +74,7 @@ public class CachingConfiguration implements CacheEventListener<Object, Object> 
     @Scheduled(fixedRateString = "#{projectsInfoServiceCacheConfig.getEvictionInterval().toMillis()}")
     @CacheEvict(cacheNames = ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, allEntries = true)
     public void emptyProjectsInfoServiceCache() {
-        log.debug("Emptying Projects Info Service cache...");
+        log.debug("Emptying Component Provisioner cache...");
     }
 
     @Override
