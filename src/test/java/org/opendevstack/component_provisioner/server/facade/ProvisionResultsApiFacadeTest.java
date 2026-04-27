@@ -8,30 +8,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
+import org.opendevstack.component_provisioner.server.model.*;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,9 +31,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -357,23 +346,18 @@ class ProvisionResultsApiFacadeTest {
         var componentId = "CID";
         var accessToken = "token";
 
-        var projectComponent = new ProjectComponentExtendedInfo();
-        projectComponent.setComponentId(componentId);
-
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
-                .thenReturn(projectComponent);
-
         // when
         facade.deleteProvisioningStatus(projectKey, componentId, accessToken);
 
         // then
-        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, projectComponent, accessToken);
+        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
     @Test
     void givenAProjectKeyAndAnAction_whenAddSystemParametersToActionIsCalled_thenAddsClusterAndCallerToAction() {
         // given
         var projectKey = "PRJ";
+        var componentId = "CID";
         var accessToken = "token123";
         var clusterLocation = "cluster-a";
         var caller = "user@example.com";
@@ -387,7 +371,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when
-        facade.addSystemParametersToAction(projectKey, action);
+        facade.addSystemParametersToAction(projectKey, componentId, action);
 
         // then
         assertThat(facade.getParameterString(action, "cluster_location")).isEqualTo(clusterLocation);
@@ -398,6 +382,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAProjectWithNoClusters_whenAddSystemParametersToActionIsCalled_thenThrowsProjectConfigurationException() {
         // given
         var projectKey = "PRJ";
+        var componentId = "CID";
         var accessToken = "token123";
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
@@ -408,7 +393,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when / then
-        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
+        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, componentId, action));
         assertThat(ex.getMessage()).contains("PRJ");
     }
 }

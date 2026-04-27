@@ -11,14 +11,15 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
+import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentExtendedInfoMother;
-import org.opendevstack.component_provisioner.server.services.exceptions.InvalidIdException;
 
 import java.net.URL;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +44,12 @@ class ProvisionServiceTest {
 
     @Mock
     private ProvisioningStatusUpdateRequestParametersInnerMapper provisioningStatusUpdateRequestParametersInnerMapper;
+
+    @Mock
+    private ComponentCatalogService componentCatalogService;
+
+    @Mock
+    private CreateIncidentParameterMapper createIncidentParameterMapper;
 
     @InjectMocks
     private ProvisionService provisionService;
@@ -75,21 +82,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenInvalidIdInProjectComponent_whenDeleteProvisioningStatusIsCalled_thenThrowsInvalidIdException() {
-        // given
-        var projectKey = "PRJ";
-        var componentId = "CID";
-        var accessToken = "token";
-        var projectComponent = new ProjectComponentExtendedInfo();
-        projectComponent.setCatalogItemId("!!!"); // Invalid base64
-
-        // when / then
-        assertThatThrownBy(() -> provisionService.deleteProvisioningStatus(projectKey, componentId, projectComponent, accessToken))
-                .isInstanceOf(InvalidIdException.class);
-    }
-
-    @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalled_thenReturnsMappedParameters() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -97,9 +90,16 @@ class ProvisionServiceTest {
         var baseUrl = "http://catalog.example.com";
         var projectComponent = ProjectComponentExtendedInfoMother.valid();
 
+        // Setup base64 encoded IDs to avoid InvalidIdException
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA=="); // catalogItemId
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY="); // catalogItemRef
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
         when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
         CatalogItem catalogItem = new CatalogItem();
         catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
                 .parameters(List.of(CatalogItemUserActionParameter.builder()
@@ -109,22 +109,41 @@ class ProvisionServiceTest {
                 .build()));
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
-        when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
-        when(provisioningStatusUpdateRequestParametersInnerMapper.toTarget(any()))
-                .thenReturn(new ProvisioningStatusUpdateRequestParametersInner());
-
-        projectComponent.setParameters(List.of(ProjectComponentParameter.builder()
+        var projectParam = ProjectComponentParameter.builder()
                 .name("param1")
                 .values(List.of("value1"))
-                .build()));
+                .build();
+        projectComponent.setParameters(List.of(projectParam));
+
+        when(createIncidentParameterMapper.toTarget(projectParam))
+                .thenReturn(CreateIncidentParameter.builder().name("param1").value("value1").build());
 
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId, projectComponent, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("param1");
+        assertThat(result.get(0).getValue()).isEqualTo("value1");
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
+
+        // when
+        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
 
         // then
         var expectedRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
-                .parameters(List.of(new ProvisioningStatusUpdateRequestParametersInner()))
                 .build();
 
         verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, expectedRequest);

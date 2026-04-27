@@ -77,7 +77,7 @@ class ProvisionResultsApiControllerTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
-        var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
+        var response = provisionResultsApiController.deleteProjectComponent(projectKey, provisioningDeleteRequest);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -99,13 +99,13 @@ class ProvisionResultsApiControllerTest {
         when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
 
         // when
-        var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), isNull());
     }
@@ -121,7 +121,7 @@ class ProvisionResultsApiControllerTest {
         doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
 
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, action);
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, action);
 
         // then
         var ex = assertThrows(InvalidRestEntityException.class, call);
@@ -140,11 +140,11 @@ class ProvisionResultsApiControllerTest {
         when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(true);
 
         // when
-        var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
+        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
     }
 
@@ -243,7 +243,7 @@ class ProvisionResultsApiControllerTest {
         doThrow(new InvalidRestEntityException(errorMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
 
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);

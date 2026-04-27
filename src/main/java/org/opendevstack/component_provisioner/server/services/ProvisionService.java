@@ -7,7 +7,8 @@ import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
-import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
+import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,8 +26,9 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 public class ProvisionService {
 
     private final ApiClientsBuilder apiClientsBuilder;
+    private final ComponentCatalogService componentCatalogService;
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
-    private final ProvisioningStatusUpdateRequestParametersInnerMapper provisioningStatusUpdateRequestParametersInnerMapper;
+    private final CreateIncidentParameterMapper createIncidentParameterMapper;
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
                                                String catalogItemId, String componentUrl, String accessToken) {
@@ -48,32 +50,32 @@ public class ProvisionService {
 
     public void deleteProvisioningStatus(String projectKey,
                                          String componentId,
-                                         ProjectComponentExtendedInfo projectComponent,
                                          String accessToken) {
         log.info("Deleting provisioning completed. Project Key: {}, componentId: {}", projectKey, componentId);
 
-        var catalogItemId = composeCatalogItemId(projectComponent);
-
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-
-        var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
-        var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
-
-        var parametersToSend = extractDeletionParameters(catalogItem, projectComponent);
-
-        if (parametersToSend.isEmpty()) {
-            log.debug("No parameters marked as sendOnDeletion found");
-        }
-
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
-                .parameters(parametersToSend)
                 .build();
 
         var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken,
                 componentCatalogServiceProps.getBaseRestUrl().toString());
 
         provisionerActionsApi.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
+    }
+
+    public List<CreateIncidentParameter> getDeletionParameters(String projectKey,
+                                                                                      String componentId,
+                                                                                      String accessToken) {
+
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken);
+
+        var catalogItemId = composeCatalogItemId(projectComponent);
+
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
+        var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
+
+        return extractDeletionParameters(catalogItem, projectComponent);
     }
 
     @SneakyThrows
@@ -83,7 +85,7 @@ public class ProvisionService {
         return idEncode(Strings.concat(decodedCatalogItemId, decodedCatalogItemRef));
     }
 
-    private List<ProvisioningStatusUpdateRequestParametersInner> extractDeletionParameters(
+    private List<CreateIncidentParameter> extractDeletionParameters(
             CatalogItem catalogItem,
             ProjectComponentExtendedInfo projectComponent) {
         var projectParametersByName =
@@ -109,7 +111,7 @@ public class ProvisionService {
                 .filter(param -> Boolean.TRUE.equals(param.getSendOnDeletion()))
                 .map(param -> projectParametersByName.get(param.getName()))
                 .filter(Objects::nonNull)
-                .map(provisioningStatusUpdateRequestParametersInnerMapper::toTarget)
+                .map(createIncidentParameterMapper::toTarget)
                 .toList();
     }
 }
