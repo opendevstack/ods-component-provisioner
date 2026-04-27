@@ -7,26 +7,23 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
 @Service
 @AllArgsConstructor
@@ -41,14 +38,15 @@ public class ProvisionerActionsApiFacade {
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
+    private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
-        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(provisionActionWrapper);
-        var systemParametersActionWrapper = addSystemParametersToAction(requiredCatalogItemParamsWrapper);
-        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
+        var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper);
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(requiredCatalogItemParamsWrapper);
         provisionerActionsApiValidator.validate(resolvedActionWrapper.toProvisionAction());
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(resolvedActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
@@ -251,13 +249,16 @@ public class ProvisionerActionsApiFacade {
         var includedParams = new HashSet<>(provisionActionWrapper.getParametersMap().keySet());
         var missingParams = mandatoryParams.stream()
                 .filter(p -> !includedParams.contains(p.getName()))
-                .map(userActionParam ->
-                        ProvisionActionParameter.builder()
-                                .name(userActionParam.getName())
-                                .type(userActionParam.getType())
-                                .value(userActionParam.getDefaultValue())
-                                .build()
-                )
+                .map(userActionParam -> {
+                    var param = ProvisionActionParameter.builder()
+                            .name(userActionParam.getName())
+                            .type(userActionParam.getType())
+                            .build();
+
+                    mandatoryFieldsValidator.updateParam(param, userActionParam, getLocation(provisionActionWrapper.toProvisionAction()));
+
+                    return param;
+                })
                 .toArray(ProvisionActionParameter[]::new);
 
         var res = provisionActionWrapper.cloneWithParameters(missingParams);

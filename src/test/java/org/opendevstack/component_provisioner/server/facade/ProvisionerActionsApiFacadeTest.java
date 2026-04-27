@@ -16,6 +16,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -60,6 +61,9 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private ReplaceParametersService replaceParametersService;
+
+    @Mock
+    private MandatoryFieldsValidator mandatoryFieldsValidator;
 
     @Mock
     private ProjectsInfoService projectsInfoService;
@@ -413,6 +417,14 @@ class ProvisionerActionsApiFacadeTest {
         doCallRealMethod()
                 .when(facade)
                 .addMandatoryCatalogItemParamsIfMissing(any());
+        doAnswer(invocation -> {
+            ProvisionActionParameter param = invocation.getArgument(0);
+            CatalogItemUserActionParameter spec = invocation.getArgument(1);
+
+            param.setValue(spec.getDefaultValue());
+            return null;
+        }).when(mandatoryFieldsValidator)
+                .updateParam(any(), any(), any());
         when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
                 .thenReturn(catalogItem);
 
