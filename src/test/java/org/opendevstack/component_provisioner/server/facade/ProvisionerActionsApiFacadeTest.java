@@ -13,13 +13,15 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobLaunchMother;
+import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -29,6 +31,7 @@ import org.opendevstack.component_provisioner.server.services.ReplaceParametersS
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -258,11 +261,15 @@ class ProvisionerActionsApiFacadeTest {
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
                 ProvisionActionParameterMother.of("catalog_item_id", "cat-id")
         ));
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
         setupSystemParameterMocks();
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(awxWorkflowJobLaunch);
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob)).thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
 
         // when
         facade.triggerProvisionAction(action);
@@ -283,14 +290,18 @@ class ProvisionerActionsApiFacadeTest {
                 ProvisionActionParameterMother.of("catalog_item_slug", catalogItemSlug)
         ));
         setupSystemParameterMocks();
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
 
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(awxWorkflowJobLaunch);
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob)).thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
 
         // when
         facade.triggerProvisionAction(action);
@@ -327,18 +338,23 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void triggerProvisionAction_notifiesCatalogAfterReplaceParameters() {
         // given
-        var action = ProvisionActionMother.of(List.of(
+        var provisionAction = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
                 ProvisionActionParameterMother.of("catalog_item_id", "cat-id")
         ));
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+
         setupSystemParameterMocks();
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
         when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
-        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
-        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(awxWorkflowJobLaunch);
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob)).thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(provisionAction.getId(), awxWorkflowJobLaunch)).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
 
         // when
-        facade.triggerProvisionAction(action);
+        facade.triggerProvisionAction(provisionAction);
 
         // then
         var order = inOrder(replaceParametersService, componentCatalogService);

@@ -125,7 +125,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo(parameter);
+        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo("originalValue");
     }
 
     @Test
@@ -212,7 +212,7 @@ class ReplaceParametersServiceTest {
         Assertions.assertThat(result.getParametersMap())
                 .hasSize(4)
                 .containsKeys("project_key", "param1", "param2", "param3");
-        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo(param1);
+        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo("value1");
         Assertions.assertThat(result.getParametersMap().get("param2").getValue()).isEqualTo("newValue2");
         Assertions.assertThat(result.getParametersMap().get("param3").getValue()).isEqualTo("value3");
     }

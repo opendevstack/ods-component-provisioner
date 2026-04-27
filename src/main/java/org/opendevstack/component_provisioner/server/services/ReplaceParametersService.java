@@ -86,7 +86,7 @@ public class ReplaceParametersService {
                 var parameter = ProvisionActionParameter.builder()
                         .name(entry.getValue().getName())
                         .type(entry.getValue().getType())
-                        .value(entry.getValue())
+                        .value(entry.getValue().getValue())
                         .build();
 
                 updatedParameters.put(entry.getKey(), parameter);
