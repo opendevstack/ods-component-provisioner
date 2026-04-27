@@ -137,7 +137,7 @@ public class ComponentCatalogService {
         return projectComponentsApi.getProjectComponents(projectKey, accessToken);
     }
 
-    @Cacheable
+    @Cacheable(key = "#root.methodName + #projectKey + #catalogItemId")
     public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
@@ -149,7 +149,7 @@ public class ComponentCatalogService {
         return catalogItem;
     }
 
-    @Cacheable
+    @Cacheable(key = "#root.methodName + #slug")
     public CatalogItem getCatalogItemBySlug(String accessToken, String slug) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
