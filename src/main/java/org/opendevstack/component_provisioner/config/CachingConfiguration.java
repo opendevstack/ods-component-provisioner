@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.cache.Caching;
 import java.util.Map;
 
-import static org.ehcache.config.units.MemoryUnit.MB;
+import static org.ehcache.config.units.EntryUnit.ENTRIES;
 import static org.ehcache.event.EventType.EVICTED;
 import static org.ehcache.event.EventType.EXPIRED;
 import static org.ehcache.event.EventType.REMOVED;
@@ -47,9 +47,13 @@ public class CachingConfiguration implements CacheEventListener<Object, Object> 
     }
 
     private Map<String, CacheConfiguration<?, ?>> ehCachesConfig(long cacheSize) {
+        // NOTE: heap tier is used instead of offheap because cached values (Optional, Pair, etc.)
+        // are not Serializable, which is required by EHCache's offheap tier.
+        // cacheSize is in MB; we convert to an approximate number of entries (assuming ~10KB per entry on average).
+        long maxEntries = Math.max(100, cacheSize * 1024 * 1024 / 10_000);
         var ehPoolsBuilder = ResourcePoolsBuilder
                 .newResourcePoolsBuilder()
-                .offheap(cacheSize, MB);
+                .heap(maxEntries, ENTRIES);
 
         var ehEventListenerConfig = CacheEventListenerConfigurationBuilder
                 .newEventListenerConfiguration(this, EXPIRED, REMOVED, EVICTED)
@@ -67,10 +71,10 @@ public class CachingConfiguration implements CacheEventListener<Object, Object> 
         );
     }
 
-    @Scheduled(fixedRateString = "#{projectsInfoServiceCacheConfig.getEvictionInterval().toString()}")
+    @Scheduled(fixedRateString = "#{projectsInfoServiceCacheConfig.getEvictionInterval().toMillis()}")
     @CacheEvict(cacheNames = ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, allEntries = true)
     public void emptyProjectsInfoServiceCache() {
-        log.debug("Emptying Projects Info Service cache...");
+        log.debug("Emptying Component Provisioner cache...");
     }
 
     @Override
