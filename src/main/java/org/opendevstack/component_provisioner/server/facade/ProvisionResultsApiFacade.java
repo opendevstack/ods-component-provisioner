@@ -112,9 +112,8 @@ public class ProvisionResultsApiFacade {
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
-        var projectComponents = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken);
 
-        provisionService.deleteProvisioningStatus(projectKey, componentId, projectComponents, accessToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
 
@@ -160,9 +159,10 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void addSystemParametersToAction(String projectKey, CreateIncidentAction action) {
+    public void addSystemParametersToAction(String projectKey, String componentId, CreateIncidentAction action) {
         addClusterLocationParameter(projectKey, action);
         addCallerParameter(action);
+        addSendOnDeletionParameters(projectKey, componentId, action);
     }
 
     private void addClusterLocationParameter(String projectKey, CreateIncidentAction action) {
@@ -177,6 +177,12 @@ public class ProvisionResultsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .value(clusterLocation)
                 .build());
+    }
+
+    private void addSendOnDeletionParameters(String projectKey, String componentId, CreateIncidentAction action) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var sendOnDeletionParameters = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        sendOnDeletionParameters.forEach(action::addParametersItem);
     }
 
     private void addCallerParameter(CreateIncidentAction action) {
