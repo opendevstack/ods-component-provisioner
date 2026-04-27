@@ -44,22 +44,19 @@ public class ComponentCatalogService {
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     private final ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
-    private final ProvisionerActionsApi provisionerActionsApi;
 
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
             ApiClient componentCatalogApiClient,
             ProjectComponentsApi projectComponentsApi, ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
-            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps,
-            ProvisionerActionsApi provisionerActionsApi) {
+            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
         this.componentCatalogApiClient = componentCatalogApiClient;
         this.projectComponentsApi = projectComponentsApi;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
-        this.provisionerActionsApi = provisionerActionsApi;
     }
 
     public Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> getCatalogItemUserActionMessageDefinition(
@@ -144,6 +141,8 @@ public class ComponentCatalogService {
                 .accessToken(accessToken)
                 .workflowJobId(workflowJobId)
                 .build();
+
+        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
 
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
     }
