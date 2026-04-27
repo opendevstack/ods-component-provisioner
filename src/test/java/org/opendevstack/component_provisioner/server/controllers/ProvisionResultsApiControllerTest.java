@@ -38,7 +38,7 @@ class ProvisionResultsApiControllerTest {
     private ProvisionResultsApiController provisionResultsApiController;
 
     @Test
-    void givenAProvisionService_whenNotifyProvisioningCompletedIsCalled_thenReturnsOk() {
+    void givenAProvisionService_whenNotifyProvisioningStatusUpdateIsCalled_thenReturnsOk() {
         // given
         var projectKey = "project-key";
         var status = ProjectComponentStatus.CREATED;
@@ -120,8 +120,11 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
 
-        // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.createIncident(projectKey, componentId, action));
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, action);
+
+        // then
+        var ex = assertThrows(InvalidRestEntityException.class, call);
         assertThat(ex.getMessage()).isEqualTo("project_key, component_id are required.");
     }
 
@@ -157,8 +160,11 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
-        // when / then
-        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request));
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
@@ -175,8 +181,11 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
-        // when / then
-        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
@@ -194,8 +203,11 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
-        // when / then
-        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
     }
@@ -204,16 +216,37 @@ class ProvisionResultsApiControllerTest {
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "project-key";
-        var statusLowercase = "created";
+        var statusLowercase = "FAILED";
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setComponentUrl("http://example");
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
 
-        // when / then
-        var exception = assertThrows(InvalidRestEntityException.class, () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request));
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
 
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
+    }
+
+    @Test
+    void givenInvalidExtraParams_whenCreateIncidentIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var componentId = "componentId";
+        var createIncidentAction = CreateIncidentActionMother.of();
+        var errorMsg = "is_deployed, change_number and reason are required.";
+
+        doThrow(new InvalidRestEntityException(errorMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
+
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
+        assertThat(exception.getMessage()).isEqualTo(errorMsg);
     }
 }
