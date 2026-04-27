@@ -322,6 +322,20 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
+    void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var request = new NotifyProvisioningStatusUpdateRequest();
+        // Both catalogItemId and catalogItemSlug are blank
+
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
+        assertThat(exception.getMessage()).isEqualTo("Either catalogItemId or catalogItemSlug must be defined.");
+    }
+
+    @Test
     void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
