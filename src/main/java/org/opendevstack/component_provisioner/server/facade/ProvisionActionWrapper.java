@@ -6,6 +6,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
@@ -35,9 +36,9 @@ public class ProvisionActionWrapper {
 
     }
 
-    public ProvisionActionWrapper cloneWithParameter(ProvisionActionParameter provisionActionParameter) {
+    public ProvisionActionWrapper cloneWithParameter(ProvisionActionParameter... provisionActionParameter) {
         var newParametersMap = new java.util.HashMap<>(parametersMap);
-        newParametersMap.put(provisionActionParameter.getName(), provisionActionParameter);
+        Arrays.stream(provisionActionParameter).forEach(param -> newParametersMap.put(param.getName(), param));
 
         return new ProvisionActionWrapper(provisionActionId, newParametersMap);
     }

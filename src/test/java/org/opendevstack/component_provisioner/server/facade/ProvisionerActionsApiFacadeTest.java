@@ -8,20 +8,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
-import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -55,15 +51,6 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private ProjectsInfoService projectsInfoService;
-
-    @Mock
-    private ProvisionerActionsApiValidator provisionerActionsApiValidator;
-
-    @Mock
-    private PlaceholderPostProcessor placeholderPostProcessor;
-
-    @Mock
-    private ReplaceParametersService replaceParametersService;
 
     @InjectMocks
     private ProvisionerActionsApiFacade facade;
@@ -240,5 +227,87 @@ class ProvisionerActionsApiFacadeTest {
         assertThat(capturedAction.getParameters())
                 .hasSize(1)
                 .anyMatch(p -> "action_id".equals(p.getName()) && action.getId().equals(p.getValue()));
+    }
+
+    @Test
+    void addMandatoryParamsIfMissing_addsMissingRequiredParameters() {
+        // given
+        var accessToken = "ACCESS";
+        var actionId = "action-id";
+
+        var params = new ArrayList<ProvisionActionParameter>();
+        params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"));
+        var action = ProvisionActionWrapperMother.of(params);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var requiredParam = new CatalogItemUserActionParameter()
+                .name("required_param")
+                .type("string")
+                .required(true)
+                .defaultValue("default");
+
+        var userAction = new CatalogItemUserAction()
+                .id(actionId)
+                .parameters(List.of(requiredParam));
+
+        var catalogItem = new CatalogItem()
+                .userActions(List.of(userAction));
+
+        when(componentCatalogService.getCatalogItemById(accessToken, "CAT-1"))
+                .thenReturn(catalogItem);
+
+        // when
+        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        // then
+        var addedParam = modifiedAction.getParametersMap().values().stream()
+                .filter(p -> "required_param".equals(p.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(addedParam.getValue()).isEqualTo("default");
+        assertThat(addedParam.getType()).isEqualTo("string");
+    }
+
+    @Test
+    void addMandatoryParamsIfMissing_doesNothingWhenRequiredParamAlreadyPresent() {
+        // given
+        var accessToken = "ACCESS";
+        var actionId = "ACTION_ID";
+
+        var params = new ArrayList<ProvisionActionParameter>();
+        params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"));
+        params.add(ProvisionActionParameterMother.of("required_param", "custom"));
+        var action = ProvisionActionWrapperMother.of(params);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var requiredParam = new CatalogItemUserActionParameter()
+                .name("required_param")
+                .type("string")
+                .required(true)
+                .defaultValue("default");
+
+        var userAction = new CatalogItemUserAction()
+                .id(actionId)
+                .parameters(List.of(requiredParam));
+
+        var catalogItem = new CatalogItem()
+                .userActions(List.of(userAction));
+
+        when(componentCatalogService.getCatalogItemById(accessToken, "CAT-1"))
+                .thenReturn(catalogItem);
+
+        // when
+        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        // then
+        var values = modifiedAction.getParametersMap().values().stream()
+                .filter(p -> "required_param".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .toList();
+
+        assertThat(values).containsExactly("custom");
     }
 }

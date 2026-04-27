@@ -2,6 +2,8 @@ package org.opendevstack.component_provisioner.server.facade;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -18,6 +20,7 @@ import org.opendevstack.component_provisioner.server.services.ReplaceParametersS
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +42,8 @@ public class ProvisionerActionsApiFacade {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
-        var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(provisionActionWrapper);
+        var systemParametersActionWrapper = addSystemParametersToAction(requiredCatalogItemParamsWrapper);
 
         provisionerActionsApiValidator.validate(systemParametersActionWrapper.toProvisionAction());
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(systemParametersActionWrapper);
@@ -182,6 +186,40 @@ public class ProvisionerActionsApiFacade {
                             .build();
                 })
         .orElse(provisionAction);
+    }
+
+    public ProvisionActionWrapper addMandatoryCatalogItemParamsIfMissing(ProvisionActionWrapper provisionActionWrapper) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var catalogItemId = provisionActionWrapper.getCatalogItemId();
+
+        CatalogItem catalogItem = componentCatalogService.getCatalogItemById(accessToken, catalogItemId);
+
+        var mandatoryParams = Optional.ofNullable(catalogItem.getUserActions())
+                .orElse(List.of())
+                .stream()
+                .filter(action -> provisionActionWrapper.getProvisionActionId().equals(action.getId()))
+                .findFirst()
+                .map(CatalogItemUserAction::getParameters)
+                .orElse(List.of())
+                .stream()
+                .filter(userActionParam -> Boolean.TRUE.equals(userActionParam.getRequired()))
+                .toList();
+        var includedParams = new HashSet<>(provisionActionWrapper.getParametersMap().keySet());
+        var missingParams = mandatoryParams.stream()
+                .filter(p -> !includedParams.contains(p.getName()))
+                .map(userActionParam ->
+                        ProvisionActionParameter.builder()
+                                .name(userActionParam.getName())
+                                .type(userActionParam.getType())
+                                .value(userActionParam.getDefaultValue())
+                                .build()
+                )
+                .toArray(ProvisionActionParameter[]::new);
+
+        var res = provisionActionWrapper.cloneWithParameter(missingParams);
+
+        log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
+        return res;
     }
 
 }

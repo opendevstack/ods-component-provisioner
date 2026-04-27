@@ -150,6 +150,18 @@ public class ComponentCatalogService {
     }
 
     @Cacheable
+    public CatalogItem getCatalogItemById(String accessToken, String id) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
+
+        var catalogItem = catalogItemsApi.getCatalogItemById(id);
+
+        log.debug("Retrieved catalog item with id {}: {}", id, catalogItem);
+
+        return catalogItem;
+    }
+
+    @Cacheable
     public CatalogItem getCatalogItemBySlug(String accessToken, String slug) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
