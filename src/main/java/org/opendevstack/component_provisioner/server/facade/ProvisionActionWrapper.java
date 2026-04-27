@@ -36,7 +36,7 @@ public class ProvisionActionWrapper {
 
     }
 
-    public ProvisionActionWrapper cloneWithParameter(ProvisionActionParameter... provisionActionParameter) {
+    public ProvisionActionWrapper cloneWithParameters(ProvisionActionParameter... provisionActionParameter) {
         var newParametersMap = new java.util.HashMap<>(parametersMap);
         Arrays.stream(provisionActionParameter).forEach(param -> newParametersMap.put(param.getName(), param));
 

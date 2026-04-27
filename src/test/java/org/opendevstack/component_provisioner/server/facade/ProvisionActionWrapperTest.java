@@ -135,7 +135,7 @@ class ProvisionActionWrapperTest {
         var newParam = ProvisionActionParameterMother.of("catalog_item_id", "cat-456");
 
         // when
-        var cloned = original.cloneWithParameter(newParam);
+        var cloned = original.cloneWithParameters(newParam);
 
         // then
         assertThat(cloned.getCatalogItemId()).isEqualTo("cat-456");
@@ -152,7 +152,7 @@ class ProvisionActionWrapperTest {
         var replacement = ProvisionActionParameterMother.of("project_key", "NEW");
 
         // when
-        var cloned = original.cloneWithParameter(replacement);
+        var cloned = original.cloneWithParameters(replacement);
 
         // then
         assertThat(cloned.getProjectKey()).isEqualTo("NEW");

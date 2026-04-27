@@ -128,7 +128,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(callerParameter);
+        return provisionActionWrapper.cloneWithParameters(callerParameter);
     }
 
     private ProvisionActionWrapper addClusterLocationToAction(ProvisionActionWrapper provisionActionWrapper) {
@@ -149,7 +149,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(locationParameter);
+        return provisionActionWrapper.cloneWithParameters(locationParameter);
     }
 
     private ProvisionActionWrapper addBearerTokenToActions(ProvisionActionWrapper provisionActionWrapper) {
@@ -159,7 +159,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return provisionActionWrapper.cloneWithParameter(bearerTokenParameter);
+        return provisionActionWrapper.cloneWithParameters(bearerTokenParameter);
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(ProvisionAction provisionAction) {
@@ -211,7 +211,7 @@ public class ProvisionerActionsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .build();
 
-        return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameter(catalogItemIdParameterItem);
+        return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameters(catalogItemIdParameterItem);
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
@@ -260,7 +260,7 @@ public class ProvisionerActionsApiFacade {
                 )
                 .toArray(ProvisionActionParameter[]::new);
 
-        var res = provisionActionWrapper.cloneWithParameter(missingParams);
+        var res = provisionActionWrapper.cloneWithParameters(missingParams);
 
         log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
         return res;
