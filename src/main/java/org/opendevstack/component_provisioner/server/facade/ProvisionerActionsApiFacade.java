@@ -4,7 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
@@ -21,6 +24,7 @@ import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,12 +48,13 @@ public class ProvisionerActionsApiFacade {
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(provisionActionWrapper);
         var systemParametersActionWrapper = addSystemParametersToAction(requiredCatalogItemParamsWrapper);
-
-        provisionerActionsApiValidator.validate(systemParametersActionWrapper.toProvisionAction());
-        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(systemParametersActionWrapper);
-        notifyComponentCatalogProvisionStarts(updateProvisionActionWithoutPlaceholdersWrapper);
-
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
+        provisionerActionsApiValidator.validate(resolvedActionWrapper.toProvisionAction());
+        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(resolvedActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
+
+        notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
+
         var awxResponse = requestProvisionToAwx(updatedProvisionActionWithOdsApiParametersWrapper.toProvisionAction());
 
         log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
@@ -169,6 +174,44 @@ public class ProvisionerActionsApiFacade {
         var updatedProvisionAction = addParametersItem(provisionAction, parameterItem);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(updatedProvisionAction);
+    }
+
+    private ProvisionActionWrapper resolveCatalogItemIdentifier(ProvisionActionWrapper wrapper) {
+        var catalogItemId = wrapper.getCatalogItemId();
+        var catalogItemSlug = wrapper.getCatalogItemSlug();
+
+        boolean hasId = catalogItemId != null && !catalogItemId.isBlank();
+        boolean hasSlug = catalogItemSlug != null && !catalogItemSlug.isBlank();
+
+        if (!hasId && !hasSlug) {
+            throw new BadRequestException("Either catalog_item_id or catalog_item_slug must be provided");
+        }
+        if (hasId && hasSlug) {
+            throw new BadRequestException("Only one of catalog_item_id or catalog_item_slug must be provided, not both");
+        }
+        if (hasId) {
+            return wrapper;
+        }
+
+        // Only catalog_item_slug provided: resolve to catalog_item_id
+        log.debug("Resolving catalog_item_id for catalog_item_slug: {}", catalogItemSlug);
+        var accessToken = wrapper.getAccessToken();
+        CatalogItem catalogItem;
+        try {
+            catalogItem = componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug);
+        } catch (RestClientException e) {
+            throw new SlugNotFoundException("Catalog item slug not found: " + catalogItemSlug);
+        }
+        var resolvedId = catalogItem.getId();
+        log.debug("Resolved catalog_item_slug {} to catalog_item_id: {}", catalogItemSlug, resolvedId);
+
+        var catalogItemIdParameterItem = ProvisionActionParameter.builder()
+                .name("catalog_item_id")
+                .value(resolvedId)
+                .type(ParameterType.STRING.getValue())
+                .build();
+
+        return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameter(catalogItemIdParameterItem);
     }
 
     // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
