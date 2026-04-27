@@ -234,8 +234,9 @@ public class ProvisionerActionsApiFacade {
     public ProvisionActionWrapper addMandatoryCatalogItemParamsIfMissing(ProvisionActionWrapper provisionActionWrapper) {
         var accessToken = authenticationProvider.getAccessToken();
         var catalogItemId = provisionActionWrapper.getCatalogItemId();
+        var projectKey = provisionActionWrapper.getProjectKey();
 
-        CatalogItem catalogItem = componentCatalogService.getCatalogItemById(accessToken, catalogItemId);
+        CatalogItem catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
 
         var mandatoryParams = Optional.ofNullable(catalogItem.getUserActions())
                 .orElse(List.of())

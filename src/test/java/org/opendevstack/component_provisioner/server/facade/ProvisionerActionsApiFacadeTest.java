@@ -1,31 +1,29 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiFacadeTest {
@@ -58,10 +53,29 @@ class ProvisionerActionsApiFacadeTest {
     private AuthenticationProvider authenticationProvider;
 
     @Mock
+    private ProvisionerActionsApiValidator provisionerActionsApiValidator;
+
+    @Mock
+    private PlaceholderPostProcessor placeholderPostProcessor;
+
+    @Mock
+    private ReplaceParametersService replaceParametersService;
+
+    @Mock
     private ProjectsInfoService projectsInfoService;
 
+    @Spy
     @InjectMocks
     private ProvisionerActionsApiFacade facade;
+
+    @BeforeEach
+    void bypassAddMissingMandatoryParamsByDefault() {
+        // We don't need to mock this method's logic everytime, only when testing it
+        lenient()
+                .doAnswer(invocation -> invocation.getArgument(0))
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+    }
 
     @Test
     void requestProvisionToAwx_mapsResponseCorrectly() {
@@ -378,6 +392,7 @@ class ProvisionerActionsApiFacadeTest {
 
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"));
+        params.add(ProvisionActionParameterMother.of("project_key", "MY-PROJECT"));
         var action = ProvisionActionWrapperMother.of(params);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
@@ -395,7 +410,10 @@ class ProvisionerActionsApiFacadeTest {
         var catalogItem = new CatalogItem()
                 .userActions(List.of(userAction));
 
-        when(componentCatalogService.getCatalogItemById(accessToken, "CAT-1"))
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
                 .thenReturn(catalogItem);
 
         // when
@@ -419,6 +437,7 @@ class ProvisionerActionsApiFacadeTest {
 
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"));
+        params.add(ProvisionActionParameterMother.of("project_key", "MY-PROJECT"));
         params.add(ProvisionActionParameterMother.of("required_param", "custom"));
         var action = ProvisionActionWrapperMother.of(params);
 
@@ -437,7 +456,10 @@ class ProvisionerActionsApiFacadeTest {
         var catalogItem = new CatalogItem()
                 .userActions(List.of(userAction));
 
-        when(componentCatalogService.getCatalogItemById(accessToken, "CAT-1"))
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
                 .thenReturn(catalogItem);
 
         // when
