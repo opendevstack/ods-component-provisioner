@@ -333,7 +333,7 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
                 .thenReturn(catalogItemsApi);
         when(catalogItemsApi.getCatalogItemByIdForProjectKey(
-                catalogItemId, projectKey, accessToken))
+                catalogItemId, projectKey))
                 .thenReturn(expectedCatalogItem);
 
         // when
@@ -348,7 +348,7 @@ class ComponentCatalogServiceTest {
         verify(apiClientsBuilder)
                 .catalogItemsApi(componentCatalogApiClient);
         verify(catalogItemsApi)
-                .getCatalogItemByIdForProjectKey(catalogItemId, projectKey, accessToken);
+                .getCatalogItemByIdForProjectKey(catalogItemId, projectKey);
 
         verifyNoMoreInteractions(catalogItemsApi);
         verifyNoInteractions(
@@ -368,7 +368,7 @@ class ComponentCatalogServiceTest {
         when(componentCatalogApiClient.getAuthentication("bearerAuth")).thenReturn(auth);
 
         List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> expectedComponents = List.of();
-        when(projectComponentsApi.getProjectComponents(projectKey, accessToken)).thenReturn(expectedComponents);
+        when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(expectedComponents);
 
         // when
         List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, accessToken);
@@ -376,7 +376,7 @@ class ComponentCatalogServiceTest {
         // then
         assertThat(result).isSameAs(expectedComponents);
         verify(auth).setBearerToken(accessToken);
-        verify(projectComponentsApi).getProjectComponents(projectKey, accessToken);
+        verify(projectComponentsApi).getProjectComponents(projectKey);
     }
 
     @Test
@@ -435,7 +435,6 @@ class ComponentCatalogServiceTest {
 
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
-        assertThat(captured.getAccessToken()).isEqualTo(accessToken);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
 }

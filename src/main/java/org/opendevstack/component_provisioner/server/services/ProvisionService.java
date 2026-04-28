@@ -26,7 +26,6 @@ public class ProvisionService {
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
-                .accessToken(accessToken)
                 .build();
 
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
