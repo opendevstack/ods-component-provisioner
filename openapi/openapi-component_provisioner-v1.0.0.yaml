@@ -270,12 +270,12 @@ paths:
         "500":
           description: Server error.
 
-  /project/{projectKey}/component/{componentId}:
+  /project/{projectKey}/component/{componentId}/status:
     get:
       tags:
-        - Project-components
-      summary: Returns the extended information of a project component given both its project key and component ID in the Bitbucket repository.
-      operationId: getProjectComponentById
+        - Project-components-status
+      summary: Returns the provision status of a project component given both its project key and component ID.
+      operationId: getProjectComponentProvisionStatusById
       parameters:
         - name: projectKey
           in: path
@@ -291,11 +291,11 @@ paths:
             type: string
       responses:
         "200":
-          description: The extended information of a project component.
+          description: The provision status information of a project component, including fail reason if exists.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectComponentExtendedInfo'
+                $ref: '#/components/schemas/ProjectComponentProvisionStatus'
         "401":
           description: Invalid client token on the request.
           content:
@@ -459,7 +459,7 @@ components:
         type: "string"
         value: "2558"
 
-    ProjectComponentExtendedInfo:
+    ProjectComponentProvisionStatus:
       properties:
         projectKey:
           type: string
