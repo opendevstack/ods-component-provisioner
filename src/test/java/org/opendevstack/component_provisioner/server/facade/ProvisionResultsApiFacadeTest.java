@@ -20,6 +20,7 @@ import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
@@ -53,6 +54,9 @@ class ProvisionResultsApiFacadeTest {
 
     @InjectMocks
     private ProvisionResultsApiFacade facade;
+
+    @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
+    private String workflowJobId;
 
     @BeforeEach
     void init() {
@@ -325,6 +329,34 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
+    void givenAProjectKeyAndComponentIdAndAction_whenValidateIsCalled_thenDoesNotThrowIfValid() {
+        // given
+        var action = CreateIncidentActionMother.of();
+
+        // when / then
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", action));
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenBuildAwxWorkflowJobLaunchIsCalled_thenAddsRequiredParameters() {
+        // given
+        var action = CreateIncidentActionMother.of();
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var launch = new AwxWorkflowJobLaunch();
+        when(entitiesMapper.asAwxWorkflowJobLaunch(action)).thenReturn(launch);
+
+        // when
+        var result = ReflectionTestUtils.invokeMethod(facade, "buildAwxWorkflowJobLaunch", projectKey, componentId, action);
+
+        // then
+        assertThat(result).isEqualTo(launch);
+        assertThat(facade.getParameterString(action, "project_key")).isEqualTo(projectKey);
+        assertThat(facade.getParameterString(action, "component_id")).isEqualTo(componentId);
+        assertThat(facade.getParameterString(action, "workflow")).isEqualTo("WORKFLOW_123");
+    }
+
+    @Test
     void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
@@ -395,5 +427,30 @@ class ProvisionResultsApiFacadeTest {
         // when / then
         var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, componentId, action));
         assertThat(ex.getMessage()).contains("PRJ");
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAction_whenAddSystemParametersToActionIsCalled_thenAddsDeletionParameters() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token123";
+        var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
+
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster-a"));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+
+        var deletionParam = CreateIncidentParameter.builder().name("delParam").value("delValue").build();
+        when(provisionService.getDeletionParameters(projectKey, componentId, accessToken)).thenReturn(List.of(deletionParam));
+
+        // when
+        facade.addSystemParametersToAction(projectKey, componentId, action);
+
+        // then
+        assertThat(action.getParameters()).contains(deletionParam);
     }
 }

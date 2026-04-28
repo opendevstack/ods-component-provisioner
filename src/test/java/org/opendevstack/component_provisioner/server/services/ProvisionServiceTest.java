@@ -128,6 +128,170 @@ class ProvisionServiceTest {
     }
 
     @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndUserActionsIsNull_thenReturnsEmptyList() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+        var projectComponent = ProjectComponentExtendedInfoMother.valid();
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
+        CatalogItem catalogItem = new CatalogItem();
+        catalogItem.setUserActions(null);
+        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+
+        // when
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndActionParametersIsNull_thenReturnsEmptyList() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+        var projectComponent = ProjectComponentExtendedInfoMother.valid();
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
+        CatalogItem catalogItem = new CatalogItem();
+        catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
+                .parameters(null)
+                .build()));
+        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+
+        // when
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndSendOnDeletionIsFalse_thenReturnsEmptyList() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+        var projectComponent = ProjectComponentExtendedInfoMother.valid();
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
+        CatalogItem catalogItem = new CatalogItem();
+        catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
+                .parameters(List.of(CatalogItemUserActionParameter.builder()
+                        .name("param1")
+                        .sendOnDeletion(false)
+                        .build()))
+                .build()));
+        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+
+        // when
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndProjectParametersIsNull_thenReturnsEmptyList() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+        var projectComponent = ProjectComponentExtendedInfoMother.valid();
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
+        projectComponent.setParameters(null);
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
+        CatalogItem catalogItem = new CatalogItem();
+        catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
+                .parameters(List.of(CatalogItemUserActionParameter.builder()
+                        .name("param1")
+                        .sendOnDeletion(true)
+                        .build()))
+                .build()));
+        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+
+        // when
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndParamNameNotFoundInProject_thenReturnsEmptyList() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+        var projectComponent = ProjectComponentExtendedInfoMother.valid();
+        projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
+        projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+                .thenReturn(projectComponent);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
+
+        CatalogItem catalogItem = new CatalogItem();
+        catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
+                .parameters(List.of(CatalogItemUserActionParameter.builder()
+                        .name("differentParam")
+                        .sendOnDeletion(true)
+                        .build()))
+                .build()));
+        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+
+        var projectParam = ProjectComponentParameter.builder()
+                .name("param1")
+                .values(List.of("value1"))
+                .build();
+        projectComponent.setParameters(List.of(projectParam));
+
+        // when
+        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
     void givenAProjectKeyAndComponentIdAndAccessToken_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
         // given
         var projectKey = "PRJ";
