@@ -53,6 +53,10 @@ public class ApiClientsBuilder {
         return new org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi(apiClient);
     }
 
+    public org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi projectComponentsApi(org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient apiClient) {
+        return new org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi(apiClient);
+    }
+
     public org.opendevstack.component_provisioner.client.ods_api_server.v1.api.ProjectsApi projectsApi(org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient apiClient) {
         return new org.opendevstack.component_provisioner.client.ods_api_server.v1.api.ProjectsApi(apiClient);
     }

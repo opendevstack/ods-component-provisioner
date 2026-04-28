@@ -269,6 +269,51 @@ paths:
           description: Insufficient permissions for the client to access the resource.
         "500":
           description: Server error.
+
+  /project/{projectKey}/component/{componentId}:
+    get:
+      tags:
+        - Project-components
+      summary: Returns the extended information of a project component given both its project key and component ID in the Bitbucket repository.
+      operationId: getProjectComponentById
+      parameters:
+        - name: projectKey
+          in: path
+          description: project key.
+          required: true
+          schema:
+            type: string
+        - name: componentId
+          in: path
+          description: component ID.
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The extended information of a project component.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectComponentExtendedInfo'
+        "401":
+          description: Invalid client token on the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+        "403":
+          description: Insufficient permissions for the client to access the resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestErrorMessage'
 components:
   securitySchemes:
     bearerAuth:
@@ -413,3 +458,24 @@ components:
         name: "workflow"
         type: "string"
         value: "2558"
+
+    ProjectComponentExtendedInfo:
+      properties:
+        projectKey:
+          type: string
+          example: 'simple-project-sample'
+        componentId:
+          type: string
+          example: 'nextjs-basic-app'
+        status:
+          type: string
+          example: 'CREATING'
+        workflowJobId:
+          type: string
+          example: '1316315'
+        errorTask:
+          type: string
+          example: '08-01-fail if validations or checks did not pass'
+        errorMessage:
+          type: string
+          example: 'JIRA_ERROR'
