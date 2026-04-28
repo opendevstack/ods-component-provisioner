@@ -5,9 +5,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
@@ -20,7 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
@@ -143,6 +150,9 @@ public class ComponentCatalogService {
                 .build();
 
         var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+
+        log.debug("Updating workflowJobId via provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
+                projectKey, "CREATING", provisionStatusUpdateRequest);
 
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
     }
