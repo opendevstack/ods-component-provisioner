@@ -13,9 +13,11 @@ import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.mo
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameterLocation;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
@@ -444,14 +446,6 @@ class ProvisionerActionsApiFacadeTest {
         doCallRealMethod()
                 .when(facade)
                 .addMandatoryCatalogItemParamsIfMissing(any());
-        doAnswer(invocation -> {
-            ProvisionActionParameter param = invocation.getArgument(0);
-            CatalogItemUserActionParameter spec = invocation.getArgument(1);
-
-            param.setValue(spec.getDefaultValue());
-            return null;
-        }).when(mandatoryFieldsValidator)
-                .updateParam(any(), any(), any());
         when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
                 .thenReturn(catalogItem);
 
@@ -512,4 +506,170 @@ class ProvisionerActionsApiFacadeTest {
 
         assertThat(values).containsExactly("custom");
     }
+
+    @Test
+    void addMandatoryParamsIfMissing_stringType_usesDefaultValue() {
+        var accessToken = "ACCESS";
+
+        var action = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
+                ProvisionActionParameterMother.of("project_key", "PRJ")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var requiredParam = CatalogItemUserActionParameter.builder()
+                .name("param_string")
+                .type("string")
+                .required(true)
+                .defaultValue("default-value")
+                .build();
+
+        var userAction = CatalogItemUserAction.builder()
+                .id(action.getProvisionActionId())
+                .parameters(List.of(requiredParam))
+                .build();
+
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(userAction))
+                .build();
+
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
+                .thenReturn(catalogItem);
+
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        var addedParam = result.getParametersMap().get("param_string");
+        assertThat(addedParam.getValue()).isEqualTo("default-value");
+    }
+
+    @Test
+    void addMandatoryParamsIfMissing_stringType_usesLocationValue_whenNoDefault() {
+        var accessToken = "ACCESS";
+
+        var action = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("cluster_location", "eu-west")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var location = CatalogItemUserActionParameterLocation.builder()
+                .location("eu-west")
+                .value("location-value")
+                .build();
+
+        var requiredParam = CatalogItemUserActionParameter.builder()
+                .name("param_string")
+                .type("string")
+                .required(true)
+                .locations(List.of(location))
+                .build();
+
+        var userAction = CatalogItemUserAction.builder()
+                .id(action.getProvisionActionId())
+                .parameters(List.of(requiredParam))
+                .build();
+
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(userAction))
+                .build();
+
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
+                .thenReturn(catalogItem);
+
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        var addedParam = result.getParametersMap().get("param_string");
+        assertThat(addedParam.getValue()).isEqualTo("location-value");
+    }
+
+    @Test
+    void addMandatoryParamsIfMissing_stringType_withoutDefaults_leavesValueNull() {
+        var accessToken = "ACCESS";
+
+        var action = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
+                ProvisionActionParameterMother.of("project_key", "PRJ")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var requiredParam = CatalogItemUserActionParameter.builder()
+                .name("param_string")
+                .type("string")
+                .required(true)
+                .build();
+
+        var userAction = CatalogItemUserAction.builder()
+                .id(action.getProvisionActionId())
+                .parameters(List.of(requiredParam))
+                .build();
+
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(userAction))
+                .build();
+
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
+                .thenReturn(catalogItem);
+
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        var addedParam = result.getParametersMap().get("param_string");
+        assertThat(addedParam.getValue()).isNull();
+    }
+
+    @Test
+    void addMandatoryParamsIfMissing_multipleListType_usesDefaultValues() {
+        var accessToken = "ACCESS";
+
+        var action = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
+                ProvisionActionParameterMother.of("project_key", "PRJ")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        var requiredParam = CatalogItemUserActionParameter.builder()
+                .name("param_multi")
+                .type(MandatoryFieldType.MULTIPLELIST.getValue())
+                .required(true)
+                .defaultValues(List.of("v1", "v2"))
+                .build();
+
+        var userAction = CatalogItemUserAction.builder()
+                .id(action.getProvisionActionId())
+                .parameters(List.of(requiredParam))
+                .build();
+
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(userAction))
+                .build();
+
+        doCallRealMethod()
+                .when(facade)
+                .addMandatoryCatalogItemParamsIfMissing(any());
+
+        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
+                .thenReturn(catalogItem);
+
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+
+        var addedParam = result.getParametersMap().get("param_multi");
+        assertThat(addedParam.getValue()).isEqualTo(List.of("v1", "v2"));
+    }
+
 }
