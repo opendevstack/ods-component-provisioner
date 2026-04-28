@@ -2,13 +2,16 @@ package org.opendevstack.component_provisioner.server.facade;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
@@ -286,7 +289,7 @@ public class ProvisionerActionsApiFacade {
                             .type(userActionParam.getType())
                             .build();
 
-                    mandatoryFieldsValidator.updateParam(param, userActionParam, getLocation(provisionActionWrapper.toProvisionAction()));
+                    applyDefaultValue(param, userActionParam, getLocation(provisionActionWrapper.toProvisionAction()));
 
                     return param;
                 })
@@ -296,6 +299,31 @@ public class ProvisionerActionsApiFacade {
 
         log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
         return res;
+    }
+
+    private void applyDefaultValue(
+            ProvisionActionParameter param,
+            CatalogItemUserActionParameter catalogParam,
+            String location
+    ) {
+        // STRING - SINGLELIST
+        if (ParameterType.STRING.getValue().equalsIgnoreCase(param.getType())
+                || MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
+            if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
+                param.setValue(catalogParam.getDefaultValue());
+            } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
+                catalogParam.getLocations().stream()
+                        .filter(parameterLocation -> StringUtils.equalsIgnoreCase(parameterLocation.getLocation(), location))
+                        .findFirst()
+                        .ifPresent(loc -> param.setValue(loc.getValue()));
+            }
+            return; // no default, but that's OK
+        }
+
+        // MULTIPLELIST
+        if (MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType()) && catalogParam.getDefaultValues() != null) {
+            param.setValue(catalogParam.getDefaultValues());
+        }
     }
 
 }

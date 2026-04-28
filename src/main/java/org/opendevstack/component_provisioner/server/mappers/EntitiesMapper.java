@@ -70,7 +70,8 @@ public class EntitiesMapper {
     private static void setupActionParamsConverters(ObjectMapper objectMapper) {
         actionParamsToAwxWorkflowTemplateId = ctx ->
                 ctx.getSource().stream()
-                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String)
+                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String ||
+                                p.getName().equals(WORKFLOW) && p.getValue() instanceof List<?>)
                         .findFirst()
                         .map(ProvisionActionParameter::getValue)
                         .map(String::valueOf)
