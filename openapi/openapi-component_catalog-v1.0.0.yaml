@@ -119,50 +119,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RestErrorMessage'
-  /project/{projectKey}/component/{componentId}:
-    get:
-      tags:
-        - Project-components
-      summary: Returns the extended information of a project component given both its project key and component ID in the Bitbucket repository.
-      operationId: getProjectComponentById
-      parameters:
-        - name: projectKey
-          in: path
-          description: project key.
-          required: true
-          schema:
-            type: string
-        - name: componentId
-          in: path
-          description: component ID.
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: The extended information of a project component.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProjectComponentExtendedInfo'
-        "401":
-          description: Invalid client token on the request.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestErrorMessage'
-        "403":
-          description: Insufficient permissions for the client to access the resource.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestErrorMessage'
-        "500":
-          description: Server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RestErrorMessage'
   /catalog-descriptors:
     get:
       tags:
@@ -1326,6 +1282,11 @@ components:
           description: the repository url where the component was provisioned
           example: "https://bitbucket.com/projects/DEVSTACK/repos/devstack-component-catalog"
           nullable: true
+
+        accessToken:
+          type: string
+          description: the access token to be used for the component provisioning
+          example: "some-access-token"
 
         workflowJobId:
           type: string
