@@ -87,8 +87,17 @@ public class MandatoryFieldsValidator {
 
 
     private boolean isBlankValue(ProvisionActionParameter param) {
-        return param.getValue() == null ||
-                StringUtils.isBlank(param.getValue().toString());
+        Object value = param.getValue();
+
+        if (value == null) {
+            return true;
+        }
+
+        if (value instanceof List<?> list) {
+            return list.isEmpty();
+        }
+
+        return StringUtils.isBlank(value.toString());
     }
 
     private boolean hasNoOptions(CatalogItemUserActionParameter param) {

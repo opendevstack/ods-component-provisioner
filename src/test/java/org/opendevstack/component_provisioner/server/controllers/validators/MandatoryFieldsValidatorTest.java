@@ -80,6 +80,31 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
+    void givenMandatoryParameterWithEmptyList_whenValidate_thenExceptionIsThrown() {
+        // given
+        var bearerToken = "bearer-token";
+
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", Collections.emptyList());
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("mandatory and no value was provided");
+    }
+
+    @Test
     void givenAValidProvisionAction_whenValidate_thenMandatoryFieldsAreProcessed() {
         // given
         var bearerToken = "bearer-token";
