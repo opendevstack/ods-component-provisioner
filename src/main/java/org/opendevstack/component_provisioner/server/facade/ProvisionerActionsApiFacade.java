@@ -8,8 +8,6 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
@@ -17,7 +15,13 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Prov
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.services.*;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -122,7 +126,7 @@ public class ProvisionerActionsApiFacade {
 
             var projectKey = provisionActionWrapper.getProjectKey();
             var componentId = provisionActionWrapper.getComponentId();
-            var accessToken = provisionActionWrapper.getAccessToken();
+            var accessToken = authenticationProvider.getAccessToken();
 
             componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
         } else {

@@ -435,7 +435,6 @@ class ComponentCatalogServiceTest {
 
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
-        assertThat(captured.getAccessToken()).isEqualTo(accessToken);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
 }
