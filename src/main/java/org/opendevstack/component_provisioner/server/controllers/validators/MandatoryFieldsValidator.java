@@ -36,7 +36,6 @@ public class MandatoryFieldsValidator {
         var projectKey = getProjectKey(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
-        var location = getLocation(provisionAction);
 
         var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
         var provisionUserAction = Optional.ofNullable(catalogItem)
@@ -70,8 +69,7 @@ public class MandatoryFieldsValidator {
         });
     }
 
-    private void validateParam(ProvisionActionParameter param,
-                          CatalogItemUserActionParameter catalogParam) {
+    private void validateParam(ProvisionActionParameter param, CatalogItemUserActionParameter catalogParam) {
         if (isBlankValue(param)) {
             throw new InvalidRestEntityException(String.format(
                     "The parameter %s is mandatory and no value was provided.",
