@@ -3,7 +3,6 @@ package org.opendevstack.component_provisioner.config;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -40,17 +39,6 @@ public class ComponentCatalogClientConfiguration {
         log.trace("itemUserActionMessagesDefinitionsApi created. {}. ApiClient: {}.", itemUserActionMessagesDefinitionsApi, componentCatalogApiClient);
 
         return itemUserActionMessagesDefinitionsApi;
-    }
-
-    @Bean(name = "provisionerActionsApi")
-    public ProvisionerActionsApi provisionerActionsApi (
-            @Qualifier("componentCatalogApiClient") ApiClient componentCatalogApiClient
-    ) {
-        var provisionerActionsApi = new ProvisionerActionsApi(componentCatalogApiClient);
-
-        log.trace("provisionerActionsApi created. {}. ApiClient {}.", provisionerActionsApi, componentCatalogApiClient);
-
-        return provisionerActionsApi;
     }
 
     @Bean(name = "projectComponentsApi")

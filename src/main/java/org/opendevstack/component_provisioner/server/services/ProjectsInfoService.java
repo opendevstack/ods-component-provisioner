@@ -22,7 +22,7 @@ public class ProjectsInfoService {
 
     private ApiClientsBuilder apiClientsBuilder;
 
-    @Cacheable
+    @Cacheable(key = "#root.methodName + T(org.opendevstack.component_provisioner.util.JwtUtils).extractClaim(#accessToken, 'oid').orElse(#accessToken)")
     public List<String> getProjectGroups(String accessToken) {
         var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var azureGroupsApi = apiClientsBuilder.azureGroupsApi(apiClient);
@@ -30,6 +30,7 @@ public class ProjectsInfoService {
         return azureGroupsApi.getAzureGroups();
     }
 
+    @Cacheable(key = "#root.methodName + #projectKey")
     public ProjectInfo getProjectClusters(String accessToken, String projectKey) {
         var apiClient = apiClientsBuilder.projectsInfoServiceApiClient(accessToken, projectsInfoServiceProps.getBaseRestUrl().toString());
         var projectsApi = apiClientsBuilder.projectsApi(apiClient);
