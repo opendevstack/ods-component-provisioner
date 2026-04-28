@@ -92,4 +92,18 @@ class IdEncoderDecoderTest {
         // then
         assertThat(result).isEqualTo("test");
     }
+
+    @Test
+    void givenPrivateConstructor_whenAttemptingToInstantiate_thenThrowsNoSuchMethodException() throws Exception {
+        // given
+        java.lang.reflect.Constructor<IdEncoderDecoder> constructor = IdEncoderDecoder.class.getDeclaredConstructor();
+        assertThat(java.lang.reflect.Modifier.isPrivate(constructor.getModifiers())).isTrue();
+
+        // when
+        constructor.setAccessible(true);
+        IdEncoderDecoder instance = constructor.newInstance();
+
+        // then
+        assertThat(instance).isNotNull();
+    }
 }

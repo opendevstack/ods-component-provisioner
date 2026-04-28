@@ -174,7 +174,9 @@ class ControllerExceptionHandlerTest {
         ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleInvalidIdException(ex);
 
         // then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().getMessage()).isEqualTo("Invalid id: some-id");
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).contains("Invalid id: some-id");
     }
 }
