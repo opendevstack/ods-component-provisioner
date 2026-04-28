@@ -53,7 +53,6 @@ class ProvisionServiceTest {
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
-                .accessToken(accessToken)
                 .build();
 
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), expectedRequest);

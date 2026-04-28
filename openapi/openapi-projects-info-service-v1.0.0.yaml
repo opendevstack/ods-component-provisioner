@@ -10,11 +10,11 @@ info:
     - The OpenAPI specification file is also used to [generate](https://openapi-generator.tech/) REST client(s) and a server REST API.
     - Clients and servers generated from the same OpenAPI specification version are guaranteed to be **compatible**.
   contact:
-    name: EDPCore Team
-    url: https://confluence.biscrum.com/pages/viewpage.action?spaceKey=EDP&title=Welcome
+    name: OpenDevStack
+    url: https://www.opendevstack.org/
 servers:
   - url: http://{baseurl}/v1
-    variables:
+    variables: 
       baseurl:
         default: localhost:8080
         description: Default address for a Projects Info Service's backend REST API instance.
@@ -31,8 +31,8 @@ paths:
       tags:
         - AzureGroups
       summary: Get all azure groups associated to the user.
-      description: >
-        This endpoint receives an azure token, and returns all the groups associated to the user.
+      description: > 
+          This endpoint receives an azure token, and returns all the groups associated to the user.
       operationId: getAzureGroups
       responses:
         "200":
@@ -177,7 +177,7 @@ components:
   securitySchemes:
     bearerAuth:
       type: http
-      description: >
+      description: > 
         Authorization via bearer token.
       scheme: bearer
       bearerFormat: JWT

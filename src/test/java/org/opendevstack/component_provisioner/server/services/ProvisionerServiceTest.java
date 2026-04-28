@@ -55,7 +55,6 @@ class ProvisionerServiceTest {
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
-                .accessToken(accessToken)
                 .build());
     }
 
