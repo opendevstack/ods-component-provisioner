@@ -107,7 +107,7 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), isNull());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), eq(accessToken));
     }
 
     @Test
