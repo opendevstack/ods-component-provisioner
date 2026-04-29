@@ -3216,7 +3216,10 @@ definitions:
       artifacts:
         readOnly: true
         title: Artifacts
-        type: string
+        type: object
+        description: Arbitrary artifacts produced by the job
+        additionalProperties:
+          type: string
       canceled_on:
         description: The date and time when the cancel request was sent.
         format: date-time
@@ -3383,7 +3386,7 @@ definitions:
       launched_by:
         readOnly: true
         title: Launched by
-        type: string
+        type: object
       limit:
         default: ""
         title: Limit
@@ -3408,7 +3411,7 @@ definitions:
       passwords_needed_to_start:
         readOnly: true
         title: Passwords needed to start
-        type: string
+        type: object
       playbook:
         default: ""
         maxLength: 1024
@@ -3419,7 +3422,7 @@ definitions:
         description: A count of all plays and tasks for the job run.
         readOnly: true
         title: Playbook counts
-        type: string
+        type: object
       project:
         title: Project
         type: string
@@ -3427,12 +3430,12 @@ definitions:
       related:
         readOnly: true
         title: Related
-        type: string
+        type: object
       result_traceback:
         minLength: 1
         readOnly: true
         title: Result traceback
-        type: string
+        type: object
       scm_branch:
         default: ""
         description: Branch to use in job run. Project default used if blank. Only allowed if project allow_override field is set to true.
@@ -3481,7 +3484,7 @@ definitions:
       summary_fields:
         readOnly: true
         title: Summary fields
-        type: string
+        type: object
       timeout:
         default: 0
         description: The amount of time (in seconds) to run before the task is canceled.
@@ -3662,7 +3665,7 @@ definitions:
       related:
         readOnly: true
         title: Related
-        type: string
+        type: object
       role:
         minLength: 1
         readOnly: true
@@ -3681,7 +3684,7 @@ definitions:
       summary_fields:
         readOnly: true
         title: Summary fields
-        type: string
+        type: object
       task:
         minLength: 1
         readOnly: true

@@ -187,8 +187,8 @@ public class EntitiesMapper {
                 .status(projectComponentInfo.getStatus())
                 .projectKey(projectKey)
                 .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
-                .errorMessage("TBD")
-                .errorTask("TBD")
+                .errorMessage(jobDetail.getArtifacts().getOrDefault("result_code", "N/A").toString())
+                .errorTask(jobDetail.getArtifacts().getOrDefault("result_output", "N/A").toString())
                 .build();
     }
 }
