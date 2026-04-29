@@ -2,8 +2,10 @@ package org.opendevstack.component_provisioner.server.mappers;
 
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
+import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobTemplate;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
@@ -176,5 +178,16 @@ public class EntitiesMapper {
 
     public ProvisionerMessageDefinition asProvisionerMessageDefinition(CatalogItemUserActionMessageDefinition itemUserActionMsgDef) {
         return MAPPER.map(itemUserActionMsgDef, ProvisionerMessageDefinition.class);
+    }
+
+    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, WorkflowJobTemplate workflowJobTemplate) {
+        return ProjectComponentProvisionStatus.builder()
+                .componentId(projectComponentInfo.getComponentId())
+                .status(projectComponentInfo.getStatus())
+                .projectKey(projectKey)
+                .workflowJobId(Optional.ofNullable(workflowJobTemplate.getId()).map(Object::toString).orElse("N/A"))
+                .errorMessage("TBD")
+                .errorTask("TBD")
+                .build();
     }
 }

@@ -23,7 +23,7 @@ public class ProjectComponentsApiController implements ProjectComponentsStatusAp
 
         log.debug("getProjectComponentById - projectComponentInfo: {}", projectComponentInfo);
 
-        var projectComponentExtendedInfo = projectComponentsApiFacade.enrichWithAapInfo(projectComponentInfo);
+        var projectComponentExtendedInfo = projectComponentsApiFacade.enrichWithAapInfo(projectKey, projectComponentInfo);
 
         log.debug("getProjectComponentById - projectComponentExtendedInfo: {}", projectComponentExtendedInfo);
 
