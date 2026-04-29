@@ -25,6 +25,8 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 @AllArgsConstructor
 public class ProvisionService {
 
+    private static final String ACTION_ID = "PROVISION";
+
     private final ApiClientsBuilder apiClientsBuilder;
     private final ComponentCatalogService componentCatalogService;
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
@@ -65,7 +67,6 @@ public class ProvisionService {
     }
 
     public List<CreateIncidentParameter> getDeletionParameters(String projectKey, String componentId) {
-
         var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
 
         var catalogItemId = composeCatalogItemId(projectComponent);
@@ -74,7 +75,7 @@ public class ProvisionService {
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
         var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
 
-        return extractDeletionParameters(catalogItem, projectComponent);
+        return extractDeletionParameters(catalogItem, projectComponent, ACTION_ID);
     }
 
     @SneakyThrows
@@ -86,7 +87,8 @@ public class ProvisionService {
 
     private List<CreateIncidentParameter> extractDeletionParameters(
             CatalogItem catalogItem,
-            ProjectComponentExtendedInfo projectComponent) {
+            ProjectComponentExtendedInfo projectComponent,
+            String actionId) {
         var projectParametersByName =
                 Optional.ofNullable(projectComponent.getParameters())
                         .orElse(List.of())
@@ -101,6 +103,7 @@ public class ProvisionService {
                 .orElse(List.of())
                 .stream()
                 .peek(action -> log.debug("User action found: {}", action))
+                .filter(action -> actionId.equals(action.getId()))
                 .flatMap(action ->
                         Optional.ofNullable(action.getParameters())
                                 .orElse(List.of())

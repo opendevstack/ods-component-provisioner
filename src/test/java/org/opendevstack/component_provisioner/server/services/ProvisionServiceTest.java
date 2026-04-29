@@ -102,6 +102,7 @@ class ProvisionServiceTest {
 
         CatalogItem catalogItem = new CatalogItem();
         catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
+                .id("PROVISION")
                 .parameters(List.of(CatalogItemUserActionParameter.builder()
                         .name("param1")
                         .sendOnDeletion(true)
