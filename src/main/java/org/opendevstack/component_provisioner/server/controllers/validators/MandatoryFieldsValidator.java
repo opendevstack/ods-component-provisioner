@@ -36,7 +36,6 @@ public class MandatoryFieldsValidator {
         var projectKey = getProjectKey(provisionAction);
         var catalogItemId = getCatalogItemId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
-        var location = getLocation(provisionAction);
 
         var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
         var provisionUserAction = Optional.ofNullable(catalogItem)
@@ -57,21 +56,20 @@ public class MandatoryFieldsValidator {
                                 )))
                         .orElse(Collections.emptyMap());
 
-        provisionAction.getParameters().stream()
-                .filter(param -> mandatoryFields.containsKey(param.getName()))
-                .forEach(param -> updateParam(param, mandatoryFields.get(param.getName()), location));
+        mandatoryFields.keySet().forEach(mandatoryFieldName -> {
+            var param = provisionAction.getParameters().stream()
+                    .filter(p -> Objects.equals(p.getName(), mandatoryFieldName))
+                    .findFirst()
+                    .orElseThrow(() -> new InvalidRestEntityException(String.format(
+                            "The parameter %s is mandatory but was not provided in the request.",
+                            mandatoryFieldName
+                    )));
+
+            validateParam(param, mandatoryFields.get(mandatoryFieldName));
+        });
     }
 
-    public void updateParam(
-            ProvisionActionParameter param,
-            CatalogItemUserActionParameter catalogParam,
-            String location
-    ) {
-
-        if (isBlankValue(param)) {
-            applyDefaultValue(param, catalogParam, location);
-        }
-
+    private void validateParam(ProvisionActionParameter param, CatalogItemUserActionParameter catalogParam) {
         if (isBlankValue(param)) {
             throw new InvalidRestEntityException(String.format(
                     "The parameter %s is mandatory and no value was provided.",
@@ -101,31 +99,6 @@ public class MandatoryFieldsValidator {
         // MULTIPLELIST is the only type that stores multiple values as a list for the answers;
         // SINGLELIST and STRING types store single string values for the answer.
         return MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType());
-    }
-
-    private void applyDefaultValue(
-            ProvisionActionParameter param,
-            CatalogItemUserActionParameter catalogParam,
-            String location
-    ) {
-        // STRING - SINGLELIST
-        if (ParameterType.STRING.getValue().equalsIgnoreCase(param.getType())
-        || MandatoryFieldType.SINGLELIST.getValue().equalsIgnoreCase(param.getType())) {
-            if (StringUtils.isNotBlank(catalogParam.getDefaultValue())) {
-                param.setValue(List.of(catalogParam.getDefaultValue()));
-            } else if (catalogParam.getLocations() != null && !catalogParam.getLocations().isEmpty()) {
-                catalogParam.getLocations().stream()
-                        .filter(parameterLocation -> StringUtils.equalsIgnoreCase(parameterLocation.getLocation(), location))
-                        .findFirst()
-                        .ifPresent(loc -> param.setValue(List.of(loc.getValue())));
-            }
-            return; // no default, but that's OK
-        }
-
-        // MULTIPLELIST
-        if (MandatoryFieldType.MULTIPLELIST.getValue().equalsIgnoreCase(param.getType()) && catalogParam.getDefaultValues() != null) {
-            param.setValue(catalogParam.getDefaultValues());
-        }
     }
 
     private void logNoOptions(ProvisionActionParameter param) {
