@@ -439,4 +439,46 @@ class ComponentCatalogServiceTest {
         assertThat(captured.getComponentId()).isEqualTo(componentId);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
+
+    @Test
+    void givenValidInputs_whenGetProjectComponentByIdIsCalled_thenReturnsProjectComponentExtendedInfo() throws MalformedURLException {
+        // given
+        String accessToken = "access-token";
+        String projectKey = "PRJ-1";
+        String componentId = "CMP-123";
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+
+        org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo expectedComponent =
+                new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId))
+                .thenReturn(expectedComponent);
+
+        // when
+        org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo result =
+                componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
+
+        // then
+        assertThat(result).isSameAs(expectedComponent);
+
+        verify(apiClientsBuilder)
+                .componentCatalogApiClient(accessToken, baseUrl.toString());
+        verify(apiClientsBuilder)
+                .projectComponentsApi(componentCatalogApiClient);
+        verify(projectComponentsApi)
+                .getProjectComponentById(projectKey, componentId);
+
+        verifyNoMoreInteractions(projectComponentsApi);
+        verifyNoInteractions(
+                itemUserActionMessagesDefinitionsApi,
+                provisionerActionsApi,
+                catalogItemsApi
+        );
+    }
+
 }
