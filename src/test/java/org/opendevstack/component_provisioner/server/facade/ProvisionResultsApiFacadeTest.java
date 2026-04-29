@@ -87,8 +87,6 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsTrueWhenMatchingComponentFound() {
         // given
-        var action = CreateIncidentActionMother.of();
-        var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
         when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
 
@@ -146,8 +144,6 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
         // given
-        var action = CreateIncidentActionMother.of();
-        String accessToken = facade.getParameterString(action, "access_token");
         when(componentCatalogService.getProjectComponents(any())).thenReturn(Collections.emptyList());
 
         // when
@@ -160,8 +156,6 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotDeleting() {
         // given
-        var action = CreateIncidentActionMother.of();
-        String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
         pc.setComponentId("componentId");
         when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
