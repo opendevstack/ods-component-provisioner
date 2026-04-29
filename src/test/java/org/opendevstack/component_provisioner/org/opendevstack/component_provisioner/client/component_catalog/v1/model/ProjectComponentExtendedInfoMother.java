@@ -16,6 +16,7 @@ public class ProjectComponentExtendedInfoMother {
         return ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
                 .status(status)
+                .workflowJobId("12345")
                 .build();
     }
 }
