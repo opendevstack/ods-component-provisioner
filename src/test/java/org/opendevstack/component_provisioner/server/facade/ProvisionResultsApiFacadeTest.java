@@ -33,6 +33,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -89,10 +90,10 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
         var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isTrue();
@@ -147,10 +148,10 @@ class ProvisionResultsApiFacadeTest {
         // given
         var action = CreateIncidentActionMother.of();
         String accessToken = facade.getParameterString(action, "access_token");
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(Collections.emptyList());
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(Collections.emptyList());
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isFalse();
@@ -163,10 +164,10 @@ class ProvisionResultsApiFacadeTest {
         String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
         pc.setComponentId("componentId");
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isFalse();
@@ -252,7 +253,7 @@ class ProvisionResultsApiFacadeTest {
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
 
-        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenReturn(catalogItem);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
@@ -276,7 +277,7 @@ class ProvisionResultsApiFacadeTest {
         request.setCatalogItemSlug(catalogItemSlug);
         request.setComponentUrl(componentUrl);
 
-        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
+        when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenThrow(new RestClientException("Not found"));
 
         // when / then
         assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken));
@@ -445,7 +446,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
 
         var deletionParam = CreateIncidentParameter.builder().name("delParam").value("delValue").build();
-        when(provisionService.getDeletionParameters(projectKey, componentId, accessToken)).thenReturn(List.of(deletionParam));
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of(deletionParam));
 
         // when
         facade.addSystemParametersToAction(projectKey, componentId, action);

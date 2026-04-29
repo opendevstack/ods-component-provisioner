@@ -29,6 +29,7 @@ public class ProvisionService {
     private final ComponentCatalogService componentCatalogService;
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
     private final CreateIncidentParameterMapper createIncidentParameterMapper;
+    private final AuthenticationProvider authenticationProvider;
 
     public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
                                                String catalogItemId, String componentUrl, String accessToken) {
@@ -63,15 +64,13 @@ public class ProvisionService {
         provisionerActionsApi.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
     }
 
-    public List<CreateIncidentParameter> getDeletionParameters(String projectKey,
-                                                                                      String componentId,
-                                                                                      String accessToken) {
+    public List<CreateIncidentParameter> getDeletionParameters(String projectKey, String componentId) {
 
-        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken);
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
 
         var catalogItemId = composeCatalogItemId(projectComponent);
 
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(authenticationProvider.getAccessToken(), componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
         var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
 

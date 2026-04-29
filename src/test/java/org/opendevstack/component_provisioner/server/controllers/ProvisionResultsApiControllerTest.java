@@ -89,11 +89,9 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(false);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any())).thenReturn(false);
         var actionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
         when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
@@ -133,11 +131,9 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(true);
+        when(provisionResultsApiFacade.isInDeletingState(any(), any())).thenReturn(true);
 
         // when
         var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);

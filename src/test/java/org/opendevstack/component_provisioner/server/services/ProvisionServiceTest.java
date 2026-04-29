@@ -12,7 +12,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
-import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentExtendedInfoMother;
 
@@ -43,13 +42,13 @@ class ProvisionServiceTest {
     private CatalogItemsApi catalogItemsApi;
 
     @Mock
-    private ProvisioningStatusUpdateRequestParametersInnerMapper provisioningStatusUpdateRequestParametersInnerMapper;
-
-    @Mock
     private ComponentCatalogService componentCatalogService;
 
     @Mock
     private CreateIncidentParameterMapper createIncidentParameterMapper;
+
+    @Mock
+    private AuthenticationProvider authenticationProvider;
 
     @InjectMocks
     private ProvisionService provisionService;
@@ -94,7 +93,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA=="); // catalogItemId
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY="); // catalogItemRef
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -119,7 +119,7 @@ class ProvisionServiceTest {
                 .thenReturn(CreateIncidentParameter.builder().name("param1").value("value1").build());
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).hasSize(1);
@@ -138,7 +138,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -149,7 +150,7 @@ class ProvisionServiceTest {
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
@@ -166,7 +167,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -179,7 +181,7 @@ class ProvisionServiceTest {
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
@@ -196,7 +198,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -212,7 +215,7 @@ class ProvisionServiceTest {
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
@@ -230,7 +233,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
         projectComponent.setParameters(null);
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -246,7 +250,7 @@ class ProvisionServiceTest {
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
@@ -263,7 +267,8 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemId("Y2F0YWxvZ0l0ZW1JZA==");
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken))
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -285,7 +290,7 @@ class ProvisionServiceTest {
         projectComponent.setParameters(List.of(projectParam));
 
         // when
-        var result = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var result = provisionService.getDeletionParameters(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();

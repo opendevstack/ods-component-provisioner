@@ -12,13 +12,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Ca
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.http.HttpStatus;
@@ -364,20 +358,15 @@ class ComponentCatalogServiceTest {
     void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() {
         // given
         String projectKey = "PRJ-1";
-        String accessToken = "access-token";
-
-        HttpBearerAuth auth = mock(HttpBearerAuth.class);
-        when(componentCatalogApiClient.getAuthentication("bearerAuth")).thenReturn(auth);
 
         List<ProjectComponentInfo> expectedComponents = List.of();
         when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(expectedComponents);
 
         // when
-        List<ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        List<ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey);
 
         // then
         assertThat(result).isSameAs(expectedComponents);
-        verify(auth).setBearerToken(accessToken);
         verify(projectComponentsApi).getProjectComponents(projectKey);
     }
 
@@ -386,20 +375,16 @@ class ComponentCatalogServiceTest {
         // given
         String projectKey = "PRJ-1";
         String componentId = "CMP-1";
-        String accessToken = "access-token";
 
-        HttpBearerAuth auth = mock(HttpBearerAuth.class);
-        when(componentCatalogApiClient.getAuthentication("bearerAuth")).thenReturn(auth);
 
         ProjectComponentExtendedInfo expectedInfo = new ProjectComponentExtendedInfo();
         when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expectedInfo);
 
         // when
-        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId, accessToken);
+        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
 
         // then
         assertThat(result).isSameAs(expectedInfo);
-        verify(auth).setBearerToken(accessToken);
         verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
     }
 

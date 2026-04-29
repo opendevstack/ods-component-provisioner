@@ -43,7 +43,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
     @Override
     public ResponseEntity<Void> deleteProjectComponent(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
-        log.debug("Delete provisioning status. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
+        log.debug("Delete Project component. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
 
         var accessToken = authenticationProvider.getAccessToken();
 
@@ -57,12 +57,11 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
         NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest = new NotifyProvisioningStatusUpdateRequest();
         notifyProvisioningStatusUpdateRequest.setComponentId(componentId);
-        var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
         provisionResultsApiFacade.addSystemParametersToAction(projectKey, componentId, createIncidentAction);
 
-        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId, accessToken);
+        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId);
 
         if (isInDeletingState) {
             log.debug("Project component already in DELETING state, skipping create of the incident via AWX");

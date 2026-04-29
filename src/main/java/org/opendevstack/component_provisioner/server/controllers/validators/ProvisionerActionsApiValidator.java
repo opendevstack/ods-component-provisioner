@@ -44,7 +44,7 @@ public class ProvisionerActionsApiValidator {
 
         validateInputParams(projectKey, accessToken, componentId);
 
-        validateComponentIsNotProvisioned(projectKey, accessToken, componentId);
+        validateComponentIsNotProvisioned(projectKey, componentId);
 
         validateUserHasPermissionsToProvision(projectKey, accessToken);
 
@@ -82,10 +82,10 @@ public class ProvisionerActionsApiValidator {
         }
     }
 
-    private void validateComponentIsNotProvisioned(String projectKey, String accessToken, String componentId) {
+    private void validateComponentIsNotProvisioned(String projectKey, String componentId) {
         log.debug("Validating component is not provisioned. projectKey: {}, componentId: {}", projectKey, componentId);
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey);
 
         var componentIdAlreadyProvisioned = projectComponents.stream()
                 .filter(projectComponent -> projectComponent.getComponentId() != null)

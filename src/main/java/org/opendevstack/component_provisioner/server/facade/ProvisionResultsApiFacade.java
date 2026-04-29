@@ -51,9 +51,9 @@ public class ProvisionResultsApiFacade {
         this.projectsInfoService = projectsInfoService;
     }
 
-    public boolean isInDeletingState(String projectKey, String componentId, String accessToken) {
+    public boolean isInDeletingState(String projectKey, String componentId) {
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey);
 
         return projectComponents.stream()
                 .filter(component -> component.getComponentId() != null)
@@ -180,8 +180,7 @@ public class ProvisionResultsApiFacade {
     }
 
     private void addSendOnDeletionParameters(String projectKey, String componentId, CreateIncidentAction action) {
-        var accessToken = authenticationProvider.getAccessToken();
-        var sendOnDeletionParameters = provisionService.getDeletionParameters(projectKey, componentId, accessToken);
+        var sendOnDeletionParameters = provisionService.getDeletionParameters(projectKey, componentId);
         sendOnDeletionParameters.forEach(action::addParametersItem);
     }
 

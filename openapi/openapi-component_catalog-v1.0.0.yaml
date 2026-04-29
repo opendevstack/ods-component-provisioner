@@ -1283,11 +1283,6 @@ components:
           example: "https://bitbucket.com/projects/DEVSTACK/repos/devstack-component-catalog"
           nullable: true
 
-        accessToken:
-          type: string
-          description: the access token to be used for the component provisioning
-          example: "some-access-token"
-
         workflowJobId:
           type: string
           description: the workflow job id from AWX to correlate provisioning status with AWX job status updates
