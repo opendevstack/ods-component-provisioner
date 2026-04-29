@@ -74,7 +74,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
                     notifyProvisioningStatusUpdateRequest,
-                    null);
+                    accessToken);
 
             log.debug("Creating incident via AWX");
 
