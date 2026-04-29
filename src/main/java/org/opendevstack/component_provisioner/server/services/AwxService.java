@@ -1,6 +1,8 @@
 package org.opendevstack.component_provisioner.server.services;
 
+import org.opendevstack.component_provisioner.client.awx.v2.api.JobsApi;
 import org.opendevstack.component_provisioner.client.awx.v2.api.WorkflowJobTemplatesApi;
+import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobTemplate;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
@@ -23,10 +25,13 @@ public class AwxService {
     private static final String AWX_API_VERSION = "v2";
     @Qualifier("awxWorkflowJobTemplatesApi")
     private final WorkflowJobTemplatesApi workflowJobTemplatesApi;
+    @Qualifier("awxJobsApi")
+    private final JobsApi jobsApi;
     private final EntitiesMapper entitiesMapper;
 
-    public AwxService(WorkflowJobTemplatesApi workflowJobTemplatesApi, EntitiesMapper entitiesMapper) {
+    public AwxService(WorkflowJobTemplatesApi workflowJobTemplatesApi, JobsApi jobsApi, EntitiesMapper entitiesMapper) {
         this.workflowJobTemplatesApi = workflowJobTemplatesApi;
+        this.jobsApi = jobsApi;
         this.entitiesMapper = entitiesMapper;
     }
 
@@ -73,15 +78,15 @@ public class AwxService {
         }
     }
 
-    public Optional<WorkflowJobTemplate> getWorkflowJobById(String jobId) {
+    public Optional<JobDetail> getWorkflowJobById(String jobId) {
         log.info("Getting workflow job with id: {}", jobId);
 
         try {
-            var workflowJobTemplate = this.workflowJobTemplatesApi.apiWorkflowJobTemplatesRead(AWX_API_VERSION, jobId);
+            var jobDetail = jobsApi.apiJobsRead(AWX_API_VERSION, jobId);
 
-            log.debug("Workflow job template: {}", workflowJobTemplate);
+            log.debug("Job detail: {}", jobDetail);
 
-            return Optional.ofNullable(workflowJobTemplate);
+            return Optional.ofNullable(jobDetail);
         } catch (HttpStatusCodeException e) {
             var errMsg = String.format(
                     "Error getting workflow job with id: %s, status code: %s",

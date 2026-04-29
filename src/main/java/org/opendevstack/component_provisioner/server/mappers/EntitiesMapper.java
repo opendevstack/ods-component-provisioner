@@ -1,5 +1,6 @@
 package org.opendevstack.component_provisioner.server.mappers;
 
+import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobTemplate;
@@ -180,12 +181,12 @@ public class EntitiesMapper {
         return MAPPER.map(itemUserActionMsgDef, ProvisionerMessageDefinition.class);
     }
 
-    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, WorkflowJobTemplate workflowJobTemplate) {
+    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, JobDetail jobDetail) {
         return ProjectComponentProvisionStatus.builder()
                 .componentId(projectComponentInfo.getComponentId())
                 .status(projectComponentInfo.getStatus())
                 .projectKey(projectKey)
-                .workflowJobId(Optional.ofNullable(workflowJobTemplate.getId()).map(Object::toString).orElse("N/A"))
+                .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
                 .errorMessage("TBD")
                 .errorTask("TBD")
                 .build();

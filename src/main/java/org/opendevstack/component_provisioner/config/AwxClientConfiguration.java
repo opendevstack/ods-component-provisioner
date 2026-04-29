@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.config;
 
 import org.opendevstack.component_provisioner.client.awx.v2.ApiClient;
+import org.opendevstack.component_provisioner.client.awx.v2.api.JobsApi;
 import org.opendevstack.component_provisioner.client.awx.v2.api.WorkflowJobTemplatesApi;
 import org.opendevstack.component_provisioner.client.awx.v2.auth.HttpBasicAuth;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,5 +39,11 @@ public class AwxClientConfiguration {
     @Primary
     public WorkflowJobTemplatesApi workflowJobTemplatesApi(@Qualifier("awxApiClient") ApiClient awxApiClient) {
         return new WorkflowJobTemplatesApi(awxApiClient);
+    }
+
+    @Bean(name="awxJobsApi")
+    @Primary
+    public JobsApi jobsApi(@Qualifier("awxApiClient") ApiClient awxApiClient) {
+        return new JobsApi(awxApiClient);
     }
 }

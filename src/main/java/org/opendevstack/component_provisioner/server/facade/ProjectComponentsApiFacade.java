@@ -28,12 +28,12 @@ public class ProjectComponentsApiFacade {
     }
 
     public ProjectComponentProvisionStatus enrichWithAapInfo(String projectKey, ProjectComponentExtendedInfo projectComponentInfo) {
-        var workflowJobTemplate = awxService.getWorkflowJobById(projectComponentInfo.getWorkflowJobId()).orElseThrow( () -> new InvalidRestEntityException(
+        var jobDetail = awxService.getWorkflowJobById(projectComponentInfo.getWorkflowJobId()).orElseThrow( () -> new InvalidRestEntityException(
                 String.format("Workflow job template with id %s not found for project component %s",
                         projectComponentInfo.getWorkflowJobId(), projectComponentInfo.getComponentId())
         ));
 
-        var provisionStatus = entitiesMapper.asProjectComponentProvisionStatus(projectKey, projectComponentInfo, workflowJobTemplate);
+        var provisionStatus = entitiesMapper.asProjectComponentProvisionStatus(projectKey, projectComponentInfo, jobDetail);
 
         log.debug("Generated project component provision status: {}", provisionStatus);
 
