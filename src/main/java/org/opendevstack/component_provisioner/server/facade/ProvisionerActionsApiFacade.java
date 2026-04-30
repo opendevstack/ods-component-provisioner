@@ -48,10 +48,10 @@ public class ProvisionerActionsApiFacade {
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
-        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper);
-        var resolvedActionWrapper = resolveCatalogItemIdentifier(requiredCatalogItemParamsWrapper);
-        provisionerActionsApiValidator.validate(resolvedActionWrapper.toProvisionAction());
-        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(resolvedActionWrapper);
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(resolvedActionWrapper);
+        provisionerActionsApiValidator.validate(requiredCatalogItemParamsWrapper.toProvisionAction());
+        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
         notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
