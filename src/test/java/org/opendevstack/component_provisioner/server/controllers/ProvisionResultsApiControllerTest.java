@@ -13,6 +13,7 @@ import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,56 @@ class ProvisionResultsApiControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
         verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
+    }
+
+    @Test
+    void givenAProvisionService_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenReturnsOk() {
+        // given
+        var projectKey = "project-key";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "componentId";
+        var catalogItemId = "catalogItemId";
+        var componentUrl = "componentUrl";
+        var accessToken = "accessToken";
+
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemId(catalogItemId);
+        request.componentUrl(componentUrl);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        // when
+        var response = provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), request);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
+    }
+
+    @Test
+    void givenInvalidStatus_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var invalidStatus = "NOT_A_STATUS";
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setCatalogItemId("cat-1");
+        request.componentUrl("http://example");
+
+        doThrow(new InvalidRestEntityException(exceptionMsg))
+                .when(provisionResultsApiFacade)
+                .validate(any(String.class), any(String.class), any(ProvisioningStatusPartialUpdateRequest.class));
+
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () ->
+                provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, invalidStatus, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
+        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any(), any());
     }
 
     @Test

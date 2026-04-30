@@ -96,5 +96,41 @@ class EntitiesMapperTest {
         assertEquals("N/A", result.getErrorMessage());
         assertEquals("N/A", result.getErrorTask());
     }
+
+    @Test
+    void givenAServerProvisioningStatusUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+        // Arrange
+        var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest();
+        serverRequest.setComponentId("comp-1");
+        serverRequest.setCatalogItemId("cat-1");
+        serverRequest.componentUrl("http://example.com");
+
+        // Act
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
+
+        // Assert
+        assertNotNull(clientRequest);
+        assertEquals("comp-1", clientRequest.getComponentId());
+        assertEquals("cat-1", clientRequest.getCatalogItemId());
+        assertEquals("http://example.com", clientRequest.getComponentUrl());
+    }
+
+    @Test
+    void givenAServerProvisioningStatusPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+        // Arrange
+        var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest();
+        serverRequest.setComponentId("comp-2");
+        serverRequest.setCatalogItemId("cat-2");
+        serverRequest.componentUrl("http://example.org");
+
+        // Act
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
+
+        // Assert
+        assertNotNull(clientRequest);
+        assertEquals("comp-2", clientRequest.getComponentId());
+        assertEquals("cat-2", clientRequest.getCatalogItemId());
+        assertEquals("http://example.org", clientRequest.getComponentUrl());
+    }
 }
 
