@@ -44,18 +44,20 @@ class ProvisionerServiceTest {
         var accessToken = "accessToken";
         var baseUrl = "http://localhost";
 
+        var clientRequest = ProvisioningStatusUpdateRequest.builder()
+                .componentId(componentId)
+                .catalogItemId(catalogItemId)
+                .componentUrl(componentUrl)
+                .build();
+
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
         when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), ProvisioningStatusUpdateRequest.builder()
-                .componentId(componentId)
-                .catalogItemId(catalogItemId)
-                .componentUrl(componentUrl)
-                .build());
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
     }
 
     @Test

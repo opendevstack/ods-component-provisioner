@@ -11,8 +11,8 @@ import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxRe
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.HttpStatus;
@@ -48,11 +48,11 @@ class ProvisionResultsApiControllerTest {
         var componentUrl = "componentUrl";
         var accessToken = "accessToken";
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
@@ -107,7 +107,7 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), eq(accessToken));
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(ProvisioningStatusUpdateRequest.class), eq(accessToken));
     }
 
     @Test
@@ -153,12 +153,12 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var invalidStatus = "NOT_A_STATUS";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request);
@@ -174,12 +174,12 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "created";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -195,13 +195,13 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "created";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
         request.setCatalogItemSlug("slug");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -217,11 +217,11 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "FAILED";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);

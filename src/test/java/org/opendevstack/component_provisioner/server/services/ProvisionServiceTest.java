@@ -32,30 +32,51 @@ class ProvisionServiceTest {
     private ProvisionService provisionService;
 
     @Test
-    void givenAProjectKeyAndStatusAndComponentIdAndCatalogItemIdAndComponentUrlAndAccessToken_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+    void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApiPut() throws Exception {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED;
-        var componentId = "CID";
-        var catalogItemId = "CAT";
-        var componentUrl = "http://example.com";
         var accessToken = "token";
         var baseUrl = "http://catalog.example.com";
+
+        var clientRequest = ProvisioningStatusUpdateRequest.builder()
+                .componentId("CID")
+                .catalogItemId("CAT")
+                .componentUrl("http://example.com")
+                .build();
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
 
         // then
-        var expectedRequest = ProvisioningStatusUpdateRequest.builder()
-                .componentId(componentId)
-                .catalogItemId(catalogItemId)
-                .componentUrl(componentUrl)
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
+    }
+
+    @Test
+    void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenInvokesProvisionerActionsApiPatch() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var accessToken = "token";
+        var baseUrl = "http://catalog.example.com";
+
+        var clientRequest = ProvisioningStatusUpdateRequest.builder()
+                .componentId("CID")
+                .catalogItemId("CAT")
+                .componentUrl("http://example.com")
                 .build();
 
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), expectedRequest);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
+
+        // when
+        provisionService.notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
+
+        // then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), clientRequest);
     }
 
     @Test

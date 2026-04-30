@@ -140,7 +140,7 @@ paths:
         - ProvisionResults
       summary: Notify provisioning Status Update
       description: >
-        This endpoint receives provisioning status update notifications from AWX.
+        This endpoint receives provisioning updates.
       operationId: notifyProvisioningStatusUpdate
       parameters:
         - name: projectKey
@@ -162,24 +162,46 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                componentId:
-                  type: string
-                  description: The componentId set by the user.
-                  example: "any-component-id-from-backend"
-                catalogItemId:
-                  type: string
-                  description: The base64 encoded path for the catalogItem. Mind that it may include branch reference.
-                  example: "cHJvamVjdHMvQ0FURVNUL3JlcG9zL3VzZXItYWN0aW9ucy1pdGVtL3Jhdy9DYXRhbG9nSXRlbS55YW1sP2F0PXJlZnMvaGVhZHMvbWFzdGVy"
-                catalogItemSlug:
-                  type: string
-                  description: The slug for the provisioned component.
-                  example: "myproject_repo_name"
-                componentUrl:
-                  type: string
-                  description: The bitbucket repository url for the provisioned component.
-                  example: "https://bitbucket.com/projects/myproject/repos/repo_name"
+              $ref: '#/components/schemas/ProvisioningStatusUpdateRequest'
+      responses:
+        "200":
+          description: Provisioning completion notified.
+        "400":
+          description: Bad request.
+        "401":
+          description: Invalid client token on the request.
+        "403":
+          description: Insufficient permissions for the client to access the resource.
+        "500":
+          description: Server error.
+    patch:
+      tags:
+        - ProvisionResults
+      summary: Notify provisioning Status Update
+      description: >
+        This endpoint receives provisioning status update notifications from AAP.
+      operationId: notifyProvisioningStatusUpdatePartially
+      parameters:
+        - name: projectKey
+          in: path
+          description: Project key of the provisioned component.
+          required: true
+          schema:
+            type: string
+        - name: status
+          in: path
+          description: Project key of the provisioned component.
+          required: true
+          example: CREATING
+          schema:
+            type: string
+            enum: [ CREATING, CREATED, FAILED, DELETING, UNKNOWN ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProvisioningStatusPartialUpdateRequest'
       responses:
         "200":
           description: Provisioning completion notified.
@@ -431,6 +453,61 @@ components:
           type: string
       required:
         - message
+
+    ProvisioningStatusPartialUpdateRequest:
+      type: object
+      properties:
+        componentId:
+          type: string
+          minLength: 1                # disallows empty string ""
+          pattern: '^(?!\s*$).+'      # reject whitespace-only
+          description: The componentId set by the user.
+          example: "any-component-id-from-backend"
+        catalogItemId:
+          type: string
+          description: The base64 encoded path for the catalogItem. It may include branch reference.
+          example: "cHJvamVjdHMvQ0FURVNUL3JlcG9zL3VzZXItYWN0aW9ucy1pdGVtL3Jhdy9DYXRhbG9nSXRlbS55YW1sP2F0PXJlZnMvaGVhZHMvbWFzdGVy"
+        catalogItemSlug:
+          type: string
+          description: The slug for the provisioned component.
+          example: "myproject_repo_name"
+        componentUrl:
+          type: string
+          description: the repository url where the component was provisioned
+          example: "https://bitbucket.com/projects/DEVSTACK/repos/devstack-component-catalog"
+          nullable: true
+
+    ProvisioningStatusUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/ProvisioningStatusPartialUpdateRequest'
+        - type: object
+          properties:
+            workflowJobId:
+              type: string
+              description: the workflow job id from AWX to correlate provisioning status with AWX job status updates
+              example: "123456"
+              nullable: true
+            parameters:
+              type: array
+              description: List of name/value string parameters.
+              items:
+                type: object
+                required:
+                  - name
+                  - values
+                properties:
+                  name:
+                    type: string
+                    description: Parameter name
+                    example: "environment"
+                  values:
+                    type: array
+                    description: Parameter values
+                    items:
+                      type: string
+                    example:
+                      - "production"
+                      - "staging"
 
     ProvisioningDeleteRequest:
       type: object

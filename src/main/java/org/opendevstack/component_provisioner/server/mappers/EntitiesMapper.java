@@ -17,6 +17,7 @@ import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLau
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
@@ -25,6 +26,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinition;
 import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinitionType;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
@@ -195,6 +197,24 @@ public class EntitiesMapper {
                 .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
                 .errorMessage(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
                 .errorTask(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
+                .build();
+    }
+
+    public ProvisioningStatusUpdateRequest asClientProvisioningStatusUpdateRequest(
+            org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
+        return ProvisioningStatusUpdateRequest.builder()
+                .componentId(provisioningStatusUpdateRequest.getComponentId())
+                .catalogItemId(provisioningStatusUpdateRequest.getCatalogItemId())
+                .componentUrl(provisioningStatusUpdateRequest.getComponentUrl())
+                .build();
+    }
+
+    public ProvisioningStatusUpdateRequest asClientProvisioningStatusUpdateRequest(
+            ProvisioningStatusPartialUpdateRequest provisioningStatusPartialUpdateRequest) {
+        return ProvisioningStatusUpdateRequest.builder()
+                .componentId(provisioningStatusPartialUpdateRequest.getComponentId())
+                .catalogItemId(provisioningStatusPartialUpdateRequest.getCatalogItemId())
+                .componentUrl(provisioningStatusPartialUpdateRequest.getComponentUrl())
                 .build();
     }
 }

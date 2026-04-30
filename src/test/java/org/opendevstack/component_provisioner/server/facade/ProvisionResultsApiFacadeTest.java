@@ -13,7 +13,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
@@ -225,17 +225,22 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
+
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
 
         // then
-        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(catalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
     }
 
     @Test
@@ -249,21 +254,26 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
 
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
 
         // then
-        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
     }
 
     @Test
@@ -276,10 +286,10 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
 
@@ -290,7 +300,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
         request.setCatalogItemSlug("SLUG");
 
@@ -302,7 +312,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
         // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
 
         // when / then
@@ -312,7 +322,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
         // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setCatalogItemSlug("SLUG");
 
         // when / then
@@ -322,7 +332,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         // Both catalogItemId and catalogItemSlug are blank
 
         // when
@@ -338,7 +348,7 @@ class ProvisionResultsApiFacadeTest {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
 
         // when / then
