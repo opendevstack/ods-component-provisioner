@@ -136,4 +136,18 @@ class ApiClientsBuilderTest {
         assertThat(result).isNotNull();
     }
 
+
+    @Test
+    void givenApiClient_whenProjectComponentsApiIsCalled_thenReturnsProjectComponentsApiInstance() {
+        // given
+        var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
+
+        // when
+        var api = builder.projectComponentsApi(client);
+
+        // then
+        assertThat(api).isNotNull();
+        assertThat(api.getApiClient()).isSameAs(client);
+    }
+
 }

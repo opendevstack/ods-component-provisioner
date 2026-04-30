@@ -4,8 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.auth.HttpBearerAuth;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
@@ -43,9 +41,6 @@ public class ComponentCatalogService {
     @Qualifier("componentCatalogApiClient")
     private final ApiClient componentCatalogApiClient;
 
-    @Qualifier("projectComponentsApi")
-    private final ProjectComponentsApi projectComponentsApi;
-
     private final ApiClientsBuilder apiClientsBuilder;
 
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
@@ -55,12 +50,11 @@ public class ComponentCatalogService {
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
             ApiClient componentCatalogApiClient,
-            ProjectComponentsApi projectComponentsApi, ApiClientsBuilder apiClientsBuilder,
+            ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
             @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
         this.componentCatalogApiClient = componentCatalogApiClient;
-        this.projectComponentsApi = projectComponentsApi;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
@@ -156,8 +150,8 @@ public class ComponentCatalogService {
     }
 
     public List<ProjectComponentInfo> getProjectComponents(String projectKey, String accessToken) {
-        var auth = (HttpBearerAuth) componentCatalogApiClient.getAuthentication("bearerAuth");
-        auth.setBearerToken(accessToken);
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var projectComponentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
 
         return projectComponentsApi.getProjectComponents(projectKey);
     }
@@ -184,6 +178,13 @@ public class ComponentCatalogService {
         log.debug("Retrieved catalog item with slug {}: {}", slug, catalogItem);
 
         return catalogItem;
+    }
+
+    public org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo getProjectComponentById(String accessToken, String projectKey, String componentId) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var projectComponentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+
+        return projectComponentsApi.getProjectComponentById(projectKey, componentId);
     }
 
     private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {

@@ -63,7 +63,7 @@ public class SecurityConfiguration {
 
         http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/swagger-ui/**", "/swagger-boeh/**", "/v3/api-docs/**")
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
                             .permitAll()
                         .requestMatchers(
                                 "/v1/message-definitions/**",

@@ -1,12 +1,5 @@
 package org.opendevstack.component_provisioner.server.mappers;
 
-import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
-import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +11,22 @@ import org.modelmapper.config.Configuration;
 import org.modelmapper.convention.MatchingStrategies;
 import org.modelmapper.convention.NamingConventions;
 import org.modelmapper.internal.InheritingConfiguration;
+import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
+import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
+import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinition;
+import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinitionType;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
 import java.util.List;
 import java.util.Optional;
@@ -176,5 +185,16 @@ public class EntitiesMapper {
 
     public ProvisionerMessageDefinition asProvisionerMessageDefinition(CatalogItemUserActionMessageDefinition itemUserActionMsgDef) {
         return MAPPER.map(itemUserActionMsgDef, ProvisionerMessageDefinition.class);
+    }
+
+    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, JobDetail jobDetail) {
+        return ProjectComponentProvisionStatus.builder()
+                .componentId(projectComponentInfo.getComponentId())
+                .status(projectComponentInfo.getStatus())
+                .projectKey(projectKey)
+                .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
+                .errorMessage(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
+                .errorTask(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
+                .build();
     }
 }
