@@ -79,9 +79,9 @@ public class ProvisionResultsApiFacade {
 
     public void notifyProvisioningStatusUpdate(String projectKey,
                                                ProjectComponentStatus status,
-                                               NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest,
-                                               String accessToken) {
-        String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+                                               NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var resolvedCatalogItemId = resolveCatalogItemId(accessToken,
                 notifyProvisioningStatusUpdateRequest.getCatalogItemId(),
                 notifyProvisioningStatusUpdateRequest.getCatalogItemSlug());
 

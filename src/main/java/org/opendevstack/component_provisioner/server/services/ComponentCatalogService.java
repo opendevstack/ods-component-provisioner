@@ -172,6 +172,13 @@ public class ComponentCatalogService {
         return catalogItem;
     }
 
+    public ProjectComponentExtendedInfo getProjectComponentById(String accessToken, String projectKey, String componentId) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var projectComponentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+
+        return projectComponentsApi.getProjectComponentById(projectKey, componentId);
+    }
+
     private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {
         if (parameters == null) {
             return Collections.emptyMap();

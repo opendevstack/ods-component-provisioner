@@ -54,14 +54,12 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemSlug(catalogItemSlug);
         request.setComponentUrl(componentUrl);
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request);
         verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
     }
 
@@ -105,7 +103,7 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), eq(accessToken));
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class));
     }
 
     @Test

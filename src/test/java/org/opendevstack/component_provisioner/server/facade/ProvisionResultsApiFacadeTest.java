@@ -215,6 +215,8 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
@@ -222,7 +224,7 @@ class ProvisionResultsApiFacadeTest {
         request.setComponentUrl(componentUrl);
 
         // when
-        facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
+        facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
@@ -239,6 +241,8 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
@@ -250,7 +254,7 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenReturn(catalogItem);
 
         // when
-        facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
+        facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
@@ -266,6 +270,8 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
@@ -274,7 +280,7 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken));
+        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request));
     }
 
     @Test

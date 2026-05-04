@@ -27,15 +27,12 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest notifyProvisioningCompletedRequest) {
         log.debug("Notifying provision status update. ProjectKey: {}, Status: {}, notifyProvisioningCompletedRequest: {}", projectKey, status, notifyProvisioningCompletedRequest);
 
-        var accessToken = authenticationProvider.getAccessToken();
-
         provisionResultsApiFacade.validate(projectKey, status, notifyProvisioningCompletedRequest);
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
                 ProjectComponentStatus.valueOf(status),
-                notifyProvisioningCompletedRequest,
-                accessToken
+                notifyProvisioningCompletedRequest
         );
 
         return ResponseEntity.ok().build();
@@ -72,8 +69,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
-                    notifyProvisioningStatusUpdateRequest,
-                    accessToken);
+                    notifyProvisioningStatusUpdateRequest);
 
             log.debug("Creating incident via AWX");
 
