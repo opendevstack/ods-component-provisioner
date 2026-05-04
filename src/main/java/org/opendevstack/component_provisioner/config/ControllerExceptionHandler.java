@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.config;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.*;
 import org.opendevstack.component_provisioner.server.model.RestErrorMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.server.services.exceptions.InvalidIdException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +60,16 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(SlugNotFoundException.class)
     public ResponseEntity<RestErrorMessage> handleSlugNotFoundException(SlugNotFoundException ex) {
         return defaultErrResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ComponentNotFoundException.class)
+    public ResponseEntity<RestErrorMessage> handleComponentNotFoundException(ComponentNotFoundException ex) {
+        return defaultErrResponse(ex, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidIdException.class)
+    public ResponseEntity<RestErrorMessage> handleInvalidIdException(InvalidIdException ex) {
+        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {

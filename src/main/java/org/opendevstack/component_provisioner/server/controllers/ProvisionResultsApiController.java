@@ -42,8 +42,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     }
 
     @Override
-    public ResponseEntity<Void> deleteProvisioningStatus(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
-        log.debug("Delete provisioning status. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
+    public ResponseEntity<Void> deleteProjectComponent(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
+        log.debug("Delete Project component. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
 
         var accessToken = authenticationProvider.getAccessToken();
 
@@ -53,16 +53,15 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     }
 
     @Override
-    public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
+    public ResponseEntity<ProvisionActionResponse> requestDeletion(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
         NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest = new NotifyProvisioningStatusUpdateRequest();
         notifyProvisioningStatusUpdateRequest.setComponentId(componentId);
-        var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
-        provisionResultsApiFacade.addSystemParametersToAction(projectKey, createIncidentAction);
+        provisionResultsApiFacade.addSystemParametersToAction(projectKey, componentId, createIncidentAction);
 
-        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId, accessToken);
+        var isInDeletingState = provisionResultsApiFacade.isInDeletingState(projectKey, componentId);
 
         if (isInDeletingState) {
             log.debug("Project component already in DELETING state, skipping create of the incident via AWX");

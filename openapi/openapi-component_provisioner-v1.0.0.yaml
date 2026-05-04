@@ -198,10 +198,10 @@ paths:
         - basicAuth: [ ]         # Enable ONLY basicAuth
       tags:
         - ProvisionResults
-      summary: Delete provision status component from the file
+      summary: Delete project component from the file
       description: >
-        This endpoint receives provisioning status delete notifications from Component Provisioner.
-      operationId: deleteProvisioningStatus
+        This endpoint receives provisioning status delete notifications from Project Component.
+      operationId: deleteProjectComponent
       parameters:
         - name: projectKey
           in: path
@@ -227,14 +227,14 @@ paths:
         "500":
           description: Server error.
 
-  /support/delete/{projectKey}/{componentId}:
+  /provision/delete/{projectKey}/{componentId}:
     post:
       tags:
         - ProvisionResults
       summary: Request App Support to do operations to delete provision status component (and dependencies) from the file
       description: >
         This endpoint receives project key and componentId and send an create an incident to app support.
-      operationId: createIncident
+      operationId: requestDeletion
       parameters:
         - name: projectKey
           in: path

@@ -8,29 +8,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
-import org.springframework.web.client.RestClientException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ProvisionService;
+import org.opendevstack.component_provisioner.server.model.*;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,9 +31,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -62,6 +55,9 @@ class ProvisionResultsApiFacadeTest {
 
     @InjectMocks
     private ProvisionResultsApiFacade facade;
+
+    @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
+    private String workflowJobId;
 
     @BeforeEach
     void init() {
@@ -91,13 +87,11 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsTrueWhenMatchingComponentFound() {
         // given
-        var action = CreateIncidentActionMother.of();
-        var accessToken = action.getParameters().stream().filter(p -> p.getName().equals("access_token")).map(CreateIncidentParameter::getValue).map(Object::toString).findFirst().orElseThrow();
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isTrue();
@@ -150,12 +144,10 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
         // given
-        var action = CreateIncidentActionMother.of();
-        String accessToken = facade.getParameterString(action, "access_token");
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(Collections.emptyList());
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(Collections.emptyList());
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isFalse();
@@ -164,14 +156,12 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotDeleting() {
         // given
-        var action = CreateIncidentActionMother.of();
-        String accessToken = facade.getParameterString(action, "access_token");
         ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
         pc.setComponentId("componentId");
-        when(componentCatalogService.getProjectComponents("PRJ", accessToken)).thenReturn(List.of(pc));
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId", accessToken);
+        var result = facade.isInDeletingState("PRJ", "componentId");
 
         // then
         assertThat(result).isFalse();
@@ -257,7 +247,7 @@ class ProvisionResultsApiFacadeTest {
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
 
-        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenReturn(catalogItem);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
@@ -281,7 +271,7 @@ class ProvisionResultsApiFacadeTest {
         request.setCatalogItemSlug(catalogItemSlug);
         request.setComponentUrl(componentUrl);
 
-        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
+        when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenThrow(new RestClientException("Not found"));
 
         // when / then
         assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request, accessToken));
@@ -334,15 +324,46 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAValidStatusAndRequest_whenValidateIsCalled_thenDoesNotThrow() {
+    void givenAProjectKeyAndComponentIdAndAction_whenValidateIsCalled_thenDoesNotThrowIfValid() {
+        // given
+        var action = CreateIncidentActionMother.of();
+
+        // when / then
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", action));
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenBuildAwxWorkflowJobLaunchIsCalled_thenAddsRequiredParameters() {
+        // given
+        var action = CreateIncidentActionMother.of();
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var launch = new AwxWorkflowJobLaunch();
+        when(entitiesMapper.asAwxWorkflowJobLaunch(action)).thenReturn(launch);
+
+        // when
+        var result = ReflectionTestUtils.invokeMethod(facade, "buildAwxWorkflowJobLaunch", projectKey, componentId, action);
+
+        // then
+        assertThat(result).isEqualTo(launch);
+        assertThat(facade.getParameterString(action, "project_key")).isEqualTo(projectKey);
+        assertThat(facade.getParameterString(action, "component_id")).isEqualTo(componentId);
+        assertThat(facade.getParameterString(action, "workflow")).isEqualTo("WORKFLOW_123");
+    }
+
+    @Test
+    void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
         var request = new NotifyProvisioningStatusUpdateRequest();
         request.setCatalogItemId("ID");
+        request.setCatalogItemSlug("SLUG");
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate(projectKey, status, request));
+        assertThatThrownBy(() -> facade.validate(projectKey, status, request))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessage("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
     }
 
     @Test
@@ -363,6 +384,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAProjectKeyAndAnAction_whenAddSystemParametersToActionIsCalled_thenAddsClusterAndCallerToAction() {
         // given
         var projectKey = "PRJ";
+        var componentId = "CID";
         var accessToken = "token123";
         var clusterLocation = "cluster-a";
         var caller = "user@example.com";
@@ -376,7 +398,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when
-        facade.addSystemParametersToAction(projectKey, action);
+        facade.addSystemParametersToAction(projectKey, componentId, action);
 
         // then
         assertThat(facade.getParameterString(action, "cluster_location")).isEqualTo(clusterLocation);
@@ -387,6 +409,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAProjectWithNoClusters_whenAddSystemParametersToActionIsCalled_thenThrowsProjectConfigurationException() {
         // given
         var projectKey = "PRJ";
+        var componentId = "CID";
         var accessToken = "token123";
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
@@ -397,7 +420,32 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when / then
-        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
+        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, componentId, action));
         assertThat(ex.getMessage()).contains("PRJ");
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndAction_whenAddSystemParametersToActionIsCalled_thenAddsDeletionParameters() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token123";
+        var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
+
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster-a"));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+
+        var deletionParam = CreateIncidentParameter.builder().name("delParam").value("delValue").build();
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of(deletionParam));
+
+        // when
+        facade.addSystemParametersToAction(projectKey, componentId, action);
+
+        // then
+        assertThat(action.getParameters()).contains(deletionParam);
     }
 }

@@ -51,9 +51,9 @@ public class ProvisionResultsApiFacade {
         this.projectsInfoService = projectsInfoService;
     }
 
-    public boolean isInDeletingState(String projectKey, String componentId, String accessToken) {
+    public boolean isInDeletingState(String projectKey, String componentId) {
 
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        var projectComponents = componentCatalogService.getProjectComponents(projectKey);
 
         return projectComponents.stream()
                 .filter(component -> component.getComponentId() != null)
@@ -112,8 +112,10 @@ public class ProvisionResultsApiFacade {
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
+
         provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
+
 
     public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
         validate(projectKey, status);
@@ -157,9 +159,10 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void addSystemParametersToAction(String projectKey, CreateIncidentAction action) {
+    public void addSystemParametersToAction(String projectKey, String componentId, CreateIncidentAction action) {
         addClusterLocationParameter(projectKey, action);
         addCallerParameter(action);
+        addSendOnDeletionParameters(projectKey, componentId, action);
     }
 
     private void addClusterLocationParameter(String projectKey, CreateIncidentAction action) {
@@ -174,6 +177,11 @@ public class ProvisionResultsApiFacade {
                 .type(ParameterType.STRING.getValue())
                 .value(clusterLocation)
                 .build());
+    }
+
+    private void addSendOnDeletionParameters(String projectKey, String componentId, CreateIncidentAction action) {
+        var sendOnDeletionParameters = provisionService.getDeletionParameters(projectKey, componentId);
+        sendOnDeletionParameters.forEach(action::addParametersItem);
     }
 
     private void addCallerParameter(CreateIncidentAction action) {

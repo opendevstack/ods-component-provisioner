@@ -12,10 +12,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Ca
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.http.HttpStatus;
@@ -26,7 +23,6 @@ import org.springframework.web.client.RestClientException;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -359,26 +355,37 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() throws URISyntaxException, MalformedURLException {
+    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() {
         // given
         String projectKey = "PRJ-1";
-        String accessToken = "access-token";
-        String baseRest = "http://component-catalog";
-        URL baseRestUrl = new URI(baseRest).toURL();
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseRestUrl);
-        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseRest)).thenReturn(componentCatalogApiClient);
-        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient)).thenReturn(projectComponentsApi);
-
-        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> expectedComponents = List.of();
+        List<ProjectComponentInfo> expectedComponents = List.of();
         when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(expectedComponents);
 
         // when
-        List<org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey, accessToken);
+        List<ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey);
 
         // then
         assertThat(result).isSameAs(expectedComponents);
         verify(projectComponentsApi).getProjectComponents(projectKey);
+    }
+
+    @Test
+    void givenValidInput_whenGetProjectComponentExtendedInfoIsCalled_thenExtendedInfoIsReturned() {
+        // given
+        String projectKey = "PRJ-1";
+        String componentId = "CMP-1";
+
+
+        ProjectComponentExtendedInfo expectedInfo = new ProjectComponentExtendedInfo();
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expectedInfo);
+
+        // when
+        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+
+        // then
+        assertThat(result).isSameAs(expectedInfo);
+        verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
     }
 
     @Test
@@ -439,46 +446,4 @@ class ComponentCatalogServiceTest {
         assertThat(captured.getComponentId()).isEqualTo(componentId);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
-
-    @Test
-    void givenValidInputs_whenGetProjectComponentByIdIsCalled_thenReturnsProjectComponentExtendedInfo() throws MalformedURLException {
-        // given
-        String accessToken = "access-token";
-        String projectKey = "PRJ-1";
-        String componentId = "CMP-123";
-        URL baseUrl = URI.create("http://component-catalog").toURL();
-
-        org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo expectedComponent =
-                new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo();
-
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
-                .thenReturn(componentCatalogApiClient);
-        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
-                .thenReturn(projectComponentsApi);
-        when(projectComponentsApi.getProjectComponentById(projectKey, componentId))
-                .thenReturn(expectedComponent);
-
-        // when
-        org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo result =
-                componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
-
-        // then
-        assertThat(result).isSameAs(expectedComponent);
-
-        verify(apiClientsBuilder)
-                .componentCatalogApiClient(accessToken, baseUrl.toString());
-        verify(apiClientsBuilder)
-                .projectComponentsApi(componentCatalogApiClient);
-        verify(projectComponentsApi)
-                .getProjectComponentById(projectKey, componentId);
-
-        verifyNoMoreInteractions(projectComponentsApi);
-        verifyNoInteractions(
-                itemUserActionMessagesDefinitionsApi,
-                provisionerActionsApi,
-                catalogItemsApi
-        );
-    }
-
 }

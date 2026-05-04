@@ -83,7 +83,7 @@ class ProvisionerActionsApiValidatorTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any()))
                 .thenReturn(List.of(exists));
 
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
@@ -107,7 +107,7 @@ class ProvisionerActionsApiValidatorTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component catalog empty → no conflict
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any()))
                 .thenReturn(List.of());
 
         // User groups
@@ -144,7 +144,7 @@ class ProvisionerActionsApiValidatorTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component does NOT exist
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any()))
                 .thenReturn(List.of());
 
         // User groups
@@ -212,7 +212,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
         when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
@@ -235,7 +235,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
+        when(componentCatalogService.getProjectComponents(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
@@ -251,7 +251,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
@@ -268,7 +268,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of());
         when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 
