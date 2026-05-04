@@ -14,6 +14,10 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.springframework.web.client.RestClientException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -217,17 +221,22 @@ class ProvisionResultsApiFacadeTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
+
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
-        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(catalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
     }
 
     @Test
@@ -243,21 +252,26 @@ class ProvisionResultsApiFacadeTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         var catalogItem = new CatalogItem();
         catalogItem.setId(resolvedCatalogItemId);
 
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+
         when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenReturn(catalogItem);
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
 
         // when
         facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
-        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, componentId, resolvedCatalogItemId, componentUrl, accessToken);
+        verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
     }
 
     @Test
@@ -272,10 +286,10 @@ class ProvisionResultsApiFacadeTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenThrow(new RestClientException("Not found"));
 
@@ -284,45 +298,109 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+    void givenAProvisionService_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenDelegatesToProvisionService() {
         // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
-        request.setCatalogItemSlug("SLUG");
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "CID";
+        var catalogItemId = "CAT";
+        var componentUrl = "http://example.com";
+        var accessToken = "token";
+
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemId(catalogItemId);
+        request.componentUrl(componentUrl);
+
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
+
+        // when
+        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+
+        // then
+        verify(provisionService).notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(catalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
+    }
+
+    @Test
+    void givenACatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenResolvesSlugToId() {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "CID";
+        var catalogItemSlug = "SLUG";
+        var resolvedCatalogItemId = "RESOLVED_ID";
+        var componentUrl = "http://example.com";
+        var accessToken = "token";
+
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemSlug(catalogItemSlug);
+        request.componentUrl(componentUrl);
+
+        var catalogItem = new CatalogItem();
+        catalogItem.setId(resolvedCatalogItemId);
+
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
+
+        // when
+        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+
+        // then
+        verify(provisionService).notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
+        assertThat(request.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
+        assertThat(request.getCatalogItemSlug()).isNull();
+    }
+
+    @Test
+    void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsSlugNotFoundException() {
+        // given
+        var projectKey = "PRJ";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "CID";
+        var catalogItemSlug = "INVALID_SLUG";
+        var componentUrl = "http://example.com";
+        var accessToken = "token";
+
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemSlug(catalogItemSlug);
+        request.componentUrl(componentUrl);
+
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", request));
+        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken));
+    }
+
+    @Test
+    void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+        // when / then
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", "ID", "SLUG"));
         assertThat(ex.getMessage()).contains("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
     }
 
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
-        // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
-
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", "ID", null));
     }
 
     @Test
     void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
-        // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
-        request.setCatalogItemSlug("SLUG");
-
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", null, "SLUG"));
     }
 
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var request = new NotifyProvisioningStatusUpdateRequest();
-        // Both catalogItemId and catalogItemSlug are blank
-
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", request);
+        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", null, null);
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
@@ -362,12 +440,9 @@ class ProvisionResultsApiFacadeTest {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
-        var request = new NotifyProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
-        request.setCatalogItemSlug("SLUG");
 
         // when / then
-        assertThatThrownBy(() -> facade.validate(projectKey, status, request))
+        assertThatThrownBy(() -> facade.validate(projectKey, status, "ID", null))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessage("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
     }

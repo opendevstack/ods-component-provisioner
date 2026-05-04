@@ -53,20 +53,20 @@ class ProvisionerServiceTest {
         var accessToken = "accessToken";
         var baseUrl = "http://localhost";
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
-
-        // when
-        provisionService.notifyProvisioningStatusUpdate(projectKey, status, componentId, catalogItemId, componentUrl, accessToken);
-
-        // then
-        var expectedRequest = ProvisioningStatusUpdateRequest.builder()
+        var clientRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
                 .catalogItemId(catalogItemId)
                 .componentUrl(componentUrl)
                 .build();
 
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), expectedRequest);
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
+        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
+
+        // when
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+
+        // then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
     }
 
     @Test

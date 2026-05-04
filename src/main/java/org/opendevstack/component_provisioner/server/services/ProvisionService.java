@@ -1,6 +1,10 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
@@ -33,37 +37,42 @@ public class ProvisionService {
     private final CreateIncidentParameterMapper createIncidentParameterMapper;
     private final AuthenticationProvider authenticationProvider;
 
-    public void notifyProvisioningStatusUpdate(String projectKey, ProjectComponentStatus status, String componentId,
-                                               String catalogItemId, String componentUrl, String accessToken) {
-        log.info("Notifying provisioning completed");
+    public void notifyProvisioningStatusUpdate(String projectKey,
+                                               ProjectComponentStatus status,
+                                               ProvisioningStatusUpdateRequest clientRequest,
+                                               String accessToken) {
+        log.debug("PUT component-catalog /provision/{}/{} body={}", projectKey, status.name(), clientRequest);
 
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        catalogProvisionerActionsApi(accessToken)
+                .notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
+    }
 
-        var notifyProvisioningCompletedRequest = ProvisioningStatusUpdateRequest.builder()
-                .componentId(componentId)
-                .catalogItemId(catalogItemId)
-                .componentUrl(componentUrl)
-                .build();
+    public void notifyProvisioningStatusUpdatePartially(String projectKey,
+                                                        ProjectComponentStatus status,
+                                                        ProvisioningStatusUpdateRequest clientRequest,
+                                                        String accessToken) {
+        log.debug("PATCH component-catalog /provision/{}/{} body={}", projectKey, status.name(), clientRequest);
 
-        log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdatePartially. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
-                projectKey, status.name(), notifyProvisioningCompletedRequest);
-
-        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), notifyProvisioningCompletedRequest);
+        catalogProvisionerActionsApi(accessToken)
+                .notifyProvisioningStatusUpdatePartially(projectKey, status.name(), clientRequest);
     }
 
     public void deleteProvisioningStatus(String projectKey,
                                          String componentId,
                                          String accessToken) {
-        log.info("Deleting provisioning completed. Project Key: {}, componentId: {}", projectKey, componentId);
+        log.info("Deleting provisioning status. Project Key: {}, componentId: {}", projectKey, componentId);
 
-        var provisioningDeleteRequest = ProvisioningDeleteRequest.builder()
+        var deleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
                 .build();
 
-        var provisionerActionsApi = apiClientsBuilder.provisionerActionsApi(accessToken,
-                componentCatalogServiceProps.getBaseRestUrl().toString());
+        catalogProvisionerActionsApi(accessToken)
+                .deleteProvisioningStatus(projectKey, deleteRequest);
+    }
 
-        provisionerActionsApi.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
+    private ProvisionerActionsApi catalogProvisionerActionsApi(String accessToken) {
+        return apiClientsBuilder.provisionerActionsApi(accessToken,
+                componentCatalogServiceProps.getBaseRestUrl().toString());
     }
 
     public List<CreateIncidentParameter> getDeletionParameters(String projectKey, String componentId) {
