@@ -17,18 +17,10 @@ import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLau
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequestAllOfParameters;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinition;
-import org.opendevstack.component_provisioner.server.model.ProvisionerMessageDefinitionType;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
@@ -193,13 +185,30 @@ public class EntitiesMapper {
     }
 
     public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, JobDetail jobDetail) {
+        var parameters = Optional.ofNullable(projectComponentInfo.getParameters())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(this::asProjectComponentStatusParameter)
+                .toList();
+
         return ProjectComponentProvisionStatus.builder()
-                .componentId(projectComponentInfo.getComponentId())
-                .status(projectComponentInfo.getStatus())
                 .projectKey(projectKey)
+                .componentId(projectComponentInfo.getComponentId())
+                .catalogItemId(projectComponentInfo.getCatalogItemId())
+                .catalogItemRef(projectComponentInfo.getCatalogItemRef())
+                .status(projectComponentInfo.getStatus())
+                .componentUrl(projectComponentInfo.getComponentUrl())
                 .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
-                .errorMessage(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
                 .errorTask(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
+                .errorMessage(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
+                .parameters(parameters)
+                .build();
+    }
+
+    public ProjectComponentStatusParameter asProjectComponentStatusParameter(ProjectComponentParameter parameter) {
+        return ProjectComponentStatusParameter.builder()
+                .name(parameter.getName())
+                .values(parameter.getValues())
                 .build();
     }
 
