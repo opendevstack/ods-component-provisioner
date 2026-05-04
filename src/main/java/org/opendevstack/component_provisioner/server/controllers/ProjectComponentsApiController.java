@@ -2,7 +2,7 @@ package org.opendevstack.component_provisioner.server.controllers;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.opendevstack.component_provisioner.server.api.ProjectComponentsStatusApi;
+import org.opendevstack.component_provisioner.server.api.ProjectComponentsWithProvisionStatusApi;
 import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApiFacade;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("${openapi.componentProvisionerREST.base-path:/v1}")
 @AllArgsConstructor
 @Slf4j
-public class ProjectComponentsApiController implements ProjectComponentsStatusApi {
+public class ProjectComponentsApiController implements ProjectComponentsWithProvisionStatusApi {
 
     private final ProjectComponentsApiFacade projectComponentsApiFacade;
 
