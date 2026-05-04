@@ -14,10 +14,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
-import org.springframework.web.client.RestClientException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -442,7 +438,7 @@ class ProvisionResultsApiFacadeTest {
         var status = ProjectComponentStatus.CREATED.name();
 
         // when / then
-        assertThatThrownBy(() -> facade.validate(projectKey, status, "ID", null))
+        assertThatThrownBy(() -> facade.validate(projectKey, status, "ID", "SLUG"))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessage("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
     }

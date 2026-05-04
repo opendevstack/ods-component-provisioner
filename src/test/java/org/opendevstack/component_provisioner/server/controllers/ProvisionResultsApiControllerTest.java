@@ -9,13 +9,9 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,13 +44,12 @@ class ProvisionResultsApiControllerTest {
         var catalogItemId = "catalogItemId";
         var catalogItemSlug = "catalogItemSlug";
         var componentUrl = "componentUrl";
-        var accessToken = "accessToken";
 
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.componentUrl(componentUrl);
+        request.setComponentUrl(JsonNullable.of(componentUrl));
 
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
@@ -78,7 +73,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusPartialUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
-        request.componentUrl(componentUrl);
+        request.setComponentUrl(JsonNullable.of(componentUrl));
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
@@ -99,7 +94,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusPartialUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg))
                 .when(provisionResultsApiFacade)
@@ -202,7 +197,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -223,7 +218,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -245,7 +240,7 @@ class ProvisionResultsApiControllerTest {
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
         request.setCatalogItemSlug("slug");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -265,7 +260,7 @@ class ProvisionResultsApiControllerTest {
         var statusLowercase = "FAILED";
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 

@@ -33,8 +33,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
                 ProjectComponentStatus.valueOf(status),
-                provisioningStatusUpdateRequest,
-                accessToken
+                provisioningStatusUpdateRequest
         );
 
         return ResponseEntity.ok().build();
@@ -89,8 +88,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
-                    provisioningStatusUpdateRequest,
-                    accessToken);
+                    provisioningStatusUpdateRequest);
 
             log.debug("Creating incident via AWX");
 

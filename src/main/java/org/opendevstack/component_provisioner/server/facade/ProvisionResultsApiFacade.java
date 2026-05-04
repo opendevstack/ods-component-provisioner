@@ -80,9 +80,9 @@ public class ProvisionResultsApiFacade {
 
     public void notifyProvisioningStatusUpdate(String projectKey,
                                                ProjectComponentStatus status,
-                                               ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest,
-                                               String accessToken) {
-        String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+                                               ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
+        var accessToken = authenticationProvider.getAccessToken();
+        var resolvedCatalogItemId = resolveCatalogItemId(accessToken,
                 provisioningStatusUpdateRequest.getCatalogItemId(),
                 provisioningStatusUpdateRequest.getCatalogItemSlug());
 
