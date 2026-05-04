@@ -18,6 +18,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageType;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequestAllOfParameters;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
@@ -30,6 +32,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPar
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -206,7 +209,21 @@ public class EntitiesMapper {
                 .componentId(provisioningStatusUpdateRequest.getComponentId())
                 .catalogItemId(provisioningStatusUpdateRequest.getCatalogItemId())
                 .componentUrl(provisioningStatusUpdateRequest.getComponentUrl())
+                .workflowJobId(provisioningStatusUpdateRequest.getWorkflowJobId())
+                .parameters(asClientParameters(provisioningStatusUpdateRequest.getParameters()))
                 .build();
+    }
+
+    private List<ProvisioningStatusUpdateRequestParametersInner> asClientParameters(
+            List<ProvisioningStatusUpdateRequestAllOfParameters> serverParameters) {
+        return Optional.ofNullable(serverParameters)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(serverParameter -> ProvisioningStatusUpdateRequestParametersInner.builder()
+                        .name(serverParameter.getName())
+                        .values(serverParameter.getValues())
+                        .build())
+                .toList();
     }
 
     public ProvisioningStatusUpdateRequest asClientProvisioningStatusUpdateRequest(
