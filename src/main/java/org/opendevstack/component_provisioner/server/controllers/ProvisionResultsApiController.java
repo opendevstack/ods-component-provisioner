@@ -30,7 +30,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         var accessToken = authenticationProvider.getAccessToken();
 
-        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusUpdateRequest);
+        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusUpdateRequest.getCatalogItemId(), provisioningStatusUpdateRequest.getCatalogItemSlug());
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
@@ -48,7 +48,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         var accessToken = authenticationProvider.getAccessToken();
 
-        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusPartialUpdateRequest);
+        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusPartialUpdateRequest.getCatalogItemId(), provisioningStatusPartialUpdateRequest.getCatalogItemSlug());
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdatePartially(
                 projectKey,

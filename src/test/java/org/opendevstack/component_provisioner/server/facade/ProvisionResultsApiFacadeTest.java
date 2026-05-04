@@ -381,44 +381,27 @@ class ProvisionResultsApiFacadeTest {
 
     @Test
     void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var request = new ProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
-        request.setCatalogItemSlug("SLUG");
-
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", request));
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", "ID", "SLUG"));
         assertThat(ex.getMessage()).contains("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
     }
 
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
-        // given
-        var request = new ProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
-
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", "ID", null));
     }
 
     @Test
     void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
-        // given
-        var request = new ProvisioningStatusUpdateRequest();
-        request.setCatalogItemSlug("SLUG");
-
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", request));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", null, "SLUG"));
     }
 
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var request = new ProvisioningStatusUpdateRequest();
-        // Both catalogItemId and catalogItemSlug are blank
-
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", request);
+        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", null, null);
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
@@ -430,11 +413,9 @@ class ProvisionResultsApiFacadeTest {
         // given
         var projectKey = "PRJ";
         var status = ProjectComponentStatus.CREATED.name();
-        var request = new ProvisioningStatusUpdateRequest();
-        request.setCatalogItemId("ID");
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate(projectKey, status, request));
+        assertDoesNotThrow(() -> facade.validate(projectKey, status, "ID", null));
     }
 
     @Test

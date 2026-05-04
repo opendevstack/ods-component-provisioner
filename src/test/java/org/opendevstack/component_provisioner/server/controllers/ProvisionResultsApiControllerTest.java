@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 
@@ -63,7 +64,7 @@ class ProvisionResultsApiControllerTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, catalogItemSlug);
     }
 
     @Test
@@ -89,7 +90,7 @@ class ProvisionResultsApiControllerTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, null);
     }
 
     @Test
@@ -104,7 +105,7 @@ class ProvisionResultsApiControllerTest {
 
         doThrow(new InvalidRestEntityException(exceptionMsg))
                 .when(provisionResultsApiFacade)
-                .validate(any(String.class), any(String.class), any(ProvisioningStatusPartialUpdateRequest.class));
+                .validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () ->
@@ -209,7 +210,7 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemId("cat-1");
         request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request);
@@ -230,7 +231,7 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemId("cat-1");
         request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -252,7 +253,7 @@ class ProvisionResultsApiControllerTest {
         request.setCatalogItemSlug("slug");
         request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -272,7 +273,7 @@ class ProvisionResultsApiControllerTest {
         request.setComponentId("comp-1");
         request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(ProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);

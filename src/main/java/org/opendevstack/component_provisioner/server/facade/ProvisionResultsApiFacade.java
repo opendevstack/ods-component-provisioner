@@ -132,17 +132,9 @@ public class ProvisionResultsApiFacade {
         provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
-    public void validate(String projectKey, String status, ProvisioningStatusUpdateRequest request) {
+    public void validate(String projectKey, String status, String catalogItemId, String catalogItemSlug) {
         validate(projectKey, status);
-        validateCatalogItemReference(request.getCatalogItemId(), request.getCatalogItemSlug());
-    }
 
-    public void validate(String projectKey, String status, ProvisioningStatusPartialUpdateRequest request) {
-        validate(projectKey, status);
-        validateCatalogItemReference(request.getCatalogItemId(), request.getCatalogItemSlug());
-    }
-
-    private void validateCatalogItemReference(String catalogItemId, String catalogItemSlug) {
         if (StringUtils.isNotBlank(catalogItemId) && StringUtils.isNotBlank(catalogItemSlug)) {
             throw new InvalidRestEntityException("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
         }
