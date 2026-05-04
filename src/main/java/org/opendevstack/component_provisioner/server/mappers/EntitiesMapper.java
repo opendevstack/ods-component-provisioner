@@ -198,9 +198,9 @@ public class EntitiesMapper {
                 .catalogItemRef(projectComponentInfo.getCatalogItemRef())
                 .status(projectComponentInfo.getStatus())
                 .componentUrl(projectComponentInfo.getComponentUrl())
-                .workflowJobId(Optional.ofNullable(jobDetail.getId()).map(Object::toString).orElse("N/A"))
-                .errorTask(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
-                .errorMessage(Optional.ofNullable(jobDetail.getArtifacts()).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
+                .workflowJobId(Optional.ofNullable(jobDetail).map(JobDetail::getId).map(Object::toString).orElse("N/A"))
+                .errorTask(Optional.ofNullable(jobDetail).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
+                .errorMessage(Optional.ofNullable(jobDetail).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
                 .parameters(parameters)
                 .build();
     }
