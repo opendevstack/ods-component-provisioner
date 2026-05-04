@@ -6,9 +6,10 @@ import org.opendevstack.component_provisioner.server.api.ProvisionResultsApi;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,18 +24,36 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     private final AuthenticationProvider authenticationProvider;
     private final ProvisionResultsApiFacade provisionResultsApiFacade;
 
-    @Override
-    public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest notifyProvisioningCompletedRequest) {
-        log.debug("Notifying provision status update. ProjectKey: {}, Status: {}, notifyProvisioningCompletedRequest: {}", projectKey, status, notifyProvisioningCompletedRequest);
+   @Override
+    public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey, String status, ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
+        log.debug("Notifying provision status update. ProjectKey: {}, Status: {}, provisioningStatusUpdateRequest: {}", projectKey, status, provisioningStatusUpdateRequest);
 
         var accessToken = authenticationProvider.getAccessToken();
 
-        provisionResultsApiFacade.validate(projectKey, status, notifyProvisioningCompletedRequest);
+        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusUpdateRequest.getCatalogItemId(), provisioningStatusUpdateRequest.getCatalogItemSlug());
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
                 ProjectComponentStatus.valueOf(status),
-                notifyProvisioningCompletedRequest,
+                provisioningStatusUpdateRequest,
+                accessToken
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> notifyProvisioningStatusUpdatePartially(String projectKey, String status, ProvisioningStatusPartialUpdateRequest provisioningStatusPartialUpdateRequest) {
+        log.debug("Notifying provision status update partially. ProjectKey: {}, Status: {}, provisioningStatusPartialUpdateRequest: {}", projectKey, status, provisioningStatusPartialUpdateRequest);
+
+        var accessToken = authenticationProvider.getAccessToken();
+
+        provisionResultsApiFacade.validate(projectKey, status, provisioningStatusPartialUpdateRequest.getCatalogItemId(), provisioningStatusPartialUpdateRequest.getCatalogItemSlug());
+
+        provisionResultsApiFacade.notifyProvisioningStatusUpdatePartially(
+                projectKey,
+                ProjectComponentStatus.valueOf(status),
+                provisioningStatusPartialUpdateRequest,
                 accessToken
         );
 
@@ -55,8 +74,8 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     @Override
     public ResponseEntity<ProvisionActionResponse> createIncident(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Creating incident. ProjectKey: {}, componentId: {}, CreateIncidentAction: {}", projectKey, componentId, createIncidentAction);
-        NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest = new NotifyProvisioningStatusUpdateRequest();
-        notifyProvisioningStatusUpdateRequest.setComponentId(componentId);
+        ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest = new ProvisioningStatusUpdateRequest();
+        provisioningStatusUpdateRequest.setComponentId(componentId);
         var accessToken = authenticationProvider.getAccessToken();
 
         provisionResultsApiFacade.validate(projectKey, componentId, createIncidentAction);
@@ -73,7 +92,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
             provisionResultsApiFacade.notifyProvisioningStatusUpdate(projectKey,
                     ProjectComponentStatus.DELETING,
-                    notifyProvisioningStatusUpdateRequest,
+                    provisioningStatusUpdateRequest,
                     accessToken);
 
             log.debug("Creating incident via AWX");

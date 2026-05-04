@@ -96,5 +96,67 @@ class EntitiesMapperTest {
         assertEquals("N/A", result.getErrorMessage());
         assertEquals("N/A", result.getErrorTask());
     }
+
+    @Test
+    void givenAServerProvisioningStatusUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+        // Arrange
+        var parameter = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequestAllOfParameters();
+        parameter.setName("env");
+        parameter.setValues(java.util.List.of("dev", "prod"));
+
+        var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest();
+        serverRequest.setComponentId("comp-1");
+        serverRequest.setCatalogItemId("cat-1");
+        serverRequest.componentUrl("http://example.com");
+        serverRequest.workflowJobId("wf-1");
+        serverRequest.setParameters(java.util.List.of(parameter));
+
+        // Act
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
+
+        // Assert
+        assertNotNull(clientRequest);
+        assertEquals("comp-1", clientRequest.getComponentId());
+        assertEquals("cat-1", clientRequest.getCatalogItemId());
+        assertEquals("http://example.com", clientRequest.getComponentUrl());
+        assertEquals("wf-1", clientRequest.getWorkflowJobId());
+        assertEquals(1, clientRequest.getParameters().size());
+        assertEquals("env", clientRequest.getParameters().get(0).getName());
+        assertEquals(java.util.List.of("dev", "prod"), clientRequest.getParameters().get(0).getValues());
+    }
+
+    @Test
+    void givenAServerProvisioningStatusUpdateRequestWithNullParameters_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenReturnsEmptyList() {
+        // Arrange
+        var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest();
+        serverRequest.setComponentId("comp-1");
+        serverRequest.setCatalogItemId("cat-1");
+        serverRequest.setParameters(null);
+
+        // Act
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
+
+        // Assert
+        assertNotNull(clientRequest.getParameters());
+        assertEquals(0, clientRequest.getParameters().size());
+    }
+
+    @Test
+    void givenAServerProvisioningStatusPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+        // Arrange
+        var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest();
+        serverRequest.setComponentId("comp-2");
+        serverRequest.setCatalogItemId("cat-2");
+        serverRequest.componentUrl("http://example.org");
+
+        // Act
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
+
+        // Assert
+        assertNotNull(clientRequest);
+        assertEquals("comp-2", clientRequest.getComponentId());
+        assertEquals("cat-2", clientRequest.getCatalogItemId());
+        assertEquals("http://example.org", clientRequest.getComponentUrl());
+    }
 }
 

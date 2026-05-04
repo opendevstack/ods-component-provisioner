@@ -13,7 +13,8 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Para
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,18 +80,34 @@ public class ProvisionResultsApiFacade {
 
     public void notifyProvisioningStatusUpdate(String projectKey,
                                                ProjectComponentStatus status,
-                                               NotifyProvisioningStatusUpdateRequest notifyProvisioningStatusUpdateRequest,
+                                               ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest,
                                                String accessToken) {
         String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
-                notifyProvisioningStatusUpdateRequest.getCatalogItemId(),
-                notifyProvisioningStatusUpdateRequest.getCatalogItemSlug());
+                provisioningStatusUpdateRequest.getCatalogItemId(),
+                provisioningStatusUpdateRequest.getCatalogItemSlug());
 
-        provisionService.notifyProvisioningStatusUpdate(projectKey,
-                status,
-                notifyProvisioningStatusUpdateRequest.getComponentId(),
-                resolvedCatalogItemId,
-                notifyProvisioningStatusUpdateRequest.getComponentUrl(),
-                accessToken);
+        provisioningStatusUpdateRequest.setCatalogItemId(resolvedCatalogItemId);
+        provisioningStatusUpdateRequest.setCatalogItemSlug(null);
+
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(provisioningStatusUpdateRequest);
+
+        provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
+    }
+
+    public void notifyProvisioningStatusUpdatePartially(String projectKey,
+                                                        ProjectComponentStatus status,
+                                                        ProvisioningStatusPartialUpdateRequest provisioningStatusPartialUpdateRequest,
+                                                        String accessToken) {
+        String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
+                provisioningStatusPartialUpdateRequest.getCatalogItemId(),
+                provisioningStatusPartialUpdateRequest.getCatalogItemSlug());
+
+        provisioningStatusPartialUpdateRequest.setCatalogItemId(resolvedCatalogItemId);
+        provisioningStatusPartialUpdateRequest.setCatalogItemSlug(null);
+
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(provisioningStatusPartialUpdateRequest);
+
+        provisionService.notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
     }
 
     private String resolveCatalogItemId(String accessToken,
@@ -115,13 +132,14 @@ public class ProvisionResultsApiFacade {
         provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
     }
 
-    public void validate(String projectKey, String status, NotifyProvisioningStatusUpdateRequest request) {
+    public void validate(String projectKey, String status, String catalogItemId, String catalogItemSlug) {
         validate(projectKey, status);
-        if (StringUtils.isNotBlank(request.getCatalogItemId()) && StringUtils.isNotBlank(request.getCatalogItemSlug())) {
+
+        if (StringUtils.isNotBlank(catalogItemId) && StringUtils.isNotBlank(catalogItemSlug)) {
             throw new InvalidRestEntityException("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
         }
 
-        if (StringUtils.isBlank(request.getCatalogItemId()) && StringUtils.isBlank(request.getCatalogItemSlug())) {
+        if (StringUtils.isBlank(catalogItemId) && StringUtils.isBlank(catalogItemSlug)) {
             throw new InvalidRestEntityException("Either catalogItemId or catalogItemSlug must be defined.");
         }
     }
