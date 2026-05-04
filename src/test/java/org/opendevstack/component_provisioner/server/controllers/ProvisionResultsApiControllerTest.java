@@ -11,8 +11,9 @@ import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxRe
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.NotifyProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.*;
 
 
@@ -48,11 +50,11 @@ class ProvisionResultsApiControllerTest {
         var componentUrl = "componentUrl";
         var accessToken = "accessToken";
 
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.setComponentUrl(componentUrl);
+        request.componentUrl(componentUrl);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
@@ -62,7 +64,57 @@ class ProvisionResultsApiControllerTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name(), request);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, catalogItemSlug);
+    }
+
+    @Test
+    void givenAProvisionService_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenReturnsOk() {
+        // given
+        var projectKey = "project-key";
+        var status = ProjectComponentStatus.CREATED;
+        var componentId = "componentId";
+        var catalogItemId = "catalogItemId";
+        var componentUrl = "componentUrl";
+        var accessToken = "accessToken";
+
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId(componentId);
+        request.setCatalogItemId(catalogItemId);
+        request.componentUrl(componentUrl);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        // when
+        var response = provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), request);
+
+        // then
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, null);
+    }
+
+    @Test
+    void givenInvalidStatus_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "project-key";
+        var invalidStatus = "NOT_A_STATUS";
+        var request = new ProvisioningStatusPartialUpdateRequest();
+        request.setComponentId("comp-1");
+        request.setCatalogItemId("cat-1");
+        request.componentUrl("http://example");
+
+        doThrow(new InvalidRestEntityException(exceptionMsg))
+                .when(provisionResultsApiFacade)
+                .validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
+
+        // when
+        var call = (org.junit.jupiter.api.function.Executable) () ->
+                provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, invalidStatus, request);
+
+        // then
+        var exception = assertThrows(InvalidRestEntityException.class, call);
+        assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
+        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any(), any());
     }
 
     @Test
@@ -107,7 +159,7 @@ class ProvisionResultsApiControllerTest {
         verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
         verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
         verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(NotifyProvisioningStatusUpdateRequest.class), isNull());
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(ProvisioningStatusUpdateRequest.class), eq(accessToken));
     }
 
     @Test
@@ -153,12 +205,12 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var invalidStatus = "NOT_A_STATUS";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, invalidStatus, request);
@@ -174,12 +226,12 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "created";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -195,13 +247,13 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "created";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
         request.setCatalogItemSlug("slug");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);
@@ -217,11 +269,11 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var statusLowercase = "FAILED";
-        var request = new NotifyProvisioningStatusUpdateRequest();
+        var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
-        request.setComponentUrl("http://example");
+        request.componentUrl("http://example");
 
-        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(NotifyProvisioningStatusUpdateRequest.class));
+        doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, statusLowercase, request);

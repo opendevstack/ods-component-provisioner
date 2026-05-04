@@ -40,180 +40,6 @@ class MandatoryFieldsValidatorTest {
     private MandatoryFieldsValidator validator;
 
     @Test
-    void givenBlankValueAndSingleDefault_whenUpdateParam_thenDefaultValueIsApplied() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", null);
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        "default-value"
-                );
-
-        // when
-        validator.updateParam(param, catalogParam, location);
-
-        // then
-        assertThat(param.getValue())
-                .isEqualTo(List.of("default-value"));
-    }
-
-    @Test
-    void givenBlankValueAndMultipleDefaultsForNonListType_whenUpdateParam_thenExceptionIsThrown() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", "");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        List.of("a", "b")
-                );
-
-        // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
-                .isInstanceOf(InvalidRestEntityException.class)
-                .hasMessageContaining("param1 is mandatory");
-    }
-
-    @Test
-    void givenBlankValueAndNoDefaults_whenUpdateParam_thenExceptionIsThrown() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", " ");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of("param1");
-        catalogParam.setDefaultValue(null);
-        catalogParam.setDefaultValues(null);
-
-        // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
-                .isInstanceOf(InvalidRestEntityException.class)
-                .hasMessageContaining("param1 is mandatory");
-    }
-
-    @Test
-    void givenNonBlankValueAndNoDefaults_whenUpdateParam_thenValueIsAccepted() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", "any-value");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of("param1");
-        catalogParam.setDefaultValue(null);
-        catalogParam.setDefaultValues(null);
-
-        // when
-        validator.updateParam(param, catalogParam, location);
-
-        // then
-        assertThat(param.getValue()).isEqualTo("any-value");
-    }
-
-    @Test
-    void givenSingleValueNotInOptions_whenUpdateParam_thenExceptionIsThrown() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", "invalid");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        Collections.emptyList(),
-                        List.of("valid1", "valid2")
-                );
-
-        // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
-                .isInstanceOf(InvalidRestEntityException.class)
-                .hasMessageContaining("invalid")
-                .hasMessageContaining("param1");
-    }
-
-    @Test
-    void givenListValueWithInvalidOption_whenUpdateParam_thenExceptionIsThrown() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", List.of("valid", "invalid"));
-        param.setType("multiplelist");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        Strings.EMPTY,
-                        List.of("valid")
-                );
-
-        // when / then
-        assertThatThrownBy(() -> validator.updateParam(param, catalogParam, location))
-                .isInstanceOf(InvalidRestEntityException.class)
-                .hasMessageContaining("invalid");
-    }
-
-    @Test
-    void givenListValueAllValid_whenUpdateParam_thenValueIsAccepted() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", List.of("a", "b"));
-        param.setType("multiplelist");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        List.of("a", "b", "c")
-                );
-
-        // when
-        validator.updateParam(param, catalogParam, location);
-
-        // then
-        assertThat(param.getValue()).isEqualTo(List.of("a", "b"));
-    }
-
-    @Test
-    void givenBlankValueAndMultipleDefaultsButWrongType_whenUpdateParam_thenExceptionIsThrown() {
-        // given
-        String location = "loc-1";
-
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", " ");
-
-        // multiple defaults exist, but param is TEXT
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        List.of("a", "b"),
-                        List.of("option1", "option2")
-                );
-
-        // when / then
-        var exception = assertThrows(
-                InvalidRestEntityException.class,
-                () -> validator.updateParam(param, catalogParam, location)
-        );
-
-        assertThat(exception.getMessage())
-                .contains("param1 is mandatory")
-                .doesNotContain("option1", "option2");
-    }
-
-    @Test
     void givenCatalogItemWithoutUserActions_whenValidate_thenExceptionIsThrown() {
         // given
         CatalogItem catalogItem = CatalogItemMother.of();
@@ -254,37 +80,28 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
-    void givenValueAndNoOptions_whenUpdateParam_thenValueIsAccepted() {
+    void givenMandatoryParameterWithEmptyList_whenValidate_thenExceptionIsThrown() {
         // given
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", "any-value");
+        var bearerToken = "bearer-token";
 
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of("param1", "default");
-        catalogParam.setOptions(null); // force hasNoOptions()
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
 
-        // when
-        validator.updateParam(param, catalogParam, "loc-1");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(catalogItem);
 
-        // then
-        assertThat(param.getValue()).isEqualTo("any-value");
-    }
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", Collections.emptyList());
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
 
-    @Test
-    void givenSingleListTypeAndDefaultValue_whenUpdateParam_thenDefaultApplied() {
-        // given
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", null);
-        param.setType("singlelist");
-
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of("param1", "default");
-
-        // when
-        validator.updateParam(param, catalogParam, "loc-1");
-
-        // then
-        assertThat(param.getValue()).isEqualTo(List.of("default"));
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("mandatory and no value was provided");
     }
 
     @Test
@@ -303,7 +120,7 @@ class MandatoryFieldsValidatorTest {
         when(componentCatalogService.getCatalogItem(any(), any(), any()))
                 .thenReturn(catalogItem);
 
-        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", null);
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", List.of("defaultValue"));
         ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
 
         // when
@@ -314,22 +131,75 @@ class MandatoryFieldsValidatorTest {
     }
 
     @Test
-    void givenAParamWithBlankValue_AndTypeMultipleList_whenUpdateParam_thenDefaultValuesAreApplied() {
+    void givenMandatoryParameterWithNullValue_whenValidate_thenExceptionIsThrown() {
         // given
-        ProvisionActionParameter param =
-                ProvisionActionParameterMother.of("param1", null);
-        param.setType("multiplelist");
+        var bearerToken = "bearer-token";
 
-        CatalogItemUserActionParameter catalogParam =
-                CatalogItemUserActionParameterMother.of(
-                        "param1",
-                        List.of("default1", "default2")
-                );
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
 
-        // when
-        validator.updateParam(param, catalogParam, "loc-1");
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(catalogItem);
 
-        // then
-        assertThat(param.getValue()).isEqualTo(List.of("default1", "default2"));
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", (Object) null);
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("mandatory and no value was provided");
+    }
+
+    @Test
+    void givenMandatoryParameterWithBlankStringValue_whenValidate_thenExceptionIsThrown() {
+        // given
+        var bearerToken = "bearer-token";
+
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", "   ");
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when / then
+        assertThatThrownBy(() -> validator.validate(action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("mandatory and no value was provided");
+    }
+
+    @Test
+    void givenMandatoryParameterWithNonBlankStringValue_whenValidate_thenValidationPasses() {
+        // given
+        var bearerToken = "bearer-token";
+
+        CatalogItem catalogItem = CatalogItemMother.of();
+        CatalogItemUserActionParameter mandatoryParam = CatalogItemUserActionParameterMother.of(
+                "mandatoryParam",
+                "defaultValue"
+        );
+        catalogItem.getUserActions().getFirst().setParameters(List.of(mandatoryParam));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(bearerToken);
+        when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(catalogItem);
+
+        ProvisionActionParameter actionParam = ProvisionActionParameterMother.of("mandatoryParam", "someValue");
+        ProvisionAction action = ProvisionActionMother.of(List.of(actionParam));
+
+        // when / then (no exception)
+        validator.validate(action);
     }
 }
