@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
@@ -11,17 +12,16 @@ import org.opendevstack.component_provisioner.server.controllers.model.ProjectCo
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -52,6 +52,35 @@ public class ProvisionResultsApiFacade {
         this.projectsInfoService = projectsInfoService;
     }
 
+    public AwxResponse requestDeletion(
+            String projectKey,
+            String componentId,
+            CreateIncidentAction createIncidentAction) {
+
+        log.debug("Processing deleti. ProjectKey: {}, componentId: {}",
+                projectKey, componentId);
+
+        String deletionWorkflow = getDeletionWorkflow(projectKey, componentId);
+        validateAndPrepare(projectKey, componentId, deletionWorkflow, createIncidentAction);
+
+        if (isInDeletingState(projectKey, componentId)) {
+            log.debug("Project component already in DELETING state, skipping AWX call");
+            return AwxResponse.builder()
+                    .httpStatusCode(HttpStatus.OK)
+                    .awxResponseBody(ProvisionActionResponse
+                            .builder()
+                            .build())
+                    .build();
+        }
+
+        setDeletingState(projectKey, componentId);
+
+        AwxResponse awxResponse = triggerDeletion(projectKey, componentId, deletionWorkflow, createIncidentAction);
+
+        log.debug("AWX response: {}", awxResponse);
+        return awxResponse;
+    }
+
     public boolean isInDeletingState(String projectKey, String componentId) {
 
         var projectComponents = componentCatalogService.getProjectComponents(projectKey);
@@ -62,10 +91,26 @@ public class ProvisionResultsApiFacade {
                 .anyMatch(component -> component.getComponentId().equals(componentId));
     }
 
-    public AwxResponse requestProvisionToAwx(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
+    public AwxResponse triggerAwxWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         var workflowJobLaunch = buildAwxWorkflowJobLaunch(projectKey, componentId, createIncidentAction);
 
         var result = awxService.triggerWorkflowJob("CREATE_INCIDENT", workflowJobLaunch);
+
+        var awxHttpStatus = result.getLeft();
+        var awxResponseBody = result.getRight()
+                .map(entitiesMapper::asProvisionActionResponse)
+                .orElse(null);
+
+        return AwxResponse.builder()
+                .httpStatusCode(awxHttpStatus)
+                .awxResponseBody(awxResponseBody)
+                .build();
+    }
+
+    public AwxResponse triggerAwxDeletionWorkflow(String projectKey, String componentId, String deletionWorkflow, CreateIncidentAction createIncidentAction) {
+        var workflowJobLaunch = buildAwxDeletionWorkflowJobLaunch(projectKey, componentId, deletionWorkflow, createIncidentAction);
+
+        var result = awxService.triggerWorkflowJob("DELETE", workflowJobLaunch);
 
         var awxHttpStatus = result.getLeft();
         var awxResponseBody = result.getRight()
@@ -159,7 +204,7 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void validate(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
+    public void validate(String projectKey, String componentId, String deletionWorkflow, CreateIncidentAction createIncidentAction) {
         var isDeployed = getParameterString(createIncidentAction, "is_deployed");
         var changeNumber = getParameterString(createIncidentAction, "change_number");
         var reason = getParameterString(createIncidentAction, "reason");
@@ -172,15 +217,14 @@ public class ProvisionResultsApiFacade {
             throw new InvalidRestEntityException("project_key, component_id are required.");
         }
 
-        if (extraParamsAreEmtpy) {
+        if (StringUtils.isBlank(deletionWorkflow) && extraParamsAreEmtpy) {
             throw new InvalidRestEntityException("is_deployed, change_number and reason are required.");
         }
     }
 
-    public void addSystemParametersToAction(String projectKey, String componentId, CreateIncidentAction action) {
+    public void addSystemParametersToAction(String projectKey, CreateIncidentAction action) {
         addClusterLocationParameter(projectKey, action);
         addCallerParameter(action);
-        addSendOnDeletionParameters(projectKey, componentId, action);
     }
 
     private void addClusterLocationParameter(String projectKey, CreateIncidentAction action) {
@@ -220,6 +264,15 @@ public class ProvisionResultsApiFacade {
                 .orElse(Strings.EMPTY);
     }
 
+    public String getDeletionWorkflow(String projectKey, String componentId) {
+        return provisionService.getDeletionWorkflow(projectKey, componentId);
+    }
+
+    public Map<String, ProjectComponentParameter> getProjectComponentParameterMap(String projectKey, String componentId) {
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        return ProvisionService.getProjectComponentParameterMap(projectComponent);
+    }
+
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         log.debug("Setting project_key parameter to: {}", projectKey);
 
@@ -246,5 +299,82 @@ public class ProvisionResultsApiFacade {
         createIncidentAction.addParametersItem(workflowParameterItem);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
+    }
+
+    private AwxWorkflowJobLaunch buildAwxDeletionWorkflowJobLaunch(String projectKey,
+                                                                   String componentId,
+                                                                   String deletionWorkflow,
+                                                                   CreateIncidentAction createIncidentAction) {
+        log.debug("Setting project_key parameter to: {}", projectKey);
+
+        var projectKeyParameterItem = CreateIncidentParameter.builder()
+                .name("project_key")
+                .type(ParameterType.STRING.getValue())
+                .value(projectKey)
+                .build();
+
+        var componentIdParameterItem = CreateIncidentParameter.builder()
+                .name("component_id")
+                .type(ParameterType.STRING.getValue())
+                .value(componentId)
+                .build();
+
+        var workflowParameterItem = CreateIncidentParameter.builder()
+                .name("workflow")
+                .type(ParameterType.STRING.getValue())
+                .value(deletionWorkflow)
+                .build();
+
+        createIncidentAction.addParametersItem(projectKeyParameterItem);
+        createIncidentAction.addParametersItem(componentIdParameterItem);
+        createIncidentAction.addParametersItem(workflowParameterItem);
+
+        addSendOnDeletionParameters(projectKey, componentId, createIncidentAction);
+
+        return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
+    }
+
+    private void validateAndPrepare(
+            String projectKey,
+            String componentId,
+            String deletionWorkflow,
+            CreateIncidentAction action) {
+
+        validate(projectKey, componentId, deletionWorkflow, action);
+        addSystemParametersToAction(projectKey, action);
+    }
+
+    private void setDeletingState(String projectKey, String componentId) {
+
+        log.debug("Setting state to DELETING");
+
+        ProvisioningStatusUpdateRequest request = new ProvisioningStatusUpdateRequest();
+        request.setComponentId(componentId);
+
+        notifyProvisioningStatusUpdate(
+                projectKey,
+                ProjectComponentStatus.DELETING,
+                request
+        );
+    }
+
+    private AwxResponse triggerDeletion(
+            String projectKey,
+            String componentId,
+            String deletionWorkflow,
+            CreateIncidentAction action) {
+
+        if (StringUtils.isBlank(deletionWorkflow)) {
+            log.debug("Workflow not found for deletion. Creating incident via AWX");
+            return triggerAwxWorkflow(projectKey, componentId, action);
+        }
+
+        log.debug("Workflow found for deletion. Triggering deletion workflow");
+        return triggerAwxDeletionWorkflow(
+                projectKey,
+                componentId,
+                deletionWorkflow,
+                action
+        );
     }
 }

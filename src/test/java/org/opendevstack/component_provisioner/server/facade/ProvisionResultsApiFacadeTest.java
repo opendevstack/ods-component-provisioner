@@ -65,7 +65,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestProvisionToAwxIsCalled_thenMapsResponseCorrectly() {
+    void givenAProjectKeyAndAComponentId_whenTriggerAwxWorkflowIsCalled_thenMapsResponseCorrectly() {
         // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
@@ -77,7 +77,7 @@ class ProvisionResultsApiFacadeTest {
         when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
 
         // when
-        var result = facade.requestProvisionToAwx("PRJ", "CID", action);
+        var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
 
         // then
         assertEquals(HttpStatus.OK, result.httpStatusCode());
@@ -125,8 +125,8 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
 
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", action));
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "",  action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, "", action));
     }
 
     @Test
@@ -183,12 +183,12 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", action));
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", "", action));
         assertThat(ex.getMessage()).contains("is_deployed, change_number and reason are required");
     }
 
     @Test
-    void givenAnEmptyAwxResponse_whenRequestProvisionToAwxIsCalled_thenReturnsNullBody() {
+    void givenAnEmptyAwxResponse_whenTriggerAwxWorkflowIsCalled_thenReturnsNullBody() {
         // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
@@ -197,7 +197,7 @@ class ProvisionResultsApiFacadeTest {
         when(awxService.triggerWorkflowJob("CREATE_INCIDENT", launch)).thenReturn(Pair.of(HttpStatus.ACCEPTED, Optional.empty()));
 
         // when
-        var result = facade.requestProvisionToAwx("PRJ", "CID", action);
+        var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
 
         // then
         assertEquals(HttpStatus.ACCEPTED, result.httpStatusCode());
@@ -384,7 +384,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", "ID", null));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", "ID", ""));
     }
 
     @Test
@@ -396,7 +396,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", null, null);
+        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", null, "");
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
@@ -409,7 +409,7 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", action));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", action));
     }
 
     @Test
@@ -475,7 +475,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when
-        facade.addSystemParametersToAction(projectKey, componentId, action);
+        facade.addSystemParametersToAction(projectKey, action);
 
         // then
         assertThat(facade.getParameterString(action, "cluster_location")).isEqualTo(clusterLocation);
@@ -497,32 +497,8 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when / then
-        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, componentId, action));
+        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
         assertThat(ex.getMessage()).contains("PRJ");
     }
 
-    @Test
-    void givenAProjectKeyAndComponentIdAndAction_whenAddSystemParametersToActionIsCalled_thenAddsDeletionParameters() {
-        // given
-        var projectKey = "PRJ";
-        var componentId = "CID";
-        var accessToken = "token123";
-        var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
-
-        var projectInfo = new ProjectInfo();
-        projectInfo.setClusters(List.of("cluster-a"));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
-        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
-
-        var deletionParam = CreateIncidentParameter.builder().name("delParam").value("delValue").build();
-        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of(deletionParam));
-
-        // when
-        facade.addSystemParametersToAction(projectKey, componentId, action);
-
-        // then
-        assertThat(action.getParameters()).contains(deletionParam);
-    }
 }

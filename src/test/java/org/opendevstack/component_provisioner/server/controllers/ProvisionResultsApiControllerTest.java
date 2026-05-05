@@ -83,7 +83,7 @@ class ProvisionResultsApiControllerTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, null);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, (String) null);
     }
 
     @Test
@@ -136,10 +136,9 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(provisionResultsApiFacade.isInDeletingState(any(), any())).thenReturn(false);
         var actionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
-        when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
+        when(provisionResultsApiFacade.requestDeletion(projectKey, componentId, createIncidentAction)).thenReturn(awxResponse);
 
         // when
         var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
@@ -147,10 +146,7 @@ class ProvisionResultsApiControllerTest {
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
-        verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(ProvisioningStatusUpdateRequest.class));
+        verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
 
     @Test
@@ -161,7 +157,8 @@ class ProvisionResultsApiControllerTest {
 
         var action = CreateIncidentActionMother.of();
 
-        doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
+        when(provisionResultsApiFacade.requestDeletion(any(), any(), any()))
+                .thenThrow(new InvalidRestEntityException("project_key, component_id are required."));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, action);
@@ -178,15 +175,15 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(provisionResultsApiFacade.isInDeletingState(any(), any())).thenReturn(true);
+        var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(new ProvisionActionResponse()).build();
+        when(provisionResultsApiFacade.requestDeletion(projectKey, componentId, createIncidentAction)).thenReturn(awxResponse);
 
         // when
         var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
+        verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
 
     @Test
@@ -281,7 +278,8 @@ class ProvisionResultsApiControllerTest {
         var createIncidentAction = CreateIncidentActionMother.of();
         var errorMsg = "is_deployed, change_number and reason are required.";
 
-        doThrow(new InvalidRestEntityException(errorMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
+        when(provisionResultsApiFacade.requestDeletion(any(), any(), any()))
+                .thenThrow(new InvalidRestEntityException(errorMsg));
 
         // when
         var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);

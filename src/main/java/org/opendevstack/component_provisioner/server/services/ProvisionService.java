@@ -1,13 +1,11 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
+import org.jspecify.annotations.NonNull;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
@@ -16,6 +14,7 @@ import org.opendevstack.component_provisioner.server.model.CreateIncidentParamet
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -30,6 +29,7 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 public class ProvisionService {
 
     private static final String ACTION_ID = "PROVISION";
+    private static final String DELETION_WORKFLOW = "deletion_workflow";
 
     private final ApiClientsBuilder apiClientsBuilder;
     private final ComponentCatalogService componentCatalogService;
@@ -87,6 +87,19 @@ public class ProvisionService {
         return extractDeletionParameters(catalogItem, projectComponent, ACTION_ID);
     }
 
+    public String getDeletionWorkflow(String projectKey, String componentId) {
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW)) {
+            var deletionWorkflow = parameterMap.get(DELETION_WORKFLOW);
+            assert deletionWorkflow.getValues() != null;
+            return deletionWorkflow.getValues().getFirst();
+        }
+
+        return "";
+    }
+
     @SneakyThrows
     private String composeCatalogItemId(ProjectComponentExtendedInfo projectComponents) {
         var decodedCatalogItemId = idDecode(projectComponents.getCatalogItemId());
@@ -98,15 +111,7 @@ public class ProvisionService {
             CatalogItem catalogItem,
             ProjectComponentExtendedInfo projectComponent,
             String actionId) {
-        var projectParametersByName =
-                Optional.ofNullable(projectComponent.getParameters())
-                        .orElse(List.of())
-                        .stream()
-                        .filter(p -> p.getName() != null)
-                        .collect(Collectors.toMap(
-                                ProjectComponentParameter::getName,
-                                Function.identity(), (a, b) -> a
-                        ));
+        var projectParametersByName = getProjectComponentParameterMap(projectComponent);
 
         return Optional.ofNullable(catalogItem.getUserActions())
                 .orElse(List.of())
@@ -124,5 +129,16 @@ public class ProvisionService {
                 .filter(Objects::nonNull)
                 .map(createIncidentParameterMapper::toTarget)
                 .toList();
+    }
+
+    public static @NonNull Map<String, ProjectComponentParameter> getProjectComponentParameterMap(ProjectComponentExtendedInfo projectComponent) {
+        return Optional.ofNullable(projectComponent.getParameters())
+                .orElse(List.of())
+                .stream()
+                .filter(p -> p.getName() != null)
+                .collect(Collectors.toMap(
+                        ProjectComponentParameter::getName,
+                        Function.identity(), (a, b) -> a
+                ));
     }
 }
