@@ -61,22 +61,17 @@ class ProvisionerServiceTest {
     }
 
     @Test
-    void givenAProjectKey_andAComponentId_whenDeleteProvisioningStatus_thenProvisioningApiIsCalled() throws java.net.MalformedURLException {
+    void givenAProjectKeyAndComponentId_whenDeleteProvisioningStatus_thenProvisioningBasicAuthApiIsCalled() {
         // given
         var projectKey = "projectKey";
         var componentId = "componentId";
-        var baseUrl = "http://localhost";
-        var accessToken = "accessToken";
 
         var provisionDeleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
                 .build();
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
-        when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
-
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId);
 
         // then
         verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, provisionDeleteRequest);
