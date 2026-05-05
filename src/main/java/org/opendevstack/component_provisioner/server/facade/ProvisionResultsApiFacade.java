@@ -128,8 +128,8 @@ public class ProvisionResultsApiFacade {
         return resolvedCatalogItemId;
     }
 
-    public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
-        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+    public void deleteProvisioningStatus(String projectKey, String componentId) {
+        provisionService.deleteProvisioningStatus(projectKey, componentId);
     }
 
     public void validate(String projectKey, String status, String catalogItemId, String catalogItemSlug) {

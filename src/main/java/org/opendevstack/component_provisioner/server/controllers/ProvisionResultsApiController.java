@@ -64,9 +64,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
     public ResponseEntity<Void> deleteProvisioningStatus(String projectKey, ProvisioningDeleteRequest provisioningDeleteRequest) {
         log.debug("Delete provisioning status. ProjectKey: {}, provisioningDeleteRequest: {}", projectKey, provisioningDeleteRequest);
 
-        var accessToken = authenticationProvider.getAccessToken();
-
-        provisionResultsApiFacade.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId(), accessToken);
+        provisionResultsApiFacade.deleteProvisioningStatus(projectKey, provisioningDeleteRequest.getComponentId());
 
         return ResponseEntity.ok().build();
     }
