@@ -75,10 +75,6 @@ class ProvisionerServiceTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
 
-        var provisionDeleteRequest = ProvisioningDeleteRequest.builder()
-                .componentId(componentId)
-                .build();
-
         // when
         provisionService.deleteProvisioningStatus(projectKey, componentId);
 

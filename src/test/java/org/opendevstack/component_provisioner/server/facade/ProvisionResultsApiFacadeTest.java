@@ -494,7 +494,6 @@ class ProvisionResultsApiFacadeTest {
     void givenAProjectKeyAndAnAction_whenAddSystemParametersToActionIsCalled_thenAddsClusterAndCallerToAction() {
         // given
         var projectKey = "PRJ";
-        var componentId = "CID";
         var accessToken = "token123";
         var clusterLocation = "cluster-a";
         var caller = "user@example.com";
@@ -519,7 +518,6 @@ class ProvisionResultsApiFacadeTest {
     void givenAProjectWithNoClusters_whenAddSystemParametersToActionIsCalled_thenThrowsProjectConfigurationException() {
         // given
         var projectKey = "PRJ";
-        var componentId = "CID";
         var accessToken = "token123";
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
