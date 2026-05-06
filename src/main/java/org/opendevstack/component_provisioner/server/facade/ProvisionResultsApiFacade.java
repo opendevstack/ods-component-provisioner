@@ -244,7 +244,7 @@ public class ProvisionResultsApiFacade {
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
     }
 
-    public Boolean getAutomatedDeletionWorkflowFlag(String projectKey, String componentId) {
+    public boolean getAutomatedDeletionWorkflowFlag(String projectKey, String componentId) {
         var accessToken = authenticationProvider.getAccessToken();
         return componentCatalogService.getProjectComponents(projectKey, accessToken).stream()
                 .filter(projectComponentInfo -> componentId.equals(projectComponentInfo.getComponentId()))
