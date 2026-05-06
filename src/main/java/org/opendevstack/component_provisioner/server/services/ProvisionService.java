@@ -7,6 +7,7 @@ import org.jspecify.annotations.NonNull;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -27,7 +28,6 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 @Slf4j
 public class ProvisionService {
 
-    private static final String ACTION_ID = "PROVISION";
     private static final String DELETION_WORKFLOW = "deletion_workflow";
 
     private final ApiClientsBuilder apiClientsBuilder;
@@ -94,7 +94,7 @@ public class ProvisionService {
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
         var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
 
-        return extractDeletionParameters(catalogItem, projectComponent, ACTION_ID);
+        return extractDeletionParameters(catalogItem, projectComponent, ActionType.PROVISION.getValue());
     }
 
     public String getDeletionWorkflow(String projectKey, String componentId) {

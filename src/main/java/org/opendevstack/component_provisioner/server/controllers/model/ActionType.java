@@ -5,8 +5,9 @@ import lombok.Getter;
 @Getter
 public enum ActionType {
 
-    CREATE_INCIDENT("create_incident"),
-    DELETE("delete");
+    CREATE_INCIDENT("CREATE_INCIDENT"),
+    PROVISION("PROVISION"),
+    DELETE("DELETE");
 
     private final String value;
 
