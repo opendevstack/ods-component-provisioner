@@ -8,6 +8,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 
+import java.util.List;
+
 @Mapper(
         componentModel = "spring",
         unmappedTargetPolicy = ReportingPolicy.IGNORE
@@ -18,22 +20,23 @@ public interface CreateIncidentParameterMapper {
     @Mapping(target = "type", source = "param.type")
     @Mapping(
             target = "value",
-            expression = "java(resolveValue(param.getType(), componentValue))"
+            expression = "java(resolveValue(param.getType(), componentValues))"
     )
     CreateIncidentParameter toTarget(
             CatalogItemUserActionParameter param,
-            ProjectComponentParameter componentValue
+            List<String> componentValues
     );
 
-    default Object resolveValue(String type, ProjectComponentParameter componentValue) {
-        if (ParameterType.MULTIPLELIST.getValue().equals(type)) {
-            return componentValue;
-        }
-        var values = componentValue.getValues();
-        if (values == null || values.isEmpty()) {
+    default Object resolveValue(String type, List<String> componentValues) {
+        if (componentValues == null || componentValues.isEmpty()) {
             return null;
         }
-        return values.getFirst();
+
+        if (ParameterType.MULTIPLELIST.getValue().equals(type)) {
+            return componentValues;
+        }
+
+        return componentValues.getFirst();
     }
 }
  

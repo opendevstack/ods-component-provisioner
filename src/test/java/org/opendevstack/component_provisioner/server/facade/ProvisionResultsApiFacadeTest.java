@@ -10,8 +10,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfoMother;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
@@ -124,11 +123,13 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsTrueWhenMatchingComponentFound() {
         // given
-        ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
-        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId("componentId")
+                .status(ProjectComponentStatus.DELETING.name())
+                .build();
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId");
+        var result = facade.isInDeletingState(pc);
 
         // then
         assertThat(result).isTrue();
@@ -180,11 +181,8 @@ class ProvisionResultsApiFacadeTest {
 
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
-        // given
-        when(componentCatalogService.getProjectComponents(any())).thenReturn(Collections.emptyList());
-
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId");
+        var result = facade.isInDeletingState((ProjectComponentExtendedInfo) null);
 
         // then
         assertThat(result).isFalse();
@@ -193,12 +191,13 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotDeleting() {
         // given
-        ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.CREATED);
-        pc.setComponentId("componentId");
-        when(componentCatalogService.getProjectComponents(any())).thenReturn(List.of(pc));
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId("componentId")
+                .status(ProjectComponentStatus.CREATED.name())
+                .build();
 
         // when
-        var result = facade.isInDeletingState("PRJ", "componentId");
+        var result = facade.isInDeletingState(pc);
 
         // then
         assertThat(result).isFalse();
@@ -348,9 +347,10 @@ class ProvisionResultsApiFacadeTest {
 
         var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
         when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
-        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
@@ -381,9 +381,10 @@ class ProvisionResultsApiFacadeTest {
 
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
         when(entitiesMapper.asClientProvisioningStatusUpdateRequest(request)).thenReturn(clientRequest);
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
-        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+        facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request);
 
         // then
         verify(provisionService).notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
@@ -406,10 +407,11 @@ class ProvisionResultsApiFacadeTest {
         request.setCatalogItemSlug(catalogItemSlug);
         request.componentUrl(componentUrl);
 
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken));
+        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request));
     }
 
     @Test
@@ -545,12 +547,14 @@ class ProvisionResultsApiFacadeTest {
         var componentId = "CID";
         var action = CreateIncidentActionMother.of();
 
-        ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
-        pc.setComponentId(componentId);
-        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(List.of(pc));
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(ProjectComponentStatus.DELETING.name())
+                .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -572,10 +576,15 @@ class ProvisionResultsApiFacadeTest {
         var launch = new AwxWorkflowJobLaunch();
         var job = new AwxWorkflowJob();
 
-        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(ProjectComponentStatus.CREATED.name())
+                .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -602,10 +611,15 @@ class ProvisionResultsApiFacadeTest {
         var launch = new AwxWorkflowJobLaunch();
         var job = new AwxWorkflowJob();
 
-        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn(deletionWorkflow);
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(ProjectComponentStatus.CREATED.name())
+                .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn(deletionWorkflow);
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -672,10 +686,15 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
 
-        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(ProjectComponentStatus.CREATED.name())
+                .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);

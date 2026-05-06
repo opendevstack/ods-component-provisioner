@@ -359,15 +359,23 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() {
+    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() throws MalformedURLException {
         // given
+        String accessToken = "bearerToken";
         String projectKey = "PRJ-1";
 
         List<ProjectComponentInfo> expectedComponents = List.of();
         when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(expectedComponents);
 
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
         // when
-        List<ProjectComponentInfo> result = componentCatalogService.getProjectComponents(projectKey);
+        List<ProjectComponentInfo> result = componentCatalogService.getProjectComponents(accessToken, projectKey);
 
         // then
         assertThat(result).isSameAs(expectedComponents);
@@ -375,8 +383,9 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponentExtendedInfoIsCalled_thenExtendedInfoIsReturned() {
+    void givenValidInput_whenGetProjectComponentExtendedInfoIsCalled_thenExtendedInfoIsReturned() throws MalformedURLException {
         // given
+        String accessToken = "bearerToken";
         String projectKey = "PRJ-1";
         String componentId = "CMP-1";
 
@@ -384,8 +393,15 @@ class ComponentCatalogServiceTest {
         ProjectComponentExtendedInfo expectedInfo = new ProjectComponentExtendedInfo();
         when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expectedInfo);
 
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
         // when
-        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId);
 
         // then
         assertThat(result).isSameAs(expectedInfo);
@@ -522,14 +538,22 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenAProjectKey_whenGetProjectComponentsIsCalled_thenInvokesProjectComponentsApi() {
+    void givenAProjectKey_whenGetProjectComponentsIsCalled_thenInvokesProjectComponentsApi() throws MalformedURLException {
         // given
+        String accessToken = "bearerToken";
         var projectKey = "PRJ";
         var projectComponents = List.of(new ProjectComponentInfo());
         when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(projectComponents);
 
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
         // when
-        var result = componentCatalogService.getProjectComponents(projectKey);
+        var result = componentCatalogService.getProjectComponents(accessToken, projectKey);
 
         // then
         assertThat(result).isEqualTo(projectComponents);
@@ -537,15 +561,24 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentId_whenGetProjectComponentExtendedInfoIsCalled_thenInvokesProjectComponentsApi() {
+    void givenAProjectKeyAndComponentId_whenGetProjectComponentExtendedInfoIsCalled_thenInvokesProjectComponentsApi() throws MalformedURLException {
         // given
+        String accessToken = "bearerToken";
         var projectKey = "PRJ";
         var componentId = "CID";
         var projectComponent = new ProjectComponentExtendedInfo();
+
         when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(projectComponent);
 
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
         // when
-        var result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        var result = componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId);
 
         // then
         assertThat(result).isEqualTo(projectComponent);

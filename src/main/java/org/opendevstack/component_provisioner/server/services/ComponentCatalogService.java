@@ -30,9 +30,6 @@ public class ComponentCatalogService {
     @Qualifier("itemUserActionMessagesDefinitionsApi")
     private final CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi;
 
-    @Qualifier("projectComponentsApi")
-    private final ProjectComponentsApi projectComponentsApi;
-
     private final ApiClientsBuilder apiClientsBuilder;
 
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
@@ -41,11 +38,10 @@ public class ComponentCatalogService {
 
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
-            ProjectComponentsApi projectComponentsApi, ApiClientsBuilder apiClientsBuilder,
+            ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
             @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
-        this.projectComponentsApi = projectComponentsApi;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
@@ -140,12 +136,16 @@ public class ComponentCatalogService {
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
     }
 
-    public List<ProjectComponentInfo> getProjectComponents(String projectKey) {
-        return projectComponentsApi.getProjectComponents(projectKey);
+    public List<ProjectComponentInfo> getProjectComponents(String accessToken, String projectKey) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+        return componentsApi.getProjectComponents(projectKey);
     }
 
-    public ProjectComponentExtendedInfo getProjectComponentExtendedInfo(String projectKey, String componentId) {
-        return projectComponentsApi.getProjectComponentById(projectKey, componentId);
+    public ProjectComponentExtendedInfo getProjectComponentExtendedInfo(String accessToken, String projectKey, String componentId) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+        return componentsApi.getProjectComponentById(projectKey, componentId);
     }
 
     @Cacheable(key = "#root.methodName + #projectKey + #catalogItemId")

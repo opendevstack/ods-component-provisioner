@@ -86,7 +86,7 @@ public class ProvisionService {
     }
 
     public List<CreateIncidentParameter> getDeletionParameters(String projectKey, String componentId) {
-        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(authenticationProvider.getAccessToken(), projectKey, componentId);
 
         var catalogItemId = composeCatalogItemId(projectComponent);
 
@@ -98,7 +98,7 @@ public class ProvisionService {
     }
 
     public String getDeletionWorkflow(String projectKey, String componentId) {
-        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(authenticationProvider.getAccessToken(), projectKey, componentId);
         var parameterMap = getProjectComponentParameterMap(projectComponent);
 
         if (parameterMap.containsKey(DELETION_WORKFLOW)) {
@@ -111,7 +111,7 @@ public class ProvisionService {
     }
 
     @SneakyThrows
-    private String composeCatalogItemId(ProjectComponentExtendedInfo projectComponents) {
+    public String composeCatalogItemId(ProjectComponentExtendedInfo projectComponents) {
         var decodedCatalogItemId = idDecode(projectComponents.getCatalogItemId());
         var decodedCatalogItemRef = idDecode(projectComponents.getCatalogItemRef());
         return idEncode(Strings.concat(decodedCatalogItemId, decodedCatalogItemRef));
@@ -136,9 +136,9 @@ public class ProvisionService {
                 .peek(param -> log.debug("Parameter found: {}", param))
                 .filter(param -> Boolean.TRUE.equals(param.getSendOnDeletion()))
                 .map(param -> {
-                    var componentValue = projectParametersByName.get(param.getName());
-                    if (componentValue == null) return null;
-                    return createIncidentParameterMapper.toTarget(param, componentValue);
+                    var paramComponent = projectParametersByName.get(param.getName());
+                    if (paramComponent == null) return null;
+                    return createIncidentParameterMapper.toTarget(param, paramComponent.getValues());
                 })
                 .filter(Objects::nonNull)
                 .toList();

@@ -48,16 +48,13 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         log.debug("Notifying provision status update partially. ProjectKey: {}, Status: {}, provisioningStatusPartialUpdateRequest: {}",
                 projectKey, status, provisioningStatusPartialUpdateRequest);
 
-        var accessToken = authenticationProvider.getAccessToken();
-
         provisionResultsApiFacade.validate(projectKey, status, provisioningStatusPartialUpdateRequest.getCatalogItemId(),
                 provisioningStatusPartialUpdateRequest.getCatalogItemSlug());
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdatePartially(
                 projectKey,
                 ProjectComponentStatus.valueOf(status),
-                provisioningStatusPartialUpdateRequest,
-                accessToken
+                provisioningStatusPartialUpdateRequest
         );
 
         return ResponseEntity.ok().build();

@@ -68,21 +68,18 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
-        var accessToken = "accessToken";
 
         var request = new ProvisioningStatusPartialUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setComponentUrl(JsonNullable.of(componentUrl));
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), request);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request);
         verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, (String) null);
     }
 
@@ -107,7 +104,7 @@ class ProvisionResultsApiControllerTest {
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
-        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any(), any());
+        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any());
     }
 
     @Test

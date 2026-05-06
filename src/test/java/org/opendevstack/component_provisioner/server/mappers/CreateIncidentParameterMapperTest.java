@@ -32,7 +32,7 @@ class CreateIncidentParameterMapperTest {
                 .build();
 
         // when
-        var result = mapper.toTarget(param, source);
+        var result = mapper.toTarget(param, source.getValues());
 
         // then
         assertThat(result).isNotNull();
@@ -54,7 +54,7 @@ class CreateIncidentParameterMapperTest {
                 .build();
 
         // when
-        var result = mapper.toTarget(param, source);
+        var result = mapper.toTarget(param, source.getValues());
 
         // then
         assertThat(result).isNotNull();
@@ -75,7 +75,7 @@ class CreateIncidentParameterMapperTest {
                 .build();
 
         // when
-        var result = mapper.toTarget(param, source);
+        var result = mapper.toTarget(param, source.getValues());
 
         // then
         assertThat(result).isNotNull();
@@ -89,7 +89,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(null).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source);
+        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isNull();
@@ -101,7 +101,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(List.of()).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source);
+        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isNull();
@@ -113,7 +113,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(List.of("first", "second")).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source);
+        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isEqualTo("first");

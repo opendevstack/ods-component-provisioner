@@ -84,8 +84,8 @@ public class ProvisionerActionsApiValidator {
 
     private void validateComponentIsNotProvisioned(String projectKey, String componentId) {
         log.debug("Validating component is not provisioned. projectKey: {}, componentId: {}", projectKey, componentId);
-
-        var projectComponents = componentCatalogService.getProjectComponents(projectKey);
+        var accessToken = authenticationProvider.getAccessToken();
+        var projectComponents = componentCatalogService.getProjectComponents(accessToken, projectKey);
 
         var componentIdAlreadyProvisioned = projectComponents.stream()
                 .filter(projectComponent -> projectComponent.getComponentId() != null)
