@@ -135,9 +135,12 @@ public class ProvisionService {
                 )
                 .peek(param -> log.debug("Parameter found: {}", param))
                 .filter(param -> Boolean.TRUE.equals(param.getSendOnDeletion()))
-                .map(param -> projectParametersByName.get(param.getName()))
+                .map(param -> {
+                    var componentValue = projectParametersByName.get(param.getName());
+                    if (componentValue == null) return null;
+                    return createIncidentParameterMapper.toTarget(param, componentValue);
+                })
                 .filter(Objects::nonNull)
-                .map(createIncidentParameterMapper::toTarget)
                 .toList();
     }
 

@@ -122,12 +122,13 @@ class ProvisionServiceTest {
         when(apiClientsBuilder.catalogItemsApi(apiClient)).thenReturn(catalogItemsApi);
 
         CatalogItem catalogItem = new CatalogItem();
+        var actionParam = CatalogItemUserActionParameter.builder()
+                .name("param1")
+                .sendOnDeletion(true)
+                .build();
         catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
                 .id("PROVISION")
-                .parameters(List.of(CatalogItemUserActionParameter.builder()
-                        .name("param1")
-                        .sendOnDeletion(true)
-                        .build()))
+                .parameters(List.of(actionParam))
                 .build()));
         when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
 
@@ -137,7 +138,7 @@ class ProvisionServiceTest {
                 .build();
         projectComponent.setParameters(List.of(projectParam));
 
-        when(createIncidentParameterMapper.toTarget(projectParam))
+        when(createIncidentParameterMapper.toTarget(actionParam, projectParam))
                 .thenReturn(CreateIncidentParameter.builder().name("param1").value("value1").build());
 
         // when

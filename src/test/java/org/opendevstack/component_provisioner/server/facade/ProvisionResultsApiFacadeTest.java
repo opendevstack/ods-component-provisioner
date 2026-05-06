@@ -59,7 +59,7 @@ class ProvisionResultsApiFacadeTest {
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         String workflowJobId = "WORKFLOW_123";
-        ReflectionTestUtils.setField(facade, "workflowJobId", workflowJobId);
+        ReflectionTestUtils.setField(facade, "workflowId", workflowJobId);
     }
 
     @Test
@@ -453,7 +453,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenBuildAwxWorkflowJobLaunchIsCalled_thenAddsRequiredParameters() {
         // given
-        ReflectionTestUtils.setField(facade, "workflowJobId", "WORKFLOW_123");
+        ReflectionTestUtils.setField(facade, "workflowId", "WORKFLOW_123");
         var action = CreateIncidentActionMother.of();
         action.setParameters(new ArrayList<>());
         var projectKey = "PRJ";
