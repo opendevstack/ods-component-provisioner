@@ -22,6 +22,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -256,9 +257,13 @@ public class ProvisionResultsApiFacade {
     }
 
     public String getParameterString(CreateIncidentAction createIncidentAction, String parameterName) {
+        if (createIncidentAction == null || createIncidentAction.getParameters() == null) {
+            return Strings.EMPTY;
+        }
         return createIncidentAction.getParameters().stream()
-                .filter(parameter -> parameterName.equals(parameter.getName()))
+                .filter(parameter -> parameter != null && parameter.getName() != null && parameterName.equals(parameter.getName()))
                 .map(CreateIncidentParameter::getValue)
+                .filter(Objects::nonNull)
                 .map(Object::toString)
                 .findAny()
                 .orElse(Strings.EMPTY);

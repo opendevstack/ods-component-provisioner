@@ -1,7 +1,6 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,8 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionResultsApiFacadeTest {
@@ -56,13 +55,8 @@ class ProvisionResultsApiFacadeTest {
     @InjectMocks
     private ProvisionResultsApiFacade facade;
 
-    @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
+    @Value("WORKFLOW_123")
     private String workflowJobId;
-
-    @BeforeEach
-    void init() {
-        ReflectionTestUtils.setField(facade, "workflowJobId", "WORKFLOW_123");
-    }
 
     @Test
     void givenAProjectKeyAndAComponentId_whenTriggerAwxWorkflowIsCalled_thenMapsResponseCorrectly() {
@@ -82,6 +76,44 @@ class ProvisionResultsApiFacadeTest {
         // then
         assertEquals(HttpStatus.OK, result.httpStatusCode());
         assertEquals(response, result.awxResponseBody());
+    }
+
+    @Test
+    void givenNullAction_whenGetParameterStringIsCalled_thenReturnsEmptyString() {
+        // given
+        CreateIncidentAction action = null;
+
+        // when
+        var result = facade.getParameterString(action, "any");
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenNullParameters_whenGetParameterStringIsCalled_thenReturnsEmptyString() {
+        // given
+        var action = CreateIncidentAction.builder().parameters(null).build();
+
+        // when
+        var result = facade.getParameterString(action, "any");
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenNullParameterValue_whenGetParameterStringIsCalled_thenReturnsEmptyString() {
+        // given
+        var action = CreateIncidentAction.builder().parameters(List.of(
+                CreateIncidentParameter.builder().name("p1").value(null).build()
+        )).build();
+
+        // when
+        var result = facade.getParameterString(action, "p1");
+
+        // then
+        assertThat(result).isEmpty();
     }
 
     @Test
@@ -125,7 +157,7 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
 
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "",  action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", action));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, "", action));
     }
 
@@ -415,7 +447,9 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenBuildAwxWorkflowJobLaunchIsCalled_thenAddsRequiredParameters() {
         // given
+        ReflectionTestUtils.setField(facade, "workflowJobId", "WORKFLOW_123");
         var action = CreateIncidentActionMother.of();
+        action.setParameters(new ArrayList<>());
         var projectKey = "PRJ";
         var componentId = "CID";
         var launch = new AwxWorkflowJobLaunch();
@@ -498,6 +532,155 @@ class ProvisionResultsApiFacadeTest {
         // when / then
         var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
         assertThat(ex.getMessage()).contains("PRJ");
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndComponentIsAlreadyDeleting_thenReturnsOkWithoutAwxCall() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+
+        ProjectComponentInfo pc = ProjectComponentInfoMother.of(ProjectComponentStatus.DELETING);
+        pc.setComponentId(componentId);
+        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(List.of(pc));
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+
+        // when
+        var result = facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(awxService, never()).triggerWorkflowJob(any(), any());
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowNotFound_thenTriggersDefaultAwxWorkflow() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        var launch = new AwxWorkflowJobLaunch();
+        var job = new AwxWorkflowJob();
+
+        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(eq("CREATE_INCIDENT"), eq(launch))).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(new ProvisionActionResponse());
+
+        // when
+        var result = facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(awxService).triggerWorkflowJob(eq("CREATE_INCIDENT"), any());
+    }
+
+    @Test
+    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowFound_thenTriggersDeletionWorkflow() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var deletionWorkflow = "DELETION_WF";
+        var action = CreateIncidentActionMother.of();
+        var launch = new AwxWorkflowJobLaunch();
+        var job = new AwxWorkflowJob();
+
+        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn(deletionWorkflow);
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
+        when(awxService.triggerWorkflowJob(eq("DELETE"), eq(launch))).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(new ProvisionActionResponse());
+
+        // when
+        var result = facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(awxService).triggerWorkflowJob(eq("DELETE"), any());
+    }
+
+    @Test
+    void givenBothCatalogItemIdAndSlugEmpty_whenResolveCatalogItemIdIsCalled_thenReturnsNull() {
+        // when
+        var result = ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, null);
+
+        // then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void givenCatalogItemIdDefined_whenResolveCatalogItemIdIsCalled_thenReturnsId() {
+        // when
+        var result = ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", "ID", "");
+
+        // then
+        assertThat(result).isEqualTo("ID");
+    }
+
+    @Test
+    void givenCatalogItemSlugDefined_whenResolveCatalogItemIdIsCalled_thenReturnsResolvedId() {
+        // given
+        var catalogItem = new CatalogItem();
+        catalogItem.setId("RESOLVED_ID");
+        when(componentCatalogService.getCatalogItemBySlug("token", "SLUG")).thenReturn(catalogItem);
+
+        // when
+        var result = ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, "SLUG");
+
+        // then
+        assertThat(result).isEqualTo("RESOLVED_ID");
+    }
+
+    @Test
+    void givenSlugNotFound_whenResolveCatalogItemIdIsCalled_thenThrowsSlugNotFoundException() {
+        // given
+        when(componentCatalogService.getCatalogItemBySlug("token", "SLUG")).thenThrow(new RestClientException("Not Found"));
+
+        // when / then
+        assertThrows(SlugNotFoundException.class, () -> ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, "SLUG"));
+    }
+
+    @Test
+    void givenAwxTriggerFails_whenRequestDeletionIsCalled_thenReturnsErrorStatus() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        var launch = new AwxWorkflowJobLaunch();
+
+        when(componentCatalogService.getProjectComponents(projectKey)).thenReturn(Collections.emptyList());
+        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(eq("CREATE_INCIDENT"), eq(launch))).thenReturn(Pair.of(HttpStatus.INTERNAL_SERVER_ERROR, Optional.empty()));
+
+        // when
+        var result = facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }

@@ -334,4 +334,42 @@ class ProvisionServiceTest {
 
         verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, expectedRequest);
     }
+
+    @Test
+    void givenProjectComponentWithDeletionWorkflow_whenGetDeletionWorkflowIsCalled_thenReturnsWorkflow() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var projectComponent = new ProjectComponentExtendedInfo();
+        var parameter = new ProjectComponentParameter();
+        parameter.setName("deletion_workflow");
+        parameter.setValues(List.of("WF_NAME"));
+        projectComponent.setParameters(List.of(parameter));
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId)).thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+
+        // then
+        assertThat(result).isEqualTo("WF_NAME");
+    }
+
+    @Test
+    void givenProjectComponentWithoutDeletionWorkflow_whenGetDeletionWorkflowIsCalled_thenReturnsEmptyString() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setParameters(List.of());
+
+        when(componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId)).thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
 }

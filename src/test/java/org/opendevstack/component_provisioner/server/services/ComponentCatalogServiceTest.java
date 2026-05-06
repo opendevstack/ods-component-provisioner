@@ -18,6 +18,7 @@ import org.opendevstack.component_provisioner.server.services.exceptions.Catalog
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
@@ -43,6 +44,9 @@ class ComponentCatalogServiceTest {
 
     @Mock
     private ApiClient componentCatalogApiClient;
+
+    @Mock
+    private ApiClient apiClient;
 
     @Mock
     private ProjectComponentsApi projectComponentsApi;
@@ -446,4 +450,106 @@ class ComponentCatalogServiceTest {
         assertThat(captured.getComponentId()).isEqualTo(componentId);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
+
+    @Test
+    void givenValidInput_whenGetProjectComponentByIdIsCalled_thenExtendedInfoIsReturned() throws Exception {
+        //given
+        String accessToken = "token";
+        String projectKey = "PRJ";
+        String componentId = "CID";
+        String baseUrl = "http://catalog.example.com";
+        ProjectComponentExtendedInfo expected = new ProjectComponentExtendedInfo();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
+        when(apiClientsBuilder.projectComponentsApi(apiClient)).thenReturn(projectComponentsApi);
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expected);
+
+        //when
+        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
+
+        //then
+        assertThat(result).isSameAs(expected);
+        verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
+    }
+
+    @Test
+    void givenSupplierReturnsNull_whenGetMessageDefinitionIsCalled_thenReturnsOkAndEmptyOptional() {
+        //given
+        //when
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
+                ReflectionTestUtils.invokeMethod(componentCatalogService, "getMessageDefinition",
+                        (java.util.function.Supplier<ResponseEntity<CatalogItemUserActionMessageDefinition>>) () -> ResponseEntity.ok(null),
+                        "err1", "err2");
+
+        //then
+        assertThat(result.getLeft()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getRight()).isEmpty();
+    }
+
+    @Test
+    void givenSupplierThrows404_whenGetMessageDefinitionIsCalled_thenReturnsNotFoundAndEmptyOptional() {
+        //given
+        //when
+        Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
+                ReflectionTestUtils.invokeMethod(componentCatalogService, "getMessageDefinition",
+                        (java.util.function.Supplier<ResponseEntity<CatalogItemUserActionMessageDefinition>>) () -> {
+                            throw new HttpClientErrorException(HttpStatus.NOT_FOUND);
+                        },
+                        "err1", "err2");
+
+        //then
+        assertThat(result.getLeft()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(result.getRight()).isEmpty();
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentIdAndWorkflowJobIdAndAccessToken_whenSetWorkflowJobIdIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var workflowJobId = "WFJ123";
+        var accessToken = "TOKEN";
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://catalog"));
+        when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://catalog")).thenReturn(provisionerActionsApi);
+
+        // when
+        componentCatalogService.setWorkflowJobId(projectKey, componentId, workflowJobId, accessToken);
+
+        // then
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(eq(projectKey), eq("CREATING"), any(ProvisioningStatusUpdateRequest.class));
+    }
+
+    @Test
+    void givenAProjectKey_whenGetProjectComponentsIsCalled_thenInvokesProjectComponentsApi() {
+        // given
+        var projectKey = "PRJ";
+        var projectComponents = List.of(new ProjectComponentInfo());
+        when(projectComponentsApi.getProjectComponents(projectKey)).thenReturn(projectComponents);
+
+        // when
+        var result = componentCatalogService.getProjectComponents(projectKey);
+
+        // then
+        assertThat(result).isEqualTo(projectComponents);
+        verify(projectComponentsApi).getProjectComponents(projectKey);
+    }
+
+    @Test
+    void givenAProjectKeyAndComponentId_whenGetProjectComponentExtendedInfoIsCalled_thenInvokesProjectComponentsApi() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var projectComponent = new ProjectComponentExtendedInfo();
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(projectComponent);
+
+        // when
+        var result = componentCatalogService.getProjectComponentExtendedInfo(projectKey, componentId);
+
+        // then
+        assertThat(result).isEqualTo(projectComponent);
+        verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
+    }
+
 }
