@@ -319,18 +319,13 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+    void givenAProjectKeyAndComponentId_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsBasicAuthApi() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
-        var accessToken = "token";
-        var baseUrl = "http://catalog.example.com";
-
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
-        when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
 
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId);
 
         // then
         var expectedRequest = ProvisioningDeleteRequest.builder()

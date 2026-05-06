@@ -2,6 +2,7 @@ package org.opendevstack.component_provisioner.server.facade;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
@@ -28,10 +29,18 @@ public class ProjectComponentsApiFacade {
     }
 
     public ProjectComponentProvisionStatus enrichWithAapInfo(String projectKey, ProjectComponentExtendedInfo projectComponentInfo) {
-        var jobDetail = awxService.getWorkflowJobById(projectComponentInfo.getWorkflowJobId()).orElseThrow( () -> new InvalidRestEntityException(
-                String.format("Workflow job template with id %s not found for project component %s",
-                        projectComponentInfo.getWorkflowJobId(), projectComponentInfo.getComponentId())
-        ));
+        JobDetail jobDetail = null;
+
+        if (projectComponentInfo.getStatus() != null &&
+                (projectComponentInfo.getStatus().equals("FAILED") || projectComponentInfo.getStatus().equals("UNKNOWN"))
+        ) {
+            jobDetail = awxService.getWorkflowJobById(projectComponentInfo.getWorkflowJobId()).orElseThrow( () -> new InvalidRestEntityException(
+                    String.format("Workflow job template with id %s not found for project component %s",
+                            projectComponentInfo.getWorkflowJobId(), projectComponentInfo.getComponentId())
+            ));
+        } else {
+            log.debug("Project component with id {} has status {}, skipping AWX job detail retrieval", projectComponentInfo.getComponentId(), projectComponentInfo.getStatus());
+        }
 
         var provisionStatus = entitiesMapper.asProjectComponentProvisionStatus(projectKey, projectComponentInfo, jobDetail);
 

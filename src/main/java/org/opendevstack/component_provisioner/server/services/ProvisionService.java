@@ -1,7 +1,5 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.jspecify.annotations.NonNull;
@@ -9,6 +7,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,6 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 
 @Service
 @Slf4j
-@AllArgsConstructor
 public class ProvisionService {
 
     private static final String ACTION_ID = "PROVISION";
@@ -36,6 +34,15 @@ public class ProvisionService {
     private final ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
     private final CreateIncidentParameterMapper createIncidentParameterMapper;
     private final AuthenticationProvider authenticationProvider;
+    private final ProvisionerActionsApi provisionerActionsBasicAuthApi;
+
+    public ProvisionService(ApiClientsBuilder apiClientsBuilder,
+                            ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
+                            @Qualifier("provisionerActionsBasicAuthApi") ProvisionerActionsApi provisionerActionsBasicAuthApi) {
+        this.apiClientsBuilder = apiClientsBuilder;
+        this.componentCatalogServiceProps = componentCatalogServiceProps;
+        this.provisionerActionsBasicAuthApi = provisionerActionsBasicAuthApi;
+    }
 
     public void notifyProvisioningStatusUpdate(String projectKey,
                                                ProjectComponentStatus status,
@@ -58,15 +65,14 @@ public class ProvisionService {
     }
 
     public void deleteProvisioningStatus(String projectKey,
-                                         String componentId,
-                                         String accessToken) {
+                                         String componentId) {
         log.info("Deleting provisioning status. Project Key: {}, componentId: {}", projectKey, componentId);
 
         var deleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
                 .build();
 
-        catalogProvisionerActionsApi(accessToken)
+        catalogProvisionerActionsBasicAuthApi()
                 .deleteProvisioningStatus(projectKey, deleteRequest);
     }
 
@@ -140,5 +146,9 @@ public class ProvisionService {
                         ProjectComponentParameter::getName,
                         Function.identity(), (a, b) -> a
                 ));
+    }
+
+    private ProvisionerActionsApi catalogProvisionerActionsBasicAuthApi() {
+        return provisionerActionsBasicAuthApi;
     }
 }

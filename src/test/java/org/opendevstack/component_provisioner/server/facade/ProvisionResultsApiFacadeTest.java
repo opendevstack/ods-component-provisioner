@@ -448,13 +448,12 @@ class ProvisionResultsApiFacadeTest {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
-        var accessToken = "token";
 
         // when
-        facade.deleteProvisioningStatus(projectKey, componentId, accessToken);
+        facade.deleteProvisioningStatus(projectKey, componentId);
 
         // then
-        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, accessToken);
+        verify(provisionService).deleteProvisioningStatus(projectKey, componentId);
     }
 
     @Test

@@ -18,6 +18,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,10 +61,10 @@ class ProjectComponentsApiFacadeTest {
     }
 
     @Test
-    void givenProjectKeyAndComponentInfo_whenEnrichWithAapInfo_thenReturnProvisionStatus() {
+    void givenProjectKeyAndComponentInfo_andFailedState_whenEnrichWithAapInfo_thenCallAwx_AndReturnProvisionStatus() {
         // given
         var projectKey = "test-project";
-        var componentInfo = ProjectComponentExtendedInfoMother.of();
+        var componentInfo = ProjectComponentExtendedInfoMother.of("FAILED");
         var jobDetail = JobDetailMother.of();
 
         ProjectComponentProvisionStatus expectedStatus = new ProjectComponentProvisionStatus();
@@ -79,5 +80,25 @@ class ProjectComponentsApiFacadeTest {
         assertThat(result).isEqualTo(expectedStatus);
         verify(awxService).getWorkflowJobById("12345");
         verify(entitiesMapper).asProjectComponentProvisionStatus(projectKey, componentInfo, jobDetail);
+    }
+
+    @Test
+    void givenProjectKeyAndComponentInfo_whenEnrichWithAapInfo_thenSkipAWXCall_AndReturnProvisionStatus() {
+        // given
+        var projectKey = "test-project";
+        var componentInfo = ProjectComponentExtendedInfoMother.of();
+
+        ProjectComponentProvisionStatus expectedStatus = new ProjectComponentProvisionStatus();
+
+        when(entitiesMapper.asProjectComponentProvisionStatus(projectKey, componentInfo, null))
+                .thenReturn(expectedStatus);
+
+        // when
+        ProjectComponentProvisionStatus result = projectComponentsApiFacade.enrichWithAapInfo(projectKey, componentInfo);
+
+        // then
+        assertThat(result).isEqualTo(expectedStatus);
+        verify(entitiesMapper).asProjectComponentProvisionStatus(projectKey, componentInfo, null);
+        verifyNoInteractions(awxService);
     }
 }

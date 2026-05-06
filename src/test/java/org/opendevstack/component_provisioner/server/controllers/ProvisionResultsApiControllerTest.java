@@ -115,18 +115,15 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var accessToken = "accessToken";
 
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder().componentId(componentId).build();
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // when
         var response = provisionResultsApiController.deleteProjectComponent(projectKey, provisioningDeleteRequest);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId, accessToken);
+        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId);
     }
 
     @Test

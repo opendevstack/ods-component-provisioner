@@ -173,9 +173,9 @@ public class ProvisionResultsApiFacade {
         return resolvedCatalogItemId;
     }
 
-    public void deleteProvisioningStatus(String projectKey, String componentId, String accessToken) {
+    public void deleteProvisioningStatus(String projectKey, String componentId) {
 
-        provisionService.deleteProvisioningStatus(projectKey, componentId, accessToken);
+        provisionService.deleteProvisioningStatus(projectKey, componentId);
     }
 
 

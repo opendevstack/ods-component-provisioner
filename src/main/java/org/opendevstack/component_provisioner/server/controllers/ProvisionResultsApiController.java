@@ -69,11 +69,10 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         log.debug("Delete Project component. ProjectKey: {}, provisioningDeleteRequest: {}",
                 projectKey, provisioningDeleteRequest);
 
-        var accessToken = authenticationProvider.getAccessToken();
+
 
         provisionResultsApiFacade.deleteProvisioningStatus(projectKey,
-                provisioningDeleteRequest.getComponentId(),
-                accessToken);
+                provisioningDeleteRequest.getComponentId());
 
         return ResponseEntity.ok().build();
     }

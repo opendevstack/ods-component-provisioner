@@ -292,10 +292,10 @@ paths:
         "500":
           description: Server error.
 
-  /project/{projectKey}/component/{componentId}/status:
+  /project/{projectKey}/component/{componentId}:
     get:
       tags:
-        - Project-components-status
+        - Project-components-with-provision-status
       summary: Returns the provision status of a project component given both its project key and component ID.
       operationId: getProjectComponentProvisionStatusById
       parameters:
@@ -536,6 +536,18 @@ components:
         type: "string"
         value: "2558"
 
+    ProjectComponentStatusParameter:
+      properties:
+        name:
+          type: string
+          example: 'environment'
+        values:
+          type: array
+          items:
+            type: string
+          example:
+            - 'dev'
+            - 'test'
     ProjectComponentProvisionStatus:
       properties:
         projectKey:
@@ -544,9 +556,18 @@ components:
         componentId:
           type: string
           example: 'nextjs-basic-app'
+        catalogItemId:
+          type: string
+          example: 'some-encoded-info'
+        catalogItemRef:
+          type: string
+          example: 'more-encoded-info'
         status:
           type: string
           example: 'CREATING'
+        componentUrl:
+          type: string
+          example: 'https://bitbucket.com/projects/CATALOGS/repos/project-components/browse/projects'
         workflowJobId:
           type: string
           example: '1316315'
@@ -556,3 +577,7 @@ components:
         errorMessage:
           type: string
           example: 'JIRA_ERROR'
+        parameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectComponentStatusParameter'
