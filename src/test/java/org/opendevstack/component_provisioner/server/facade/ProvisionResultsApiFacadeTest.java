@@ -472,4 +472,88 @@ class ProvisionResultsApiFacadeTest {
         var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
         assertThat(ex.getMessage()).contains("PRJ");
     }
+
+    @Test
+    void givenComponentWithAutomatedDeletionWorkflowTrue_whenGetAutomatedDeletionWorkflowFlagIsCalled_thenReturnsTrue() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+
+        var component = ProjectComponentInfoMother.of();
+        component.setComponentId(componentId);
+        component.setHasAutomatedDeletionWorkflow(true);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+                .thenReturn(List.of(component));
+
+        // when
+        var result = facade.getAutomatedDeletionWorkflowFlag(projectKey, componentId);
+
+        // then
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void givenComponentWithAutomatedDeletionWorkflowFalse_whenGetAutomatedDeletionWorkflowFlagIsCalled_thenReturnsFalse() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+
+        var component = ProjectComponentInfoMother.of();
+        component.setComponentId(componentId);
+        component.setHasAutomatedDeletionWorkflow(false);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+                .thenReturn(List.of(component));
+
+        // when
+        var result = facade.getAutomatedDeletionWorkflowFlag(projectKey, componentId);
+
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void givenComponentNotFound_whenGetAutomatedDeletionWorkflowFlagIsCalled_thenReturnsFalse() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+
+        var otherComponent = ProjectComponentInfoMother.of();
+        otherComponent.setComponentId("OTHER");
+        otherComponent.setHasAutomatedDeletionWorkflow(true);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+                .thenReturn(List.of(otherComponent));
+
+        // when
+        var result = facade.getAutomatedDeletionWorkflowFlag(projectKey, componentId);
+
+        // then
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void givenNoComponents_whenGetAutomatedDeletionWorkflowFlagIsCalled_thenReturnsFalse() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var accessToken = "token";
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+                .thenReturn(Collections.emptyList());
+
+        // when
+        var result = facade.getAutomatedDeletionWorkflowFlag(projectKey, componentId);
+
+        // then
+        assertThat(result).isFalse();
+    }
 }

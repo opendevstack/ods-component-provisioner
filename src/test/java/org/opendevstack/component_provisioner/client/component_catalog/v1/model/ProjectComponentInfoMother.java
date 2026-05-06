@@ -13,6 +13,7 @@ public class ProjectComponentInfoMother {
                 .componentId("componentId")
                 .componentUrl("http://www.example.com")
                 .canBeDeleted(false)
+                .hasAutomatedDeletionWorkflow(false)
                 .status(status.name())
                 .build();
     }

@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -161,16 +164,17 @@ public class ProvisionResultsApiFacade {
         var isDeployed = getParameterString(createIncidentAction, "is_deployed");
         var changeNumber = getParameterString(createIncidentAction, "change_number");
         var reason = getParameterString(createIncidentAction, "reason");
+        var hasAutomatedDeletionWorkflow = getAutomatedDeletionWorkflowFlag(projectKey, componentId);
 
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
-        var extraParamsAreEmtpy = StringUtils.isBlank(isDeployed)
+        var extraParamsAreEmpty = StringUtils.isBlank(isDeployed)
                 || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
 
-        if (mainParamsAreEmpty) {
+        if (!hasAutomatedDeletionWorkflow && mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
         }
 
-        if (extraParamsAreEmtpy) {
+        if (extraParamsAreEmpty) {
             throw new InvalidRestEntityException("is_deployed, change_number and reason are required.");
         }
     }
@@ -238,5 +242,14 @@ public class ProvisionResultsApiFacade {
         createIncidentAction.addParametersItem(workflowParameterItem);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
+    }
+
+    public Boolean getAutomatedDeletionWorkflowFlag(String projectKey, String componentId) {
+        var accessToken = authenticationProvider.getAccessToken();
+        return componentCatalogService.getProjectComponents(projectKey, accessToken).stream()
+                .filter(projectComponentInfo -> componentId.equals(projectComponentInfo.getComponentId()))
+                .findFirst()
+                .map(ProjectComponentInfo::getHasAutomatedDeletionWorkflow)
+                .orElse(false);
     }
 }
