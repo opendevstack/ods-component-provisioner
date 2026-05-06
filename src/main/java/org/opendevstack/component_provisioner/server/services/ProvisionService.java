@@ -1,5 +1,6 @@
 package org.opendevstack.component_provisioner.server.services;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.jspecify.annotations.NonNull;
@@ -7,9 +8,9 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,11 +37,14 @@ public class ProvisionService {
     private final AuthenticationProvider authenticationProvider;
     private final ProvisionerActionsApi provisionerActionsBasicAuthApi;
 
-    public ProvisionService(ApiClientsBuilder apiClientsBuilder,
-                            ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
+    public ProvisionService(ApiClientsBuilder apiClientsBuilder, ComponentCatalogService componentCatalogService,
+                            ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps, CreateIncidentParameterMapper createIncidentParameterMapper, AuthenticationProvider authenticationProvider,
                             @Qualifier("provisionerActionsBasicAuthApi") ProvisionerActionsApi provisionerActionsBasicAuthApi) {
         this.apiClientsBuilder = apiClientsBuilder;
+        this.componentCatalogService = componentCatalogService;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
+        this.createIncidentParameterMapper = createIncidentParameterMapper;
+        this.authenticationProvider = authenticationProvider;
         this.provisionerActionsBasicAuthApi = provisionerActionsBasicAuthApi;
     }
 
