@@ -36,7 +36,7 @@ public class ProvisionResultsApiFacade {
 
 
     @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
-    private String workflowJobId;
+    private String workflowId;
 
     public ProvisionResultsApiFacade(AwxService awxService,
                                      ComponentCatalogService componentCatalogService,
@@ -274,7 +274,7 @@ public class ProvisionResultsApiFacade {
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
 
-        addDefaultParameters(projectKey, componentId, workflowJobId, createIncidentAction);
+        addDefaultParameters(projectKey, componentId, workflowId, createIncidentAction);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
     }
@@ -290,7 +290,7 @@ public class ProvisionResultsApiFacade {
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
     }
 
-    private static void addDefaultParameters(String projectKey, String componentId, String deletionWorkflow, CreateIncidentAction createIncidentAction) {
+    private static void addDefaultParameters(String projectKey, String componentId, String workflow, CreateIncidentAction createIncidentAction) {
         var projectKeyParameterItem = CreateIncidentParameter.builder()
                 .name("project_key")
                 .type(ParameterType.STRING.getValue())
@@ -306,7 +306,7 @@ public class ProvisionResultsApiFacade {
         var workflowParameterItem = CreateIncidentParameter.builder()
                 .name("workflow")
                 .type(ParameterType.STRING.getValue())
-                .value(deletionWorkflow)
+                .value(workflow)
                 .build();
 
         createIncidentAction.addParametersItem(projectKeyParameterItem);
