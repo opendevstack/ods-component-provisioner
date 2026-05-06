@@ -18,18 +18,4 @@ class InvalidIdExceptionTest {
         assertThat(exception.getMessage()).contains("Invalid id: some-id");
         assertThat(exception.getCause()).isNull();
     }
-
-    @Test
-    void givenIdAndCause_whenConstructorIsCalled_thenMessageAndCauseAreCorrect() {
-        // given
-        String id = "some-id";
-        Exception cause = new RuntimeException("root cause");
-
-        // when
-        InvalidIdException exception = new InvalidIdException(id, cause);
-
-        // then
-        assertThat(exception.getMessage()).contains("Invalid id: some-id");
-        assertThat(exception.getCause()).isSameAs(cause);
-    }
 }

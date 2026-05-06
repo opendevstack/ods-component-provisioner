@@ -5,9 +5,4 @@ public class InvalidIdException extends RuntimeException {
     public InvalidIdException(String id) {
         super("Invalid id: " + id);
     }
-
-    public InvalidIdException(String id, Throwable cause) {
-        super("Invalid id: " + id, cause);
-    }
-
 }
