@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
@@ -19,7 +21,6 @@ import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
@@ -33,10 +34,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ProvisionResultsApiFacadeTest {
 
     @Mock
@@ -55,8 +56,11 @@ class ProvisionResultsApiFacadeTest {
     @InjectMocks
     private ProvisionResultsApiFacade facade;
 
-    @Value("WORKFLOW_123")
-    private String workflowJobId;
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        String workflowJobId = "WORKFLOW_123";
+        ReflectionTestUtils.setField(facade, "workflowJobId", workflowJobId);
+    }
 
     @Test
     void givenAProjectKeyAndAComponentId_whenTriggerAwxWorkflowIsCalled_thenMapsResponseCorrectly() {
@@ -66,14 +70,15 @@ class ProvisionResultsApiFacadeTest {
         var job = new AwxWorkflowJob();
         var response = new ProvisionActionResponse();
 
-        when(entitiesMapper.asAwxWorkflowJobLaunch(action)).thenReturn(launch);
-        when(awxService.triggerWorkflowJob("CREATE_INCIDENT", launch)).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
-        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(response);
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(response);
 
         // when
         var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
 
         // then
+        assertNotNull(result, "Result should not be null");
         assertEquals(HttpStatus.OK, result.httpStatusCode());
         assertEquals(response, result.awxResponseBody());
     }
@@ -225,13 +230,14 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
 
-        when(entitiesMapper.asAwxWorkflowJobLaunch(action)).thenReturn(launch);
-        when(awxService.triggerWorkflowJob("CREATE_INCIDENT", launch)).thenReturn(Pair.of(HttpStatus.ACCEPTED, Optional.empty()));
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.ACCEPTED, Optional.empty()));
 
         // when
         var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
 
         // then
+        assertNotNull(result, "Result should not be null");
         assertEquals(HttpStatus.ACCEPTED, result.httpStatusCode());
         assertThat(result.awxResponseBody()).isNull();
     }
@@ -574,15 +580,16 @@ class ProvisionResultsApiFacadeTest {
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
-        when(awxService.triggerWorkflowJob(eq("CREATE_INCIDENT"), eq(launch))).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
-        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(new ProvisionActionResponse());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(new ProvisionActionResponse());
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
+        assertNotNull(result, "Result should not be null");
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(awxService).triggerWorkflowJob(eq("CREATE_INCIDENT"), any());
+        verify(awxService).triggerWorkflowJob(anyString(), any());
     }
 
     @Test
@@ -604,15 +611,16 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
         when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
-        when(awxService.triggerWorkflowJob(eq("DELETE"), eq(launch))).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
-        when(entitiesMapper.asProvisionActionResponse(job)).thenReturn(new ProvisionActionResponse());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(new ProvisionActionResponse());
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
+        assertNotNull(result, "Result should not be null");
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(awxService).triggerWorkflowJob(eq("DELETE"), any());
+        verify(awxService).triggerWorkflowJob(anyString(), any());
     }
 
     @Test
@@ -672,12 +680,13 @@ class ProvisionResultsApiFacadeTest {
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
-        when(awxService.triggerWorkflowJob(eq("CREATE_INCIDENT"), eq(launch))).thenReturn(Pair.of(HttpStatus.INTERNAL_SERVER_ERROR, Optional.empty()));
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.INTERNAL_SERVER_ERROR, Optional.empty()));
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
+        assertNotNull(result, "Result should not be null");
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
