@@ -129,7 +129,7 @@ class ProvisionResultsApiControllerTest {
         var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
 
         // then
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId);
     }
 
