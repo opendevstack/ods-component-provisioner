@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -48,14 +49,30 @@ class ReplaceParametersServiceTest {
     }
 
     @Test
+    void givenNoParametersMatchingConfigured_whenReplaceProvisioningParametersFromOdsApi_thenSkipsOdsApiCall() {
+        // given
+        initializeService("project_name");
+        var unrelatedParam = ProvisionActionParameterMother.of("unrelated_param", "someValue");
+        var params = Map.of("unrelated_param", unrelatedParam);
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of(params);
+
+        // when
+        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
+
+        // then
+        Assertions.assertThat(result).isEqualTo(wrapper);
+        verifyNoInteractions(odsApiService);
+    }
+
+    @Test
     void givenProjectNotFound_whenReplaceProvisioningParametersFromOdsApi_thenReturnsUnmodifiedWrapper() {
         // given
         initializeService("project_name");
 
         var projectKey = "projectKey";
-        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
         var params = Map.of(
-                "project_key", projectKeyParam
+                "project_key", ProvisionActionParameterMother.of("project_key", projectKey),
+                "project_name", ProvisionActionParameterMother.of("project_name", "projectName")
         );
 
         ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of(params);
@@ -73,19 +90,19 @@ class ReplaceParametersServiceTest {
     void givenParameterOverriddenFromOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenReturnsUpdatedParameter() {
         // given
         initializeService("project_name");
-        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("param1", "oldValue");
+        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("project_name", "oldValue");
 
         var projectKey = "projectKey";
         var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
         var params = Map.of(
-                "param1", parameter,
+                "project_name", parameter,
                 "project_key", projectKeyParam
         );
 
-        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("param1", params);
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("project_name", params);
 
         var projectData = new CreateProjectResponse();
-        Map<String, Object> odsApiValues = Map.of("param1", "newValue");
+        Map<String, Object> odsApiValues = Map.of("project_name", "newValue");
 
         when(odsApiService.getProject(anyString())).thenReturn(projectData);
         when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
@@ -95,25 +112,25 @@ class ReplaceParametersServiceTest {
 
         // then
         Assertions.assertThat(result.getParametersMap())
-                .containsKey("param1")
-                .extracting("param1").isNotNull();
-        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo("newValue");
+                .containsKey("project_name")
+                .extracting("project_name").isNotNull();
+        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
     }
 
     @Test
     void givenParameterNotInOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenKeepsOriginalValue() {
         // given
         initializeService("project_name");
-        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("param1", "originalValue");
+        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("project_name", "originalValue");
 
         var projectKey = "projectKey";
         var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
         var params = Map.of(
-                "param1", parameter,
+                "project_name", parameter,
                 "project_key", projectKeyParam
         );
 
-        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("param1", params);
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("project_name", params);
 
         var projectData = new CreateProjectResponse();
         Map<String, Object> odsApiValues = new HashMap<>();
@@ -125,7 +142,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo("originalValue");
+        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
     }
 
     @Test
@@ -151,69 +168,5 @@ class ReplaceParametersServiceTest {
         Assertions.assertThatThrownBy(() -> replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper))
                 .isInstanceOf(IllegalConfigurationException.class)
                 .hasMessageContaining("not of type String");
-    }
-
-    @Test
-    void givenMissingRequiredOdsParameter_whenReplaceProvisioningParametersFromOdsApi_thenAddsParameterFromOdsApi() {
-        // given
-        initializeService("required_param");
-
-        var projectKey = "projectKey";
-        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
-        var params = Map.of(
-                "project_key", projectKeyParam
-        );
-
-        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("provision_action_id", params);
-
-        var projectData = new CreateProjectResponse();
-        Map<String, Object> odsApiValues = Map.of("required_param", "valueFromOds");
-
-        when(odsApiService.getProject(anyString())).thenReturn(projectData);
-        when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
-
-        // when
-        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
-
-        // then
-        Assertions.assertThat(result.getParametersMap())
-                .containsKey("required_param");
-        Assertions.assertThat(result.getParametersMap().get("required_param").getValue()).isEqualTo("valueFromOds");
-        Assertions.assertThat(result.getParametersMap().get("required_param").getType()).isEqualTo(ParameterType.STRING.getValue());
-    }
-
-    @Test
-    void givenMultipleParametersWithMixedSources_whenReplaceProvisioningParametersFromOdsApi_thenMergesCorrectly() {
-        // given
-        initializeService("param2,param3");
-        ProvisionActionParameter param1 = ProvisionActionParameterMother.of("param1", "value1");
-        ProvisionActionParameter param2 = ProvisionActionParameterMother.of("param2", "oldValue2");
-
-        var projectKey = "projectKey";
-        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
-        var params = Map.of(
-                "project_key", projectKeyParam,
-                "param1", param1,
-                "param2", param2
-        );
-
-        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("provision", params);
-
-        var projectData = new CreateProjectResponse();
-        Map<String, Object> odsApiValues = Map.of("param2", "newValue2", "param3", "value3");
-
-        when(odsApiService.getProject(anyString())).thenReturn(projectData);
-        when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
-
-        // when
-        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
-
-        // then
-        Assertions.assertThat(result.getParametersMap())
-                .hasSize(4)
-                .containsKeys("project_key", "param1", "param2", "param3");
-        Assertions.assertThat(result.getParametersMap().get("param1").getValue()).isEqualTo("value1");
-        Assertions.assertThat(result.getParametersMap().get("param2").getValue()).isEqualTo("newValue2");
-        Assertions.assertThat(result.getParametersMap().get("param3").getValue()).isEqualTo("value3");
     }
 }
