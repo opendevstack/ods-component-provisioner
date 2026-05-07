@@ -41,14 +41,22 @@ class ProvisionResultsApiFacadeTest {
 
     @Mock
     private AwxService awxService;
+
     @Mock
     private ComponentCatalogService componentCatalogService;
+
     @Mock
     private EntitiesMapper entitiesMapper;
+
     @Mock
     private ProvisionService provisionService;
+
     @Mock
     private AuthenticationProvider authenticationProvider;
+
+    @Mock
+    private ApplicationAuthenticationProvider applicationAuthenticationProvider;
+
     @Mock
     private ProjectsInfoService projectsInfoService;
 
@@ -182,7 +190,7 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenIsInDeletingStateIsCalled_thenReturnsFalseWhenComponentNotFound() {
         // when
-        var result = facade.isInDeletingState((ProjectComponentExtendedInfo) null);
+        var result = facade.isInDeletingState(null);
 
         // then
         assertThat(result).isFalse();
@@ -252,7 +260,7 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(applicationAuthenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
@@ -267,6 +275,7 @@ class ProvisionResultsApiFacadeTest {
         facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
+        verifyNoInteractions(authenticationProvider);
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
         assertThat(request.getCatalogItemId()).isEqualTo(catalogItemId);
         assertThat(request.getCatalogItemSlug()).isNull();
@@ -283,7 +292,7 @@ class ProvisionResultsApiFacadeTest {
         var componentUrl = "http://example.com";
         var accessToken = "token";
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(applicationAuthenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
@@ -302,6 +311,7 @@ class ProvisionResultsApiFacadeTest {
         facade.notifyProvisioningStatusUpdate(projectKey, status, request);
 
         // then
+        verifyNoInteractions(authenticationProvider);
         verify(provisionService).notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
         assertThat(request.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
         assertThat(request.getCatalogItemSlug()).isNull();
