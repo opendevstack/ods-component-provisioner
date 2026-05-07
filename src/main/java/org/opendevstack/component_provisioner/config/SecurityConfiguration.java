@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @Configuration
 @AllArgsConstructor
 public class SecurityConfiguration {
+    public static final String V_1_PROVISION = "/v1/provision/*";
     private final AadAppRoleStatelessAuthenticationFilter aadAuthFilter;
 
     /**
@@ -40,13 +41,17 @@ public class SecurityConfiguration {
     @Order(1)
     SecurityFilterChain basicForProvisionDelete(HttpSecurity http) throws Exception {
         PathPatternRequestMatcher provisionDelete =
-                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.DELETE, "/v1/provision/*");
+                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.DELETE, V_1_PROVISION);
+        PathPatternRequestMatcher provisionPut =
+                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.PUT, V_1_PROVISION);
 
         var basicEntryPoint = new BasicAuthenticationEntryPoint();
         basicEntryPoint.setRealmName("provision");
 
         http
-                .securityMatcher(provisionDelete)
+                .securityMatchers( requestMatcherConfigurer ->
+                        requestMatcherConfigurer.requestMatchers(provisionDelete, provisionPut)
+                )
                 .authorizeHttpRequests(auth -> auth.anyRequest().hasRole("PROVISIONER"))
                 .csrf(CsrfConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -71,7 +76,7 @@ public class SecurityConfiguration {
                         )
                             .permitAll()
                         .requestMatchers(
-                                "/v1/provision/*/*"
+                                V_1_PROVISION
                         )
                             .permitAll()
                         .requestMatchers("/actuator/health")
