@@ -115,7 +115,7 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY="); // catalogItemRef
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -162,7 +162,7 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -191,7 +191,7 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -222,7 +222,7 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -257,7 +257,7 @@ class ProvisionServiceTest {
         projectComponent.setParameters(null);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -291,7 +291,7 @@ class ProvisionServiceTest {
         projectComponent.setCatalogItemRef("Y2F0YWxvZ0l0ZW1SZWY=");
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId))
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
@@ -350,7 +350,7 @@ class ProvisionServiceTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId)).thenReturn(projectComponent);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
         var result = provisionService.getDeletionWorkflow(projectKey, componentId);
@@ -370,7 +370,7 @@ class ProvisionServiceTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        when(componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId)).thenReturn(projectComponent);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
         var result = provisionService.getDeletionWorkflow(projectKey, componentId);

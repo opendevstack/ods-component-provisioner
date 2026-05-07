@@ -86,7 +86,7 @@ public class ProvisionService {
     }
 
     public List<CreateIncidentParameter> getDeletionParameters(String projectKey, String componentId) {
-        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(authenticationProvider.getAccessToken(), projectKey, componentId);
+        var projectComponent = componentCatalogService.getProjectComponentById(authenticationProvider.getAccessToken(), projectKey, componentId);
 
         var catalogItemId = composeCatalogItemId(projectComponent);
 
@@ -98,7 +98,7 @@ public class ProvisionService {
     }
 
     public String getDeletionWorkflow(String projectKey, String componentId) {
-        var projectComponent = componentCatalogService.getProjectComponentExtendedInfo(authenticationProvider.getAccessToken(), projectKey, componentId);
+        var projectComponent = componentCatalogService.getProjectComponentById(authenticationProvider.getAccessToken(), projectKey, componentId);
         var parameterMap = getProjectComponentParameterMap(projectComponent);
 
         if (parameterMap.containsKey(DELETION_WORKFLOW)) {

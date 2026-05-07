@@ -401,7 +401,7 @@ class ComponentCatalogServiceTest {
                 .thenReturn(projectComponentsApi);
 
         // when
-        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId);
+        ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
 
         // then
         assertThat(result).isSameAs(expectedInfo);
@@ -578,7 +578,7 @@ class ComponentCatalogServiceTest {
                 .thenReturn(projectComponentsApi);
 
         // when
-        var result = componentCatalogService.getProjectComponentExtendedInfo(accessToken, projectKey, componentId);
+        var result = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
 
         // then
         assertThat(result).isEqualTo(projectComponent);

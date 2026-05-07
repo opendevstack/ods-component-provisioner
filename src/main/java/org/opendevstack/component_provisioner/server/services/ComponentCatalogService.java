@@ -142,12 +142,6 @@ public class ComponentCatalogService {
         return componentsApi.getProjectComponents(projectKey);
     }
 
-    public ProjectComponentExtendedInfo getProjectComponentExtendedInfo(String accessToken, String projectKey, String componentId) {
-        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
-        return componentsApi.getProjectComponentById(projectKey, componentId);
-    }
-
     @Cacheable(key = "#root.methodName + #projectKey + #catalogItemId")
     public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
