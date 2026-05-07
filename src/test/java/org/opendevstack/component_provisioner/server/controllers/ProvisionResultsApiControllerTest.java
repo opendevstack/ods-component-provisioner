@@ -9,13 +9,9 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,22 +44,19 @@ class ProvisionResultsApiControllerTest {
         var catalogItemId = "catalogItemId";
         var catalogItemSlug = "catalogItemSlug";
         var componentUrl = "componentUrl";
-        var accessToken = "accessToken";
 
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
         request.setCatalogItemSlug(catalogItemSlug);
-        request.componentUrl(componentUrl);
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        request.setComponentUrl(JsonNullable.of(componentUrl));
 
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdate(projectKey, status.name(), request);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request, accessToken);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(projectKey, status, request);
         verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, catalogItemSlug);
     }
 
@@ -75,22 +68,19 @@ class ProvisionResultsApiControllerTest {
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
-        var accessToken = "accessToken";
 
         var request = new ProvisioningStatusPartialUpdateRequest();
         request.setComponentId(componentId);
         request.setCatalogItemId(catalogItemId);
-        request.componentUrl(componentUrl);
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        request.setComponentUrl(JsonNullable.of(componentUrl));
 
         // when
         var response = provisionResultsApiController.notifyProvisioningStatusUpdatePartially(projectKey, status.name(), request);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request, accessToken);
-        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, null);
+        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdatePartially(projectKey, status, request);
+        verify(provisionResultsApiFacade).validate(projectKey, status.name(), catalogItemId, (String) null);
     }
 
     @Test
@@ -101,7 +91,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusPartialUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg))
                 .when(provisionResultsApiFacade)
@@ -114,7 +104,7 @@ class ProvisionResultsApiControllerTest {
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
         assertThat(exception.getMessage()).isEqualTo(exceptionMsg);
-        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any(), any());
+        verify(provisionResultsApiFacade, never()).notifyProvisioningStatusUpdatePartially(any(), any(), any());
     }
 
     @Test
@@ -126,7 +116,7 @@ class ProvisionResultsApiControllerTest {
         var provisioningDeleteRequest = ProvisioningDeleteRequest.builder().componentId(componentId).build();
 
         // when
-        var response = provisionResultsApiController.deleteProvisioningStatus(projectKey, provisioningDeleteRequest);
+        var response = provisionResultsApiController.deleteProjectComponent(projectKey, provisioningDeleteRequest);
 
         // then
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
@@ -138,25 +128,19 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(false);
         var actionResponse = new ProvisionActionResponse();
         var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(actionResponse).build();
-        when(provisionResultsApiFacade.requestProvisionToAwx(any(), any(), any())).thenReturn(awxResponse);
+        when(provisionResultsApiFacade.requestDeletion(projectKey, componentId, createIncidentAction)).thenReturn(awxResponse);
 
         // when
-        var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(actionResponse, response.getBody());
-        verify(provisionResultsApiFacade).validate(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
-        verify(provisionResultsApiFacade).requestProvisionToAwx(projectKey, componentId, createIncidentAction);
-        verify(provisionResultsApiFacade).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProjectComponentStatus.DELETING), any(ProvisioningStatusUpdateRequest.class), eq(accessToken));
+        verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
 
     @Test
@@ -167,10 +151,11 @@ class ProvisionResultsApiControllerTest {
 
         var action = CreateIncidentActionMother.of();
 
-        doThrow(new InvalidRestEntityException("project_key, component_id are required.")).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
+        when(provisionResultsApiFacade.requestDeletion(any(), any(), any()))
+                .thenThrow(new InvalidRestEntityException("project_key, component_id are required."));
 
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, action);
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, action);
 
         // then
         var ex = assertThrows(InvalidRestEntityException.class, call);
@@ -182,19 +167,17 @@ class ProvisionResultsApiControllerTest {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
-        var accessToken = "accessToken";
         var createIncidentAction = CreateIncidentActionMother.of();
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-        when(provisionResultsApiFacade.isInDeletingState(any(), any(), any())).thenReturn(true);
+        var awxResponse = AwxResponse.builder().httpStatusCode(HttpStatus.OK).awxResponseBody(new ProvisionActionResponse()).build();
+        when(provisionResultsApiFacade.requestDeletion(projectKey, componentId, createIncidentAction)).thenReturn(awxResponse);
 
         // when
-        var response = provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(provisionResultsApiFacade).addSystemParametersToAction(projectKey, createIncidentAction);
-        verify(provisionResultsApiFacade, never()).requestProvisionToAwx(any(), any(), any());
+        verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
 
     @Test
@@ -205,7 +188,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -226,7 +209,7 @@ class ProvisionResultsApiControllerTest {
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -248,7 +231,7 @@ class ProvisionResultsApiControllerTest {
         request.setComponentId("comp-1");
         request.setCatalogItemId("cat-1");
         request.setCatalogItemSlug("slug");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -268,7 +251,7 @@ class ProvisionResultsApiControllerTest {
         var statusLowercase = "FAILED";
         var request = new ProvisioningStatusUpdateRequest();
         request.setComponentId("comp-1");
-        request.componentUrl("http://example");
+        request.setComponentUrl(JsonNullable.of("http://example"));
 
         doThrow(new InvalidRestEntityException(exceptionMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), nullable(String.class), nullable(String.class));
 
@@ -289,10 +272,11 @@ class ProvisionResultsApiControllerTest {
         var createIncidentAction = CreateIncidentActionMother.of();
         var errorMsg = "is_deployed, change_number and reason are required.";
 
-        doThrow(new InvalidRestEntityException(errorMsg)).when(provisionResultsApiFacade).validate(any(String.class), any(String.class), any(CreateIncidentAction.class));
+        when(provisionResultsApiFacade.requestDeletion(any(), any(), any()))
+                .thenThrow(new InvalidRestEntityException(errorMsg));
 
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.createIncident(projectKey, componentId, createIncidentAction);
+        var call = (org.junit.jupiter.api.function.Executable) () -> provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);

@@ -2,13 +2,9 @@ package org.opendevstack.component_provisioner.server.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
@@ -21,25 +17,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
 
-@CacheConfig(cacheNames={ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME})
+@CacheConfig(cacheNames = {ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME})
 @Service
 @Slf4j
 public class ComponentCatalogService {
 
     @Qualifier("itemUserActionMessagesDefinitionsApi")
     private final CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi;
-
-    @Qualifier("componentCatalogApiClient")
-    private final ApiClient componentCatalogApiClient;
 
     private final ApiClientsBuilder apiClientsBuilder;
 
@@ -49,12 +38,10 @@ public class ComponentCatalogService {
 
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
-            ApiClient componentCatalogApiClient,
             ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
             @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
-        this.componentCatalogApiClient = componentCatalogApiClient;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
@@ -149,11 +136,10 @@ public class ComponentCatalogService {
         provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
     }
 
-    public List<ProjectComponentInfo> getProjectComponents(String projectKey, String accessToken) {
+    public List<ProjectComponentInfo> getProjectComponents(String accessToken, String projectKey) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-        var projectComponentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
-
-        return projectComponentsApi.getProjectComponents(projectKey);
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+        return componentsApi.getProjectComponents(projectKey);
     }
 
     @Cacheable(key = "#root.methodName + #projectKey + #catalogItemId")
@@ -180,11 +166,11 @@ public class ComponentCatalogService {
         return catalogItem;
     }
 
-    public org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo getProjectComponentById(String accessToken, String projectKey, String componentId) {
+    public ProjectComponentExtendedInfo getProjectComponentById(String accessToken, String projectKey, String componentId) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
-        var projectComponentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
 
-        return projectComponentsApi.getProjectComponentById(projectKey, componentId);
+        return componentsApi.getProjectComponentById(projectKey, componentId);
     }
 
     private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {

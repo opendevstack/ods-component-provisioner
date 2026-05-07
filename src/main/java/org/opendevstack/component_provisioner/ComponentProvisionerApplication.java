@@ -24,6 +24,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
                 "org.opendevstack.component_provisioner.server.security",
                 "org.opendevstack.component_provisioner.config",
                 "org.opendevstack.component_provisioner.server.services",
+                "org.opendevstack.component_provisioner.server.mappers",
                 "org.opendevstack.component_provisioner.client.awx.v2"
         },
         nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class

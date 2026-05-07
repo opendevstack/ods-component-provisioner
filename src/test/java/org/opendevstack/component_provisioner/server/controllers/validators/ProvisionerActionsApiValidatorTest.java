@@ -83,7 +83,7 @@ class ProvisionerActionsApiValidatorTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any(), any()))
                 .thenReturn(List.of(exists));
 
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
@@ -107,7 +107,7 @@ class ProvisionerActionsApiValidatorTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component catalog empty → no conflict
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any(), any()))
                 .thenReturn(List.of());
 
         // User groups
@@ -144,7 +144,7 @@ class ProvisionerActionsApiValidatorTest {
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         // Component does NOT exist
-        when(componentCatalogService.getProjectComponents(projectKey, accessToken))
+        when(componentCatalogService.getProjectComponents(any(), any()))
                 .thenReturn(List.of());
 
         // User groups

@@ -60,7 +60,6 @@ public class SecurityConfiguration {
     @Bean
     @Order(2)
     public SecurityFilterChain aadForEverythingElse(HttpSecurity http) throws Exception {
-
         http
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
@@ -74,7 +73,7 @@ public class SecurityConfiguration {
                         .requestMatchers(
                                 "/v1/provision/*/*"
                         )
-                        .permitAll()
+                            .permitAll()
                         .requestMatchers("/actuator/health")
                             .permitAll()
 

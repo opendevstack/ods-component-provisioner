@@ -1,15 +1,18 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
+import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -28,13 +31,19 @@ class ProvisionerServiceTest {
     private ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     @Mock
-    private org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient apiClient;
+    private ApiClient apiClient;
+
+    @Mock
+    private CatalogItemsApi catalogItemsApi;
+
+    @Mock
+    private ProvisioningStatusUpdateRequestParametersInnerMapper provisioningStatusUpdateRequestParametersInnerMapper;
 
     @InjectMocks
     private ProvisionService provisionService;
 
     @Test
-    void givenAProvisionClient_WhenNotifyProvisioningCompleted_ThenProvisioningIsNotified() throws java.net.MalformedURLException {
+    void givenAProjectKeyAndStatusAndComponentIdAndCatalogItemIdAndComponentUrlAndAccessToken_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApi() throws java.net.MalformedURLException {
         // given
         var projectKey = "projectKey";
         var status = ProjectComponentStatus.CREATED;
@@ -66,14 +75,14 @@ class ProvisionerServiceTest {
         var projectKey = "projectKey";
         var componentId = "componentId";
 
-        var provisionDeleteRequest = ProvisioningDeleteRequest.builder()
-                .componentId(componentId)
-                .build();
-
         // when
         provisionService.deleteProvisioningStatus(projectKey, componentId);
 
         // then
-        verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, provisionDeleteRequest);
+        var expectedRequest = ProvisioningDeleteRequest.builder()
+                .componentId(componentId)
+                .build();
+
+        verify(provisionerActionsApi).deleteProvisioningStatus(projectKey, expectedRequest);
     }
 }
