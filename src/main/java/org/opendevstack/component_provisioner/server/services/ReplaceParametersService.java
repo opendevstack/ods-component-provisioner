@@ -40,7 +40,9 @@ public class ReplaceParametersService {
             return provisionActionWrapper;
         }
 
-        if (paramsToOverrideFromOdsApi.stream().noneMatch(provisionActionWrapper.getParametersMap().keySet()::contains)) {
+
+        boolean actionDoesNotContainParamsToOverride = paramsToOverrideFromOdsApi.stream().noneMatch(provisionActionWrapper.getParametersMap().keySet()::contains);
+        if (actionDoesNotContainParamsToOverride) {
             log.debug("No parameters matching ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
             return provisionActionWrapper;
         }
@@ -59,7 +61,7 @@ public class ReplaceParametersService {
         var parametersMap = provisionActionWrapper.getParametersMap();
         var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
 
-        return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
+        return provisionActionWrapper.cloneWithParameters(updatedParametersMap.values());
     }
 
     private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
