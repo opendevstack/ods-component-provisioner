@@ -5,10 +5,7 @@ import lombok.ToString;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,6 +38,10 @@ public class ProvisionActionWrapper {
         Arrays.stream(provisionActionParameter).forEach(param -> newParametersMap.put(param.getName(), param));
 
         return new ProvisionActionWrapper(provisionActionId, newParametersMap);
+    }
+
+    public ProvisionActionWrapper cloneWithParameters(Collection<ProvisionActionParameter> parameters) {
+        return cloneWithParameters(parameters.toArray(ProvisionActionParameter[]::new));
     }
 
     public ProvisionActionWrapper cloneWithoutParameterByName(String provisionActionParameterName) {

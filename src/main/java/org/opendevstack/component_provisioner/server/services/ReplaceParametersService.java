@@ -37,28 +37,31 @@ public class ReplaceParametersService {
     public ProvisionActionWrapper replaceProvisioningParametersFromOdsApi(ProvisionActionWrapper provisionActionWrapper) {
         if (Boolean.FALSE.equals(odsApiServiceEnabled) || paramsToOverrideFromOdsApi == null || paramsToOverrideFromOdsApi.isEmpty()) {
             log.debug("No ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
-
             return provisionActionWrapper;
-        } else {
-            log.debug("Overriding provisioning parameters from ODS API for parameters: {}", paramsToOverrideFromOdsApi);
-
-            var projectKey = provisionActionWrapper.getProjectKey();
-
-            var projectKeyData = odsApiService.getProject(projectKey);
-
-            if (projectKeyData == null) {
-                log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
-
-                return provisionActionWrapper;
-            } else {
-                var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
-                var parametersMap = provisionActionWrapper.getParametersMap();
-
-                var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
-
-                return new ProvisionActionWrapper(provisionActionWrapper.getProvisionActionId(), updatedParametersMap);
-            }
         }
+
+
+        boolean actionDoesNotContainParamsToOverride = paramsToOverrideFromOdsApi.stream().noneMatch(provisionActionWrapper.getParametersMap().keySet()::contains);
+        if (actionDoesNotContainParamsToOverride) {
+            log.debug("No parameters matching ODS API parameters configured to override. Skipping overriding provisioning parameters from ODS API.");
+            return provisionActionWrapper;
+        }
+
+        log.debug("Overriding provisioning parameters from ODS API for parameters: {}", paramsToOverrideFromOdsApi);
+
+        var projectKey = provisionActionWrapper.getProjectKey();
+        var projectKeyData = odsApiService.getProject(projectKey);
+
+        if (projectKeyData == null) {
+            log.warn("Project data not found in ODS API for project key: {}. Skipping overriding provisioning parameters from ODS API.", projectKey);
+            return provisionActionWrapper;
+        }
+
+        var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
+        var parametersMap = provisionActionWrapper.getParametersMap();
+        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+
+        return provisionActionWrapper.cloneWithParameters(updatedParametersMap.values());
     }
 
     private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
@@ -90,21 +93,6 @@ public class ReplaceParametersService {
                         .build();
 
                 updatedParameters.put(entry.getKey(), parameter);
-            }
-        }
-
-        // If there are required ODS parameters not in the request, we add them with value from ODS API
-        for (String odsApiParameterToOverride : paramsToOverrideFromOdsApi) {
-            if (!parametersMap.containsKey(odsApiParameterToOverride) && odsApiSnakeCaseValuesMap.containsKey(odsApiParameterToOverride)) {
-                log.debug("Adding missing parameter from ODS API: {}", odsApiParameterToOverride);
-
-                var parameter = ProvisionActionParameter.builder()
-                        .name(odsApiParameterToOverride)
-                        .type(ParameterType.STRING.getValue())
-                        .value(odsApiSnakeCaseValuesMap.get(odsApiParameterToOverride).toString())
-                        .build();
-
-                updatedParameters.put(odsApiParameterToOverride, parameter);
             }
         }
 
