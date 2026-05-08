@@ -17,7 +17,7 @@ public class ApplicationAuthenticationProvider {
     public ApplicationAuthenticationProvider(AzureAdTokenService azureAdTokenService,
                                              @Value("${component-provisioner.ods-api-service.params.client_id}") String clientId,
                                              @Value("${component-provisioner.ods-api-service.params.client_secret}") String clientSecret,
-                                             @Value("${component-provisioner.ods-api-service.params.scope}") String scope) {
+                                             @Value("${devstack.marketplace-api.scope}") String scope) {
         this.azureAdTokenService = azureAdTokenService;
         this.clientId = clientId;
         this.clientSecret = clientSecret;

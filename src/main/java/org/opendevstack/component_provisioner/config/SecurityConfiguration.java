@@ -21,7 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @Configuration
 @AllArgsConstructor
 public class SecurityConfiguration {
-    public static final String V_1_PROVISION = "/v1/provision/*";
+    public static final String V_1_PROVISION = "/v1/provision/**";
     private final AadAppRoleStatelessAuthenticationFilter aadAuthFilter;
 
     /**

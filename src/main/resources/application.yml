@@ -84,3 +84,8 @@ component-provisioner:
     create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
   parameters:
     blacklist: ${SENSITIVE_PARAMETERS_BLACKLIST}
+
+
+devstack:
+  marketplace-api:
+    scope: ${DEVSTACK_MARKETPLACE_API_SCOPE}
