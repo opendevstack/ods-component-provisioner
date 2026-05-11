@@ -64,6 +64,12 @@ public class ApplicationPropertiesConfiguration {
         return ExternalServiceProps.builder().build();
     }
 
+    @Bean("azureAdTokenServiceProps")
+    @ConfigurationProperties(prefix = "component-provisioner.azure.token.url")
+    public AzureAdTokenServiceProps azureAdTokenServiceProps() {
+        return AzureAdTokenServiceProps.builder().build();
+    }
+
     @Builder // useful for unit testing
     @Data
     public static class ProjectsInfoServicesCacheProps {
@@ -112,6 +118,12 @@ public class ApplicationPropertiesConfiguration {
     @Data
     public static class OdsApiServerServiceProps {
         private URL baseRestUrl;
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class AzureAdTokenServiceProps {
+        private String tokenRestUrl;
     }
 
     @Builder // useful for unit testing

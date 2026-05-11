@@ -48,6 +48,9 @@ user-actions:
   id: ${USER_ACTIONS_ID}
 
 component-provisioner:
+  azure:
+    token:
+      url: ${AZURE_TOKEN_URL}
   caching:
     projects-info-services-cache:
       enabled: true
@@ -76,8 +79,8 @@ component-provisioner:
     service:
       base-rest-url: ${ODS_API_SERVICE_SERVICE_BASE_REST_URL}
     params:
-      client_id: ${ODS_API_SERVICE_SERVICE_PARAMS_CLIENT_ID}
-      client_secret: ${ODS_API_SERVICE_SERVICE_PARAMS_CLIENT_SECRET}
+      client_id: ${DEVSTACK_MARKETPLACE_API_CLIENT_ID}
+      client_secret: ${DEVSTACK_MARKETPLACE_API_CLIENT_SECRET}
       scope: ${ODS_API_SERVICE_SERVICE_PARAMS_SCOPE}
       override: ${ODS_API_SERVICE_SERVICE_PARAMS_OVERRIDE}
   support:
