@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.model.AzureTokenResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ class AzureAdTokenServiceTest {
     @Mock
     private RestTemplate restTemplate;
 
+    @Mock
+    private ApplicationPropertiesConfiguration.AzureAdTokenServiceProps azureAdTokenServiceProps;
+
     @InjectMocks
     private AzureAdTokenService azureAdTokenService;
 
@@ -38,6 +42,8 @@ class AzureAdTokenServiceTest {
         ReflectionTestUtils.setField(mockResponse, "accessToken", expectedToken);
 
         ResponseEntity<AzureTokenResponse> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
+
+        when(azureAdTokenServiceProps.getTokenRestUrl()).thenReturn("https://login.microsoftonline.com/example-tenant/oauth2/v2.0/token");
 
         when(restTemplate.postForEntity(anyString(), any(), eq(AzureTokenResponse.class)))
                 .thenReturn(responseEntity);

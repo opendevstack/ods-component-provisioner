@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.model.AzureTokenResponse;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class AzureAdTokenService {
 
     private final RestTemplate restTemplate;
+    private final ApplicationPropertiesConfiguration.AzureAdTokenServiceProps azureAdTokenServiceProps;
 
     public String getAccessToken(String clientId, String clientSecret, String scope) {
 
@@ -28,9 +30,11 @@ public class AzureAdTokenService {
         HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(body, headers);
 
+        var tokenRestUrl = azureAdTokenServiceProps.getTokenRestUrl();
+
         ResponseEntity<AzureTokenResponse> response =
                 restTemplate.postForEntity(
-                        "https://login.microsoftonline.com/e1f8af86-ee95-4718-bd0d-375b37366c83/oauth2/v2.0/token",
+                        tokenRestUrl,
                         request,
                         AzureTokenResponse.class
                 );
