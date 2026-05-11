@@ -35,6 +35,7 @@ public class ProvisionResultsApiFacade {
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
 
+    private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
 
     @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
     private String workflowId;
@@ -44,13 +45,15 @@ public class ProvisionResultsApiFacade {
                                      EntitiesMapper entitiesMapper,
                                      ProvisionService provisionService,
                                      AuthenticationProvider authenticationProvider,
-                                     ProjectsInfoService projectsInfoService) {
+                                     ProjectsInfoService projectsInfoService,
+                                     ApplicationAuthenticationProvider applicationAuthenticationProvider) {
         this.awxService = awxService;
         this.componentCatalogService = componentCatalogService;
         this.entitiesMapper = entitiesMapper;
         this.provisionService = provisionService;
         this.authenticationProvider = authenticationProvider;
         this.projectsInfoService = projectsInfoService;
+        this.applicationAuthenticationProvider = applicationAuthenticationProvider;
     }
 
     public AwxResponse requestDeletion(
@@ -126,7 +129,7 @@ public class ProvisionResultsApiFacade {
     public void notifyProvisioningStatusUpdate(String projectKey,
                                                ProjectComponentStatus status,
                                                ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
-        var accessToken = authenticationProvider.getAccessToken();
+        var accessToken = applicationAuthenticationProvider.getAccessToken();
         var resolvedCatalogItemId = resolveCatalogItemId(accessToken,
                 provisioningStatusUpdateRequest.getCatalogItemId(),
                 provisioningStatusUpdateRequest.getCatalogItemSlug());
