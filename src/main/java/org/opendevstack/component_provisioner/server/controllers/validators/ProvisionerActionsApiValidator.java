@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
@@ -35,7 +36,7 @@ public class ProvisionerActionsApiValidator {
     private final ProjectsInfoService projectsInfoService;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
-    public void validate(ProvisionAction provisionAction) {
+    public void validate(ProvisionAction provisionAction, CatalogItem catalogItem) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
 
         var projectKey = getProjectKey(provisionAction);
@@ -48,7 +49,7 @@ public class ProvisionerActionsApiValidator {
 
         validateUserHasPermissionsToProvision(projectKey, accessToken);
 
-        mandatoryFieldsValidator.validate(provisionAction);
+        mandatoryFieldsValidator.validate(provisionAction, catalogItem);
     }
 
     private void validateUserHasPermissionsToProvision(String projectKey, String accessToken) {

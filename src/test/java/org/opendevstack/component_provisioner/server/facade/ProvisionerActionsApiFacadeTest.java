@@ -94,7 +94,10 @@ class ProvisionerActionsApiFacadeTest {
         lenient()
                 .doAnswer(invocation -> invocation.getArgument(0))
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
+        lenient()
+                .when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .thenReturn(new CatalogItem());
     }
 
     @Test
@@ -364,7 +367,7 @@ class ProvisionerActionsApiFacadeTest {
 
         // then
         ArgumentCaptor<ProvisionActionWrapper> wrapperCaptor = ArgumentCaptor.forClass(ProvisionActionWrapper.class);
-        verify(facade).addMandatoryCatalogItemParamsIfMissing(wrapperCaptor.capture());
+        verify(facade).addMandatoryCatalogItemParamsIfMissing(wrapperCaptor.capture(), any());
         var capturedWrapper = wrapperCaptor.getValue();
         assertThat(capturedWrapper.getCatalogItemId()).isEqualTo(resolvedCatalogItemId);
         assertThat(capturedWrapper.getCatalogItemSlug()).isNull();
@@ -456,15 +459,12 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void addMandatoryParamsIfMissing_addsMissingRequiredParameters() {
         // given
-        var accessToken = "ACCESS";
         var actionId = "action-id";
 
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"));
         params.add(ProvisionActionParameterMother.of("project_key", "MY-PROJECT"));
         var action = ProvisionActionWrapperMother.of(params);
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var requiredParam = new CatalogItemUserActionParameter()
                 .name("required_param")
@@ -481,12 +481,10 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
-                .thenReturn(catalogItem);
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
         // when
-        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         // then
         var addedParam = modifiedAction.getParametersMap().values().stream()
@@ -501,7 +499,6 @@ class ProvisionerActionsApiFacadeTest {
     @Test
     void addMandatoryParamsIfMissing_doesNothingWhenRequiredParamAlreadyPresent() {
         // given
-        var accessToken = "ACCESS";
         var actionId = "ACTION_ID";
 
         var params = new ArrayList<ProvisionActionParameter>();
@@ -509,8 +506,6 @@ class ProvisionerActionsApiFacadeTest {
         params.add(ProvisionActionParameterMother.of("project_key", "MY-PROJECT"));
         params.add(ProvisionActionParameterMother.of("required_param", "custom"));
         var action = ProvisionActionWrapperMother.of(params);
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var requiredParam = new CatalogItemUserActionParameter()
                 .name("required_param")
@@ -527,12 +522,10 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "MY-PROJECT"))
-                .thenReturn(catalogItem);
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
         // when
-        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var modifiedAction = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         // then
         var values = modifiedAction.getParametersMap().values().stream()
@@ -545,14 +538,10 @@ class ProvisionerActionsApiFacadeTest {
 
     @Test
     void addMandatoryParamsIfMissing_stringType_usesDefaultValue() {
-        var accessToken = "ACCESS";
-
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
         ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var requiredParam = CatalogItemUserActionParameter.builder()
                 .name("param_string")
@@ -572,12 +561,9 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
-                .thenReturn(catalogItem);
-
-        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         var addedParam = result.getParametersMap().get("param_string");
         assertThat(addedParam.getValue()).isEqualTo("default-value");
@@ -585,15 +571,11 @@ class ProvisionerActionsApiFacadeTest {
 
     @Test
     void addMandatoryParamsIfMissing_stringType_usesLocationValue_whenNoDefault() {
-        var accessToken = "ACCESS";
-
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
                 ProvisionActionParameterMother.of("cluster_location", "eu-west")
         ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var location = CatalogItemUserActionParameterLocation.builder()
                 .location("eu-west")
@@ -618,12 +600,9 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
-                .thenReturn(catalogItem);
-
-        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         var addedParam = result.getParametersMap().get("param_string");
         assertThat(addedParam.getValue()).isEqualTo("location-value");
@@ -631,14 +610,10 @@ class ProvisionerActionsApiFacadeTest {
 
     @Test
     void addMandatoryParamsIfMissing_stringType_withoutDefaults_leavesValueNull() {
-        var accessToken = "ACCESS";
-
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
         ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var requiredParam = CatalogItemUserActionParameter.builder()
                 .name("param_string")
@@ -657,12 +632,9 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
-                .thenReturn(catalogItem);
-
-        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         var addedParam = result.getParametersMap().get("param_string");
         assertThat(addedParam.getValue()).isNull();
@@ -670,14 +642,10 @@ class ProvisionerActionsApiFacadeTest {
 
     @Test
     void addMandatoryParamsIfMissing_multipleListType_usesDefaultValues() {
-        var accessToken = "ACCESS";
-
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
         ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
         var requiredParam = CatalogItemUserActionParameter.builder()
                 .name("param_multi")
@@ -697,12 +665,9 @@ class ProvisionerActionsApiFacadeTest {
 
         doCallRealMethod()
                 .when(facade)
-                .addMandatoryCatalogItemParamsIfMissing(any());
+                .addMandatoryCatalogItemParamsIfMissing(any(), any());
 
-        when(componentCatalogService.getCatalogItem(accessToken, "CAT-1", "PRJ"))
-                .thenReturn(catalogItem);
-
-        var result = facade.addMandatoryCatalogItemParamsIfMissing(action);
+        var result = facade.addMandatoryCatalogItemParamsIfMissing(action, catalogItem);
 
         var addedParam = result.getParametersMap().get("param_multi");
         assertThat(addedParam.getValue()).isEqualTo(List.of("v1", "v2"));

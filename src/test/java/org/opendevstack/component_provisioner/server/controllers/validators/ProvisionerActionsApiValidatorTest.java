@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
@@ -60,7 +61,7 @@ class ProvisionerActionsApiValidatorTest {
         var action = buildActionMissing(missingParam);
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -87,7 +88,7 @@ class ProvisionerActionsApiValidatorTest {
                 .thenReturn(List.of(exists));
 
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -106,7 +107,7 @@ class ProvisionerActionsApiValidatorTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-        // Component catalog empty → no conflict
+        // Component catalog empty -> no conflict
         when(componentCatalogService.getProjectComponents(any(), any()))
                 .thenReturn(List.of());
 
@@ -118,13 +119,13 @@ class ProvisionerActionsApiValidatorTest {
         when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
         when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
 
-        // Simulate evaluator result → forbidden
+        // Simulate evaluator result -> forbidden
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
                 .thenReturn(Pair.of(false, "User is not allowed"));
 
         // Expect exception
         assertThrows(UserNotAllowedException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -155,12 +156,12 @@ class ProvisionerActionsApiValidatorTest {
         when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
         when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
 
-        // Simulate evaluator result → allowed
+        // Simulate evaluator result -> allowed
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
                 .thenReturn(Pair.of(true, ""));
 
         // Should NOT throw
-        provisionerActionsApiValidator.validate(action);
+        provisionerActionsApiValidator.validate(action, new CatalogItem());
     }
 
     @Test
@@ -173,7 +174,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -186,7 +187,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -199,7 +200,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -219,10 +220,10 @@ class ProvisionerActionsApiValidatorTest {
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
         doThrow(new InvalidRestEntityException("Mandatory field missing"))
                 .when(mandatoryFieldsValidator)
-                .validate(any());
+                .validate(any(), any());
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -238,7 +239,7 @@ class ProvisionerActionsApiValidatorTest {
         when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -255,7 +256,7 @@ class ProvisionerActionsApiValidatorTest {
         when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     @Test
@@ -273,7 +274,7 @@ class ProvisionerActionsApiValidatorTest {
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
     }
 
     private ProvisionAction buildActionMissing(String missingParamName) {
