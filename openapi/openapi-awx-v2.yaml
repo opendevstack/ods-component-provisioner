@@ -9706,7 +9706,7 @@ definitions:
       related:
         readOnly: true
         title: Related
-        type: string
+        type: object
       scm_branch:
         title: Scm branch
         type: string
@@ -9724,7 +9724,7 @@ definitions:
       summary_fields:
         readOnly: true
         title: Summary fields
-        type: string
+        type: object
       timeout:
         title: Timeout
         type: integer

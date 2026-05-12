@@ -6,10 +6,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.awx.v2.api.JobsApi;
+import org.opendevstack.component_provisioner.client.awx.v2.api.WorkflowJobNodesApi;
 import org.opendevstack.component_provisioner.client.awx.v2.api.WorkflowJobTemplatesApi;
+import org.opendevstack.component_provisioner.client.awx.v2.model.ApiWorkflowJobNodesList200ResponseMother;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
+import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobNodeList;
+import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobNodeListMother;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
@@ -18,6 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,6 +41,9 @@ class AwxServiceTest {
 
     @Mock
     private WorkflowJobTemplatesApi workflowJobTemplatesApi;
+
+    @Mock
+    private WorkflowJobNodesApi workflowJobNodesApi;
 
     @Mock
     private JobsApi jobsApi;
@@ -117,12 +127,17 @@ class AwxServiceTest {
     @Test
     void givenJobId_whenGetWorkflowJobByIdSucceeds_thenReturnsJobDetail() {
         // given
+        var workflowJobId = "workflow-job-id";
+        var jobId = "12345";
         var jobDetail = JobDetailMother.of();
+        List<WorkflowJobNodeList> results = Collections.singletonList(WorkflowJobNodeListMother.of(Integer.valueOf(jobId)));
+        var workflowJobNodesResponse = ApiWorkflowJobNodesList200ResponseMother.of(results);
 
-        when(jobsApi.apiJobsRead(AWX_API_VERSION, "12345")).thenReturn(jobDetail);
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(AWX_API_VERSION, workflowJobId, null, null, null)).thenReturn(workflowJobNodesResponse);
+        when(jobsApi.apiJobsRead(AWX_API_VERSION, jobId)).thenReturn(jobDetail);
 
         // when
-        var result = awxService.getWorkflowJobById("12345");
+        var result = awxService.getWorkflowJobById(workflowJobId);
 
         // then
         assertTrue(result.isPresent());
@@ -134,7 +149,7 @@ class AwxServiceTest {
         // given
         String jobId = "job-123";
 
-        when(jobsApi.apiJobsRead(AWX_API_VERSION, jobId)).thenReturn(null);
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(AWX_API_VERSION, jobId, null, null, null)).thenReturn(null);
 
         // when
         var result = awxService.getWorkflowJobById(jobId);
@@ -149,7 +164,7 @@ class AwxServiceTest {
         String jobId = "job-123";
         HttpStatusCodeException exception = mock(HttpStatusCodeException.class);
 
-        when(jobsApi.apiJobsRead(AWX_API_VERSION, jobId)).thenThrow(exception);
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(AWX_API_VERSION, jobId, null, null, null)).thenThrow(exception);
         when(exception.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
 
         // when
@@ -165,7 +180,7 @@ class AwxServiceTest {
         String jobId = "job-123";
         RestClientException exception = new RestClientException("Connection error");
 
-        when(jobsApi.apiJobsRead(AWX_API_VERSION, jobId)).thenThrow(exception);
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(AWX_API_VERSION, jobId, null, null, null)).thenThrow(exception);
 
         // when & then
         assertThrows(AwxClientException.class, () -> awxService.getWorkflowJobById(jobId));
