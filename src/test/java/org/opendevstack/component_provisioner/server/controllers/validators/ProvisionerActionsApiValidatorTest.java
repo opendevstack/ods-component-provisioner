@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
@@ -24,8 +26,11 @@ import org.opendevstack.component_provisioner.server.services.ProjectsInfoServic
 import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.GroupsRestrictionsEvaluator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -61,7 +66,7 @@ class ProvisionerActionsApiValidatorTest {
         var action = buildActionMissing(missingParam);
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -88,7 +93,7 @@ class ProvisionerActionsApiValidatorTest {
                 .thenReturn(List.of(exists));
 
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -125,7 +130,7 @@ class ProvisionerActionsApiValidatorTest {
 
         // Expect exception
         assertThrows(UserNotAllowedException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -161,7 +166,7 @@ class ProvisionerActionsApiValidatorTest {
                 .thenReturn(Pair.of(true, ""));
 
         // Should NOT throw
-        provisionerActionsApiValidator.validate(action, new CatalogItem());
+        provisionerActionsApiValidator.validate(action);
     }
 
     @Test
@@ -174,7 +179,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -187,7 +192,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -200,7 +205,7 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -212,18 +217,12 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
-        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
-        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
-        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
         doThrow(new InvalidRestEntityException("Mandatory field missing"))
                 .when(mandatoryFieldsValidator)
                 .validate(any(), any());
 
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()));
     }
 
     @Test
@@ -239,7 +238,7 @@ class ProvisionerActionsApiValidatorTest {
         when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -256,7 +255,7 @@ class ProvisionerActionsApiValidatorTest {
         when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
@@ -274,7 +273,7 @@ class ProvisionerActionsApiValidatorTest {
         when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 
         assertThrows(RuntimeException.class,
-                () -> provisionerActionsApiValidator.validate(action, new CatalogItem()));
+                () -> provisionerActionsApiValidator.validate(action));
     }
 
     private ProvisionAction buildActionMissing(String missingParamName) {
@@ -289,5 +288,179 @@ class ProvisionerActionsApiValidatorTest {
             params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
 
         return ProvisionActionMother.of(params);
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenCatalogItemIsNull() {
+        var action = ProvisionActionMother.of(Collections.emptyList());
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, null))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("does not exist");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenCatalogItemHasNoUserActions() {
+        var catalogItem = CatalogItem.builder().title("My Item").userActions(null).build();
+        var action = ProvisionActionMother.of(Collections.emptyList());
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("does not exist");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenNoPROVISIONUserAction() {
+        var userAction = CatalogItemUserAction.builder().id("DELETE").parameters(List.of()).build();
+        var catalogItem = CatalogItem.builder().title("My Item").userActions(List.of(userAction)).build();
+        var action = ProvisionActionMother.of(Collections.emptyList());
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("doesn't have a PROVISION user action");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenParameterIsNotDefinedInCatalog() {
+        var visibleParam = CatalogItemUserActionParameter.builder()
+                .name("known_param")
+                .visible(true)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(visibleParam))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("unknown_param", "value")
+        ));
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("unknown_param")
+                .hasMessageContaining("My Catalog Item");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenParameterIsNotVisible() {
+        var hiddenParam = CatalogItemUserActionParameter.builder()
+                .name("hidden_param")
+                .visible(false)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(hiddenParam))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("hidden_param", "value")
+        ));
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("hidden_param")
+                .hasMessageContaining("My Catalog Item");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_throwsWhenParameterVisibilityIsNull() {
+        var paramWithNullVisibility = CatalogItemUserActionParameter.builder()
+                .name("null_visibility_param")
+                .visible(null)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(paramWithNullVisibility))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("null_visibility_param", "value")
+        ));
+
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("null_visibility_param")
+                .hasMessageContaining("My Catalog Item");
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_succeedsWhenAllParametersAreVisible() {
+        var mandatoryVisible = CatalogItemUserActionParameter.builder()
+                .name("mandatory_param")
+                .visible(true)
+                .required(true)
+                .build();
+        var optionalVisible = CatalogItemUserActionParameter.builder()
+                .name("optional_param")
+                .visible(true)
+                .required(false)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(mandatoryVisible, optionalVisible))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("mandatory_param", "val1"),
+                ProvisionActionParameterMother.of("optional_param", "val2")
+        ));
+
+        assertThatNoException().isThrownBy(
+                () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_succeedsWhenOnlyVisibleOptionalParamProvided() {
+        var optionalVisible = CatalogItemUserActionParameter.builder()
+                .name("optional_param")
+                .visible(true)
+                .required(false)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(optionalVisible))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("optional_param", "value")
+        ));
+
+        assertThatNoException().isThrownBy(
+                () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_succeedsWhenNoParametersProvided() {
+        var visibleParam = CatalogItemUserActionParameter.builder()
+                .name("some_param")
+                .visible(true)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(visibleParam))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(Collections.emptyList());
+
+        assertThatNoException().isThrownBy(
+                () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 }

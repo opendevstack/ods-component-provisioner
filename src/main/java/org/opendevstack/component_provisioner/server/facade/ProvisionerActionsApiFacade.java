@@ -45,13 +45,14 @@ public class ProvisionerActionsApiFacade {
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
-
+        provisionerActionsApiValidator.validate(provisionAction);
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
+        provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
-        provisionerActionsApiValidator.validate(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
+        provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 

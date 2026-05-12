@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
+import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -19,7 +21,13 @@ import org.opendevstack.component_provisioner.server.services.restrictions.evalu
 import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.UserActionEntityRestrictions;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
@@ -36,7 +44,7 @@ public class ProvisionerActionsApiValidator {
     private final ProjectsInfoService projectsInfoService;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
-    public void validate(ProvisionAction provisionAction, CatalogItem catalogItem) {
+    public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
 
         var projectKey = getProjectKey(provisionAction);
@@ -48,7 +56,34 @@ public class ProvisionerActionsApiValidator {
         validateComponentIsNotProvisioned(projectKey, componentId);
 
         validateUserHasPermissionsToProvision(projectKey, accessToken);
+    }
 
+    public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
+        var catalogItemProvisionUserAction = Optional.ofNullable(catalogItem)
+                .map(CatalogItem::getUserActions)
+                .map(userActions -> userActions.stream()
+                        .filter(userAction -> ActionType.PROVISION.getValue().equals(userAction.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new InvalidRestEntityException("The catalog item doesn't have a PROVISION user action")))
+                .orElseThrow(() -> new InvalidRestEntityException("The catalog item does not exist, or doesn't have any user action"));
+
+        Map<String, CatalogItemUserActionParameter> catalogParamsByName = Optional.ofNullable(catalogItemProvisionUserAction.getParameters())
+                .orElse(Collections.emptyList())
+                .stream()
+                .collect(Collectors.toMap(CatalogItemUserActionParameter::getName, Function.identity()));
+
+        provisionAction.getParameters()
+                .forEach(param -> {
+                    var catalogParam = catalogParamsByName.get(param.getName());
+                    if (catalogParam == null || !Boolean.TRUE.equals(catalogParam.getVisible())) {
+                        throw new InvalidRestEntityException(
+                                String.format("The parameter '%s' is not allowed when provisioning '%s'.", param.getName(), catalogItem.getTitle())
+                        );
+                    }
+                });
+    }
+
+    public void validateMandatoryFields(ProvisionAction provisionAction, CatalogItem catalogItem) {
         mandatoryFieldsValidator.validate(provisionAction, catalogItem);
     }
 
