@@ -47,10 +47,10 @@ public class ProvisionerActionsApiFacade {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
-        var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
-        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
-        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(resolvedActionWrapper, catalogItem);
+        var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
         provisionerActionsApiValidator.validate(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
@@ -221,7 +221,7 @@ public class ProvisionerActionsApiFacade {
 
         // Only catalog_item_slug provided: resolve to catalog_item_id
         log.debug("Resolving catalog_item_id for catalog_item_slug: {}", catalogItemSlug);
-        var accessToken = wrapper.getAccessToken();
+        var accessToken = authenticationProvider.getAccessToken();
         CatalogItem catalogItem;
         try {
             catalogItem = componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug);

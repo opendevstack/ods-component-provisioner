@@ -250,7 +250,6 @@ class ProvisionerActionsApiFacadeTest {
     void triggerProvisionAction_givenNoCatalogItemIdNorSlug_thenThrowsBadRequestException() {
         // given
         var action = ProvisionActionMother.of(List.of(ProvisionActionParameterMother.of("project_key", "PRJ")));
-        setupSystemParameterMocks();
 
         // when / then
         assertThatThrownBy(() -> facade.triggerProvisionAction(action))
@@ -267,7 +266,6 @@ class ProvisionerActionsApiFacadeTest {
                 ProvisionActionParameterMother.of("catalog_item_id", "cat-id"),
                 ProvisionActionParameterMother.of("catalog_item_slug", "my-slug")
         ));
-        setupSystemParameterMocks();
 
         // when / then
         assertThatThrownBy(() -> facade.triggerProvisionAction(action))
@@ -383,7 +381,7 @@ class ProvisionerActionsApiFacadeTest {
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
                 ProvisionActionParameterMother.of("catalog_item_slug", catalogItemSlug)
         ));
-        setupSystemParameterMocks();
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug))
                 .thenThrow(new RestClientException("Not found"));
 
