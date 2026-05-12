@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.controllers.validators;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
@@ -8,8 +7,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -20,24 +17,13 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getCatalogItemId;
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class MandatoryFieldsValidator {
 
-    private final ComponentCatalogService componentCatalogService;
-    private final AuthenticationProvider authenticationProvider;
-
-    public void validate(ProvisionAction provisionAction) {
-        var projectKey = getProjectKey(provisionAction);
-        var catalogItemId = getCatalogItemId(provisionAction);
-        var accessToken = authenticationProvider.getAccessToken();
-
-        var catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
+    public void validate(ProvisionAction provisionAction, CatalogItem catalogItem) {
         var provisionUserAction = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
                 .map(userActions -> userActions.stream()

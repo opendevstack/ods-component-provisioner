@@ -45,12 +45,14 @@ public class ProvisionerActionsApiFacade {
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
-
+        provisionerActionsApiValidator.validate(provisionAction);
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
-        var systemParametersActionWrapper = addSystemParametersToAction(provisionActionWrapper);
-        var resolvedActionWrapper = resolveCatalogItemIdentifier(systemParametersActionWrapper);
-        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(resolvedActionWrapper);
-        provisionerActionsApiValidator.validate(requiredCatalogItemParamsWrapper.toProvisionAction());
+        var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
+        var catalogItem = fetchCatalogItem(resolvedActionWrapper);
+        provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
+        var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
+        var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
+        provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
@@ -220,7 +222,7 @@ public class ProvisionerActionsApiFacade {
 
         // Only catalog_item_slug provided: resolve to catalog_item_id
         log.debug("Resolving catalog_item_id for catalog_item_slug: {}", catalogItemSlug);
-        var accessToken = wrapper.getAccessToken();
+        var accessToken = authenticationProvider.getAccessToken();
         CatalogItem catalogItem;
         try {
             catalogItem = componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug);
@@ -256,13 +258,7 @@ public class ProvisionerActionsApiFacade {
         .orElse(provisionAction);
     }
 
-    public ProvisionActionWrapper addMandatoryCatalogItemParamsIfMissing(ProvisionActionWrapper provisionActionWrapper) {
-        var accessToken = authenticationProvider.getAccessToken();
-        var catalogItemId = provisionActionWrapper.getCatalogItemId();
-        var projectKey = provisionActionWrapper.getProjectKey();
-
-        CatalogItem catalogItem = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey);
-
+    public ProvisionActionWrapper addMandatoryCatalogItemParamsIfMissing(ProvisionActionWrapper provisionActionWrapper, CatalogItem catalogItem) {
         var mandatoryParams = Optional.ofNullable(catalogItem.getUserActions())
                 .orElse(List.of())
                 .stream()
@@ -292,6 +288,11 @@ public class ProvisionerActionsApiFacade {
 
         log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
         return res;
+    }
+
+    private CatalogItem fetchCatalogItem(ProvisionActionWrapper wrapper) {
+        var accessToken = authenticationProvider.getAccessToken();
+        return componentCatalogService.getCatalogItem(accessToken, wrapper.getCatalogItemId(), wrapper.getProjectKey());
     }
 
     private void applyDefaultValue(
