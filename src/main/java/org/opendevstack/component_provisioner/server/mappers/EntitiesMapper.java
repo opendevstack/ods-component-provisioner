@@ -23,6 +23,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
+import org.opendevstack.component_provisioner.server.services.model.AwxResultNames;
 
 import java.util.Collections;
 import java.util.List;
@@ -184,7 +185,7 @@ public class EntitiesMapper {
         return MAPPER.map(itemUserActionMsgDef, ProvisionerMessageDefinition.class);
     }
 
-    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, JobDetail jobDetail) {
+    public ProjectComponentProvisionStatus asProjectComponentProvisionStatus(String projectKey, ProjectComponentExtendedInfo projectComponentInfo, JobDetail workflowJob) {
         var parameters = Optional.ofNullable(projectComponentInfo.getParameters())
                 .orElseGet(Collections::emptyList)
                 .stream()
@@ -198,9 +199,9 @@ public class EntitiesMapper {
                 .catalogItemRef(projectComponentInfo.getCatalogItemRef())
                 .status(projectComponentInfo.getStatus())
                 .componentUrl(projectComponentInfo.getComponentUrl())
-                .workflowJobId(Optional.ofNullable(jobDetail).map(JobDetail::getId).map(Object::toString).orElse("N/A"))
-                .errorTask(Optional.ofNullable(jobDetail).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault("result_output", "N/A")).orElse("N/A"))
-                .errorMessage(Optional.ofNullable(jobDetail).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault("result_code", "N/A")).orElse("N/A"))
+                .workflowJobId(Optional.ofNullable(workflowJob).map(JobDetail::getId).map(Object::toString).orElse("N/A"))
+                .errorTask(Optional.ofNullable(workflowJob).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault(AwxResultNames.RESULT_OUTPUT.getValue(), "N/A")).orElse("N/A"))
+                .errorMessage(Optional.ofNullable(workflowJob).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault(AwxResultNames.RESULT_CODE.getValue(), "N/A")).orElse("N/A"))
                 .parameters(parameters)
                 .build();
     }
