@@ -199,7 +199,7 @@ public class EntitiesMapper {
                 .catalogItemRef(projectComponentInfo.getCatalogItemRef())
                 .status(projectComponentInfo.getStatus())
                 .componentUrl(projectComponentInfo.getComponentUrl())
-                .workflowJobId(Optional.ofNullable(workflowJob).map(JobDetail::getId).map(Object::toString).orElse("N/A"))
+                .workflowJobId(projectComponentInfo.getWorkflowJobId())
                 .errorTask(Optional.ofNullable(workflowJob).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault(AwxResultNames.RESULT_OUTPUT.getValue(), "N/A")).orElse("N/A"))
                 .errorMessage(Optional.ofNullable(workflowJob).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault(AwxResultNames.RESULT_CODE.getValue(), "N/A")).orElse("N/A"))
                 .parameters(parameters)

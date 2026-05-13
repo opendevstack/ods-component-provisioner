@@ -41,7 +41,7 @@ class EntitiesMapperTest {
         assertEquals("comp-123", result.getComponentId());
         assertEquals("PROVISIONED", result.getStatus());
         assertEquals("TEST_PROJECT", result.getProjectKey());
-        assertEquals("42", result.getWorkflowJobId());
+        assertEquals("12345", result.getWorkflowJobId());
         assertEquals("SUCCESS", result.getErrorMessage());
         assertEquals("Component provisioned successfully", result.getErrorTask());
     }
@@ -59,7 +59,7 @@ class EntitiesMapperTest {
                 projectKey, projectComponentInfo, jobDetail);
 
         // Assert
-        assertEquals("N/A", result.getWorkflowJobId());
+        assertEquals("12345", result.getWorkflowJobId());
     }
 
     @Test
