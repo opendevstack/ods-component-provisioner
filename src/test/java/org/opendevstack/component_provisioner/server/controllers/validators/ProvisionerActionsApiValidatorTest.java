@@ -463,4 +463,49 @@ class ProvisionerActionsApiValidatorTest {
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_succeedsWhenOnlyInternalParamsProvided() {
+        // catalog_item_id and project_key are not defined in catalog params but must always be allowed
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of())
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-123"),
+                ProvisionActionParameterMother.of("project_key", "pkey")
+        ));
+
+        assertThatNoException().isThrownBy(
+                () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
+    }
+
+    @Test
+    void validateReceivesOnlyVisibleParameters_succeedsWhenInternalParamsCombinedWithVisibleParams() {
+        // catalog_item_id and project_key mixed with regular visible params should still pass
+        var visibleParam = CatalogItemUserActionParameter.builder()
+                .name("visible_param")
+                .visible(true)
+                .build();
+        var userAction = CatalogItemUserAction.builder()
+                .id("PROVISION")
+                .parameters(List.of(visibleParam))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .title("My Catalog Item")
+                .userActions(List.of(userAction))
+                .build();
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("catalog_item_id", "cat-123"),
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("visible_param", "value")
+        ));
+
+        assertThatNoException().isThrownBy(
+                () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
+    }
 }

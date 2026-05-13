@@ -22,10 +22,10 @@ import org.opendevstack.component_provisioner.server.services.restrictions.evalu
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,6 +36,8 @@ import static org.opendevstack.component_provisioner.server.services.Provisioner
 @AllArgsConstructor
 @Slf4j
 public class ProvisionerActionsApiValidator {
+
+    private static final Set<String> INTERNAL_PROVISIONING_PARAMS = Set.of("catalog_item_id", "project_key");
 
     private final ComponentCatalogService componentCatalogService;
     private final AuthenticationProvider authenticationProvider;
@@ -74,6 +76,10 @@ public class ProvisionerActionsApiValidator {
 
         provisionAction.getParameters()
                 .forEach(param -> {
+                    // Some parameters are internally added and should be accepted despite not being defined in the items
+                    if (INTERNAL_PROVISIONING_PARAMS.contains(param.getName())) {
+                        return;
+                    }
                     var catalogParam = catalogParamsByName.get(param.getName());
                     if (catalogParam == null || !Boolean.TRUE.equals(catalogParam.getVisible())) {
                         throw new InvalidRestEntityException(
