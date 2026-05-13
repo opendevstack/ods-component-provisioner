@@ -19,12 +19,4 @@ public enum AwxResultNames {
         return String.valueOf(value);
     }
 
-     public static AwxResultNames fromValue(String value) {
-        for (AwxResultNames b : AwxResultNames.values()) {
-            if (b.value.equals(value)) {
-                return b;
-            }
-        }
-        throw new IllegalArgumentException("Unexpected value '" + value + "'");
-    }
 }
