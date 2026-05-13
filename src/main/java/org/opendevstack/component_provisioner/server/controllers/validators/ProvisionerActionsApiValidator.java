@@ -76,8 +76,7 @@ public class ProvisionerActionsApiValidator {
 
         provisionAction.getParameters()
                 .forEach(param -> {
-                    // Catalog item id is a parameter that despite not being configured in the item, it should be
-                    // supported since it's needed to know which item to provision
+                    // Some parameters are internally added and should be accepted despite not being defined in the items
                     if (INTERNAL_PROVISIONING_PARAMS.contains(param.getName())) {
                         return;
                     }
