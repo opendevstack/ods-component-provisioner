@@ -65,7 +65,7 @@ public class ApplicationPropertiesConfiguration {
     }
 
     @Bean("azureAdTokenServiceProps")
-    @ConfigurationProperties(prefix = "component-provisioner.azure.token.url")
+    @ConfigurationProperties(prefix = "component-provisioner.azure.token")
     public AzureAdTokenServiceProps azureAdTokenServiceProps() {
         return AzureAdTokenServiceProps.builder().build();
     }
@@ -123,7 +123,7 @@ public class ApplicationPropertiesConfiguration {
     @Builder // useful for unit testing
     @Data
     public static class AzureAdTokenServiceProps {
-        private String tokenRestUrl;
+        private String url;
     }
 
     @Builder // useful for unit testing
