@@ -65,7 +65,7 @@ public class ApplicationPropertiesConfiguration {
     }
 
     @Bean("azureAdTokenServiceProps")
-    @ConfigurationProperties(prefix = "component-provisioner.azure.token.url")
+    @ConfigurationProperties(prefix = "component-provisioner.azure.token")
     public AzureAdTokenServiceProps azureAdTokenServiceProps() {
         return AzureAdTokenServiceProps.builder().build();
     }
