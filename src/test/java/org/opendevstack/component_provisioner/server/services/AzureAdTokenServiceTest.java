@@ -43,7 +43,7 @@ class AzureAdTokenServiceTest {
 
         ResponseEntity<AzureTokenResponse> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
 
-        when(azureAdTokenServiceProps.getTokenRestUrl()).thenReturn("https://login.microsoftonline.com/example-tenant/oauth2/v2.0/token");
+        when(azureAdTokenServiceProps.getUrl()).thenReturn("https://login.microsoftonline.com/example-tenant/oauth2/v2.0/token");
 
         when(restTemplate.postForEntity(anyString(), any(), eq(AzureTokenResponse.class)))
                 .thenReturn(responseEntity);

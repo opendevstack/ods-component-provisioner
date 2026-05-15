@@ -30,7 +30,7 @@ public class AzureAdTokenService {
         HttpEntity<MultiValueMap<String, String>> request =
                 new HttpEntity<>(body, headers);
 
-        var tokenRestUrl = azureAdTokenServiceProps.getTokenRestUrl();
+        var tokenRestUrl = azureAdTokenServiceProps.getUrl();
 
         ResponseEntity<AzureTokenResponse> response =
                 restTemplate.postForEntity(

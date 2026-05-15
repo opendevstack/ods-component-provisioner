@@ -123,7 +123,7 @@ public class ApplicationPropertiesConfiguration {
     @Builder // useful for unit testing
     @Data
     public static class AzureAdTokenServiceProps {
-        private String tokenRestUrl;
+        private String url;
     }
 
     @Builder // useful for unit testing

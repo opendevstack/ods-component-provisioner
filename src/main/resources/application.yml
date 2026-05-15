@@ -50,7 +50,7 @@ user-actions:
 component-provisioner:
   azure:
     token:
-      tokenRestUrl: ${AZURE_TOKEN_URL}
+      url: ${AZURE_TOKEN_URL}
   caching:
     projects-info-services-cache:
       enabled: true
