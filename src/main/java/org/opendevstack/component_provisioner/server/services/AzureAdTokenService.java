@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.model.AzureTokenResponse;
 import org.springframework.http.*;
@@ -10,6 +11,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class AzureAdTokenService {
 
@@ -31,6 +33,8 @@ public class AzureAdTokenService {
                 new HttpEntity<>(body, headers);
 
         var tokenRestUrl = azureAdTokenServiceProps.getUrl();
+
+        log.debug("Requesting Azure AD access token from URL: {} and body: {}", tokenRestUrl, body);
 
         ResponseEntity<AzureTokenResponse> response =
                 restTemplate.postForEntity(
