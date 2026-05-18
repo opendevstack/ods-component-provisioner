@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -353,7 +354,7 @@ class ProvisionServiceTest {
         when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
-        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+        var result = provisionService.getDeletionWorkflowId(projectKey, componentId);
 
         // then
         assertThat(result).isEqualTo("WF_NAME");
@@ -373,10 +374,160 @@ class ProvisionServiceTest {
         when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
-        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+        var result = provisionService.getDeletionWorkflowId(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void givenProjectComponentWithDeletionWorkflowName_whenGetDeletionWorkflowNameIsCalled_thenReturnsWorkflowName() {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        var parameter = new ProjectComponentParameter();
+        parameter.setName("deletion_workflow_name");
+        parameter.setValues(List.of("WF_NAME"));
+
+        projectComponent.setParameters(List.of(parameter));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflowName(projectKey, componentId);
+
+        // then
+        assertThat(result).isEqualTo("WF_NAME");
+    }
+
+    @Test
+    void givenProjectComponentWithoutDeletionWorkflowName_whenGetDeletionWorkflowNameIsCalled_thenReturnsEmptyString() {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setParameters(List.of());
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflowName(projectKey, componentId);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenProjectComponentWithDeletionWorkflowTimeout_whenGetDeletionWorkflowTimeoutIsCalled_thenReturnsTimeout() {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        var parameter = new ProjectComponentParameter();
+        parameter.setName("deletion_workflow_timeout_seconds");
+        parameter.setValues(List.of("120"));
+
+        projectComponent.setParameters(List.of(parameter));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
+
+        // then
+        assertThat(result).isEqualTo("120");
+    }
+
+    @Test
+    void givenProjectComponentWithoutDeletionWorkflowTimeout_whenGetDeletionWorkflowTimeoutIsCalled_thenReturnsEmptyString() {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setParameters(List.of());
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        // when
+        var result = provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
+
+        // then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void givenProjectComponentWithAllDeletionWorkflowParams_whenEachGetterIsCalled_thenReturnsCorrectValues() {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var params = List.of(
+                ProjectComponentParameter.builder()
+                        .name("deletion_workflow")
+                        .values(List.of("WF_ID"))
+                        .build(),
+                ProjectComponentParameter.builder()
+                        .name("deletion_workflow_name")
+                        .values(List.of("WF_NAME"))
+                        .build(),
+                ProjectComponentParameter.builder()
+                        .name("deletion_workflow_timeout_seconds")
+                        .values(List.of("300"))
+                        .build()
+        );
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setParameters(params);
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        // when / then
+        assertThat(provisionService.getDeletionWorkflowId(projectKey, componentId)).isEqualTo("WF_ID");
+        assertThat(provisionService.getDeletionWorkflowName(projectKey, componentId)).isEqualTo("WF_NAME");
+        assertThat(provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId)).isEqualTo("300");
+    }
+
+    @Test
+    void givenParameterWithNullValues_whenGetDeletionWorkflowIsCalled_thenThrowsException() {
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        var parameter = new ProjectComponentParameter();
+        parameter.setName("deletion_workflow_name");
+        parameter.setValues(null);
+
+        var projectComponent = new ProjectComponentExtendedInfo();
+        projectComponent.setParameters(List.of(parameter));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+        when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .thenReturn(projectComponent);
+
+        assertThatThrownBy(() ->
+                provisionService.getDeletionWorkflowName(projectKey, componentId)
+        ).isInstanceOf(AssertionError.class);
+    }
+
 
 }

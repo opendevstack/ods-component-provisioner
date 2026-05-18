@@ -37,8 +37,11 @@ public class ProvisionResultsApiFacade {
 
     private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
 
-    @Value("${component-provisioner.support.create-incident-workflow-id:WORKFLOW}")
-    private String workflowId;
+    @Value("${component-provisioner.awx.workflows.create-incident-workflow-id}")
+    private String createIncidentWorkflowId;
+
+    @Value("${component-provisioner.awx.workflows.deletion-wrapper-workflow-id}")
+    private String deletionWrapperWorkflowId;
 
     public ProvisionResultsApiFacade(AwxService awxService,
                                      ComponentCatalogService componentCatalogService,
@@ -63,8 +66,10 @@ public class ProvisionResultsApiFacade {
 
         log.debug("Processing deletion. ProjectKey: {}, componentId: {}", projectKey, componentId);
 
-        String deletionWorkflow = getDeletionWorkflow(projectKey, componentId);
-        validate(projectKey, componentId, deletionWorkflow, createIncidentAction);
+        String deletionWorkflowId = getDeletionWorkflowId(projectKey, componentId);
+        String deletionWorkflowName = getDeletionWorkflowName(projectKey, componentId);
+        String deletionWorkflowTimeoutSeconds = getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
+        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName, createIncidentAction);
         addSystemParametersToAction(projectKey, createIncidentAction);
 
         var accessToken = authenticationProvider.getAccessToken();
@@ -83,7 +88,12 @@ public class ProvisionResultsApiFacade {
         var catalogItemId = provisionService.composeCatalogItemId(projectComponent);
         setDeletingState(projectKey, componentId, catalogItemId);
 
-        AwxResponse awxResponse = triggerDeletion(projectKey, componentId, deletionWorkflow, createIncidentAction);
+        var triggerDeletionWrapperWorkflow = Strings.isNotBlank(deletionWorkflowId) || Strings.isNotBlank(deletionWorkflowName);
+        if (triggerDeletionWrapperWorkflow) {
+            addDeletionWrapperWorkflowParameters(catalogItemId, deletionWorkflowId, deletionWorkflowName, deletionWorkflowTimeoutSeconds, createIncidentAction);
+        }
+
+        AwxResponse awxResponse = triggerDeletion(projectKey, componentId, triggerDeletionWrapperWorkflow, createIncidentAction);
 
         log.debug("AWX response: {}", awxResponse);
         return awxResponse;
@@ -94,7 +104,7 @@ public class ProvisionResultsApiFacade {
         return ProjectComponentStatus.DELETING.name().equals(projectComponent.getStatus());
     }
 
-    public AwxResponse triggerAwxWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
+    public AwxResponse triggerAwxIncidentWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
         var workflowJobLaunch = buildAwxWorkflowJobLaunch(projectKey, componentId, createIncidentAction);
 
         var result = awxService.triggerWorkflowJob(ActionType.CREATE_INCIDENT.getValue(), workflowJobLaunch);
@@ -110,8 +120,8 @@ public class ProvisionResultsApiFacade {
                 .build();
     }
 
-    public AwxResponse triggerAwxDeletionWorkflow(String projectKey, String componentId, String deletionWorkflow, CreateIncidentAction createIncidentAction) {
-        var workflowJobLaunch = buildAwxDeletionWorkflowJobLaunch(projectKey, componentId, deletionWorkflow, createIncidentAction);
+    public AwxResponse triggerAwxDeletionWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
+        var workflowJobLaunch = buildAwxDeletionWorkflowJobLaunch(projectKey, componentId, createIncidentAction);
 
         var result = awxService.triggerWorkflowJob(ActionType.DELETE.getValue(), workflowJobLaunch);
 
@@ -177,10 +187,8 @@ public class ProvisionResultsApiFacade {
     }
 
     public void deleteProvisioningStatus(String projectKey, String componentId) {
-
         provisionService.deleteProvisioningStatus(projectKey, componentId);
     }
-
 
     public void validate(String projectKey, String status, String catalogItemId, String catalogItemSlug) {
         validate(projectKey, status);
@@ -207,21 +215,21 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void validate(String projectKey, String componentId, String deletionWorkflow, CreateIncidentAction createIncidentAction) {
+    public void validate(String projectKey, String componentId, String deletionWorkflowId, String deletionWorkflowName, CreateIncidentAction createIncidentAction) {
         var isDeployed = getParameterString(createIncidentAction, "is_deployed");
         var changeNumber = getParameterString(createIncidentAction, "change_number");
         var reason = getParameterString(createIncidentAction, "reason");
 
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
-        var extraParamsAreEmtpy = StringUtils.isBlank(isDeployed)
+        var extraParamsAreEmpty = StringUtils.isBlank(isDeployed)
                 || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
         }
 
-        if (StringUtils.isBlank(deletionWorkflow) && extraParamsAreEmtpy) {
-            throw new InvalidRestEntityException("Without deletion_workflow, params is_deployed, change_number and reason are required.");
+        if (StringUtils.isBlank(deletionWorkflowId) && StringUtils.isBlank(deletionWorkflowName) && extraParamsAreEmpty) {
+            throw new InvalidRestEntityException("The component has no deletion_workflow nor deletion_workflow_name configured, so params is_deployed, change_number and reason are required in the request.");
         }
     }
 
@@ -253,6 +261,49 @@ public class ProvisionResultsApiFacade {
                 .forEach(action::addParametersItem);
     }
 
+    private void addDeletionWrapperWorkflowParameters(String catalogItemId,
+                                                      String customDeletionWorkflowId,
+                                                      String customDeletionWorkflowName,
+                                                      String deletionWorkflowTimeoutSeconds,
+                                                      CreateIncidentAction action) {
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("access_token")
+                .value(authenticationProvider.getAccessToken())
+                .type(ParameterType.STRING.getValue())
+                .build()
+        );
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("catalog_item_id")
+                .value(catalogItemId)
+                .type(ParameterType.STRING.getValue())
+                .build()
+        );
+        if (Strings.isNotBlank(customDeletionWorkflowId)) {
+            action.addParametersItem(CreateIncidentParameter.builder()
+                    .name("deletion_workflow_id")
+                    .value(customDeletionWorkflowId)
+                    .type(ParameterType.STRING.getValue())
+                    .build()
+            );
+        }
+        if (Strings.isNotBlank(customDeletionWorkflowName)) {
+            action.addParametersItem(CreateIncidentParameter.builder()
+                    .name("deletion_workflow_name")
+                    .value(customDeletionWorkflowName)
+                    .type(ParameterType.STRING.getValue())
+                    .build()
+            );
+        }
+        if (Strings.isNotBlank(deletionWorkflowTimeoutSeconds)) {
+            action.addParametersItem(CreateIncidentParameter.builder()
+                    .name("deletion_workflow_timeout_seconds")
+                    .value(deletionWorkflowTimeoutSeconds)
+                    .type(ParameterType.STRING.getValue())
+                    .build()
+            );
+        }
+    }
+
     private void addCallerParameter(CreateIncidentAction action) {
         var caller = authenticationProvider.getUserPrincipalName();
         action.addParametersItem(CreateIncidentParameter.builder()
@@ -275,23 +326,30 @@ public class ProvisionResultsApiFacade {
                 .orElse(Strings.EMPTY);
     }
 
-    public String getDeletionWorkflow(String projectKey, String componentId) {
-        return provisionService.getDeletionWorkflow(projectKey, componentId);
+    public String getDeletionWorkflowId(String projectKey, String componentId) {
+        return provisionService.getDeletionWorkflowId(projectKey, componentId);
+    }
+
+    public String getDeletionWorkflowName(String projectKey, String componentId) {
+        return provisionService.getDeletionWorkflowName(projectKey, componentId);
+    }
+
+    public String getDeletionWorkflowTimeoutSeconds(String projectKey, String componentId) {
+        return provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
 
-        addDefaultParameters(projectKey, componentId, workflowId, createIncidentAction);
+        addDefaultParameters(projectKey, componentId, createIncidentWorkflowId, createIncidentAction);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
     }
 
     private AwxWorkflowJobLaunch buildAwxDeletionWorkflowJobLaunch(String projectKey,
                                                                    String componentId,
-                                                                   String deletionWorkflow,
                                                                    CreateIncidentAction createIncidentAction) {
 
-        addDefaultParameters(projectKey, componentId, deletionWorkflow, createIncidentAction);
+        addDefaultParameters(projectKey, componentId, deletionWrapperWorkflowId, createIncidentAction);
         addSendOnDeletionParameters(projectKey, componentId, createIncidentAction);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
@@ -339,20 +397,15 @@ public class ProvisionResultsApiFacade {
     private AwxResponse triggerDeletion(
             String projectKey,
             String componentId,
-            String deletionWorkflow,
+            boolean triggerWrapperDeletionWorkflow,
             CreateIncidentAction action) {
 
-        if (StringUtils.isBlank(deletionWorkflow)) {
+        if (!triggerWrapperDeletionWorkflow) {
             log.debug("Workflow not found for deletion. Creating incident via AWX");
-            return triggerAwxWorkflow(projectKey, componentId, action);
+            return triggerAwxIncidentWorkflow(projectKey, componentId, action);
         }
 
-        log.debug("Workflow found for deletion. Triggering deletion workflow");
-        return triggerAwxDeletionWorkflow(
-                projectKey,
-                componentId,
-                deletionWorkflow,
-                action
-        );
+        log.debug("Workflow found for deletion. Triggering wrapper for custom deletion workflow");
+        return triggerAwxDeletionWorkflow(projectKey, componentId, action);
     }
 }
