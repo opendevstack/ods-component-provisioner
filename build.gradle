@@ -166,7 +166,7 @@ openApiGenerate {
             generateBuilders     : "true",
             useSpringBoot3       : "true",
             useSpringController  : "true",
-            useSwaggerUI         : "true",
+            useSwaggerUI         : "false",
             hideGenerationTimestamp: "true"
     ]
 }
