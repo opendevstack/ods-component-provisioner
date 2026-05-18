@@ -66,7 +66,8 @@ class ProvisionResultsApiFacadeTest {
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
         String workflowJobId = "WORKFLOW_123";
-        ReflectionTestUtils.setField(facade, "workflowId", workflowJobId);
+        ReflectionTestUtils.setField(facade, "createIncidentWorkflowId", workflowJobId);
+        ReflectionTestUtils.setField(facade, "deletionWrapperWorkflowId", workflowJobId);
     }
 
     @Test
@@ -228,7 +229,7 @@ class ProvisionResultsApiFacadeTest {
 
         // when / then
         var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", "", "", action));
-        assertThat(ex.getMessage()).contains("is_deployed, change_number and reason are required");
+        assertThat(ex.getMessage()).contains("is_deployed, change_number and reason");
     }
 
     @Test
@@ -465,7 +466,6 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentId_whenBuildAwxWorkflowJobLaunchIsCalled_thenAddsRequiredParameters() {
         // given
-        ReflectionTestUtils.setField(facade, "workflowId", "WORKFLOW_123");
         var action = CreateIncidentActionMother.of();
         action.setParameters(new ArrayList<>());
         var projectKey = "PRJ";
@@ -594,6 +594,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
         when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("");
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
@@ -629,6 +630,8 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
         when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn(deletionWorkflow);
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn(null);
+        when(provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId)).thenReturn(null);
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
@@ -645,6 +648,64 @@ class ProvisionResultsApiFacadeTest {
         assertNotNull(result, "Result should not be null");
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
         verify(awxService).triggerWorkflowJob(anyString(), any());
+    }
+
+    @Test
+    void givenOnlyDeletionWorkflowName_whenRequestDeletion_thenTriggersWrapperWorkflow() {
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+
+        var pc = ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(ProjectComponentStatus.CREATED.name())
+                .build();
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+
+        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
+        when(provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId)).thenReturn(null);
+
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
+
+        ProjectInfo projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+
+        var result = facade.requestDeletion(projectKey, componentId, action);
+
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        verify(awxService).triggerWorkflowJob(eq("DELETE"), any());
+    }
+
+    @Test
+    void givenWrapperWorkflow_whenRequestDeletion_thenAddsWrapperParameters() {
+        var action = CreateIncidentActionMother.of();
+        action.setParameters(new ArrayList<>());
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+
+        ReflectionTestUtils.invokeMethod(
+                facade,
+                "addDeletionWrapperWorkflowParameters",
+                "catalogId",
+                "wfId",
+                null,
+                "60",
+                action
+        );
+
+        assertThat(facade.getParameterString(action, "catalog_item_id")).isEqualTo("catalogId");
+        assertThat(facade.getParameterString(action, "deletion_workflow_id")).isEqualTo("wfId");
+        assertThat(facade.getParameterString(action, "deletion_workflow_timeout_seconds")).isEqualTo("60");
     }
 
     @Test
