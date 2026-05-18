@@ -37,10 +37,10 @@ public class ProvisionResultsApiFacade {
 
     private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
 
-    @Value("${component-provisioner.awx.workflows.create-incident-workflow-id:WORKFLOW}")
+    @Value("${component-provisioner.awx.workflows.create-incident-workflow-id}")
     private String createIncidentWorkflowId;
 
-    @Value("${component-provisioner.awx.workflows.deletion-wrapper-workflow-id:WORKFLOW}")
+    @Value("${component-provisioner.awx.workflows.deletion-wrapper-workflow-id}")
     private String deletionWrapperWorkflowId;
 
     public ProvisionResultsApiFacade(AwxService awxService,
