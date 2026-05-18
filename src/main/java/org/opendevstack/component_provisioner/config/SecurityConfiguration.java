@@ -67,7 +67,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain aadForEverythingElse(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                        .requestMatchers(
+                                "/api-docs/**",
+                                "/v3/api-docs/**"
+                        )
                             .permitAll()
                         .requestMatchers(
                                 "/v1/message-definitions/**",
