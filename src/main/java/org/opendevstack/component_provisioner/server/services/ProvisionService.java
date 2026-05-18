@@ -28,7 +28,9 @@ import static org.opendevstack.component_provisioner.server.services.common.IdEn
 @Slf4j
 public class ProvisionService {
 
-    private static final String DELETION_WORKFLOW = "deletion_workflow";
+    private static final String DELETION_WORKFLOW_ID = "deletion_workflow";
+    private static final String DELETION_WORKFLOW_NAME = "deletion_workflow_name";
+    private static final String DELETION_WORKFLOW_TIMEOUT = "deletion_workflow_timeout_seconds";
 
     private final ApiClientsBuilder apiClientsBuilder;
     private final ComponentCatalogService componentCatalogService;
@@ -97,14 +99,40 @@ public class ProvisionService {
         return extractDeletionParameters(catalogItem, projectComponent, ActionType.PROVISION.getValue());
     }
 
-    public String getDeletionWorkflow(String projectKey, String componentId) {
+    public String getDeletionWorkflowId(String projectKey, String componentId) {
         var projectComponent = componentCatalogService.getProjectComponentById(authenticationProvider.getAccessToken(), projectKey, componentId);
         var parameterMap = getProjectComponentParameterMap(projectComponent);
 
-        if (parameterMap.containsKey(DELETION_WORKFLOW)) {
-            var deletionWorkflow = parameterMap.get(DELETION_WORKFLOW);
-            assert deletionWorkflow.getValues() != null;
-            return deletionWorkflow.getValues().getFirst();
+        if (parameterMap.containsKey(DELETION_WORKFLOW_ID)) {
+            var deletionWorkflowId = parameterMap.get(DELETION_WORKFLOW_ID);
+            assert deletionWorkflowId.getValues() != null;
+            return deletionWorkflowId.getValues().getFirst();
+        }
+
+        return "";
+    }
+
+    public String getDeletionWorkflowName(String projectKey, String componentId) {
+        var projectComponent = componentCatalogService.getProjectComponentById(authenticationProvider.getAccessToken(), projectKey, componentId);
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW_NAME)) {
+            var deletionWorkflowName = parameterMap.get(DELETION_WORKFLOW_NAME);
+            assert deletionWorkflowName.getValues() != null;
+            return deletionWorkflowName.getValues().getFirst();
+        }
+
+        return "";
+    }
+
+    public String getDeletionWorkflowTimeoutSeconds(String projectKey, String componentId) {
+        var projectComponent = componentCatalogService.getProjectComponentById(authenticationProvider.getAccessToken(), projectKey, componentId);
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW_TIMEOUT)) {
+            var deletionWorkflowName = parameterMap.get(DELETION_WORKFLOW_TIMEOUT);
+            assert deletionWorkflowName.getValues() != null;
+            return deletionWorkflowName.getValues().getFirst();
         }
 
         return "";

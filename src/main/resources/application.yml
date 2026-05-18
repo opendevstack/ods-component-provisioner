@@ -68,6 +68,9 @@ component-provisioner:
       base-rest-url: ${AWX_SERVICE_BASE_REST_URL}
       username: ${AWX_SERVICE_USERNAME}
       password: ${AWX_SERVICE_PASSWORD}
+    workflows:
+      create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
+      deletion-wrapper-workflow-id: ${DELETION_WRAPPER_WORKFLOW_ID}
   component-catalog:
     service:
       base-rest-url: ${COMPONENT_CATALOG_SERVICE_BASE_REST_URL}
@@ -83,8 +86,6 @@ component-provisioner:
       client_secret: ${DEVSTACK_MARKETPLACE_API_CLIENT_SECRET}
       scope: ${ODS_API_SERVICE_SERVICE_PARAMS_SCOPE}
       override: ${ODS_API_SERVICE_SERVICE_PARAMS_OVERRIDE}
-  support:
-    create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
   parameters:
     blacklist: ${SENSITIVE_PARAMETERS_BLACKLIST}
 

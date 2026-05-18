@@ -70,7 +70,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenTriggerAwxWorkflowIsCalled_thenMapsResponseCorrectly() {
+    void givenAProjectKeyAndAComponentId_whenTriggerAwxIncidentWorkflowIsCalled_thenMapsResponseCorrectly() {
         // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
@@ -82,7 +82,7 @@ class ProvisionResultsApiFacadeTest {
         when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(response);
 
         // when
-        var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
+        var result = facade.triggerAwxIncidentWorkflow("PRJ", "CID", action);
 
         // then
         assertNotNull(result, "Result should not be null");
@@ -171,8 +171,8 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
 
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", action));
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, "", action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", "", action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, "", "", action));
     }
 
     @Test
@@ -227,12 +227,12 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
 
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", "", action));
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", "", "", action));
         assertThat(ex.getMessage()).contains("is_deployed, change_number and reason are required");
     }
 
     @Test
-    void givenAnEmptyAwxResponse_whenTriggerAwxWorkflowIsCalled_thenReturnsNullBody() {
+    void givenAnEmptyAwxResponse_whenTriggerAwxIncidentWorkflowIsCalled_thenReturnsNullBody() {
         // given
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
@@ -241,7 +241,7 @@ class ProvisionResultsApiFacadeTest {
         when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.ACCEPTED, Optional.empty()));
 
         // when
-        var result = facade.triggerAwxWorkflow("PRJ", "CID", action);
+        var result = facade.triggerAwxIncidentWorkflow("PRJ", "CID", action);
 
         // then
         assertNotNull(result, "Result should not be null");
@@ -459,7 +459,7 @@ class ProvisionResultsApiFacadeTest {
         var action = CreateIncidentActionMother.of();
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", action));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", "", action));
     }
 
     @Test
@@ -564,7 +564,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -593,7 +593,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
@@ -628,7 +628,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn(deletionWorkflow);
+        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn(deletionWorkflow);
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
@@ -703,7 +703,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflow(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));

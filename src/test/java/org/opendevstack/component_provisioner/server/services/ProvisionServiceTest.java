@@ -353,7 +353,7 @@ class ProvisionServiceTest {
         when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
-        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+        var result = provisionService.getDeletionWorkflowId(projectKey, componentId);
 
         // then
         assertThat(result).isEqualTo("WF_NAME");
@@ -373,7 +373,7 @@ class ProvisionServiceTest {
         when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId)).thenReturn(projectComponent);
 
         // when
-        var result = provisionService.getDeletionWorkflow(projectKey, componentId);
+        var result = provisionService.getDeletionWorkflowId(projectKey, componentId);
 
         // then
         assertThat(result).isEmpty();
