@@ -72,7 +72,8 @@ public class ReplaceParametersService {
             if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
                 log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
 
-                if (entry.getValue().getType().equals(ParameterType.STRING.getValue())) {
+                if (entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
+                        entry.getValue().getType().equals(ParameterType.SINGLELIST.getValue())) {
                     var parameter = ProvisionActionParameter.builder()
                             .name(entry.getValue().getName())
                             .type(entry.getValue().getType())
@@ -81,7 +82,7 @@ public class ReplaceParametersService {
 
                     updatedParameters.put(entry.getKey(), parameter);
                 } else {
-                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of type String. Only type string are supported for overriding from ODS API.");
+                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of valid type. Only type string and singlelist are supported for overriding from ODS API.");
                 }
             } else {
                 log.debug("Found parameter, but not in ods, keeping it as it is: {}", entry.getKey());
