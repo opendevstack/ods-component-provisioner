@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.ods_api_server.v1.model.CreateProjectResponse;
-import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapperMother;
 import org.opendevstack.component_provisioner.server.facade.exceptions.IllegalConfigurationException;
@@ -167,6 +166,6 @@ class ReplaceParametersServiceTest {
         // when & then
         Assertions.assertThatThrownBy(() -> replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper))
                 .isInstanceOf(IllegalConfigurationException.class)
-                .hasMessageContaining("not of type String");
+                .hasMessageContaining("Only type string and singlelist are supported");
     }
 }
