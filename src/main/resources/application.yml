@@ -70,6 +70,8 @@ component-provisioner:
       password: ${AWX_SERVICE_PASSWORD}
     workflows:
       create-incident-workflow-id: ${CREATE_INCIDENT_WORKFLOW_ID}
+      marketplace-default-provision-workflow-id: ${MARKETPLACE_DEFAULT_PROVISION_WORKFLOW_ID}
+      provision-wrapper-workflow-id: ${PROVISION_WRAPPER_WORKFLOW_ID}
       deletion-wrapper-workflow-id: ${DELETION_WRAPPER_WORKFLOW_ID}
   component-catalog:
     service:

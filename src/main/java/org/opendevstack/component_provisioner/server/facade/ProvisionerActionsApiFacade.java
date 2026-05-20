@@ -1,6 +1,6 @@
 package org.opendevstack.component_provisioner.server.facade;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
@@ -20,6 +20,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
@@ -30,7 +31,7 @@ import java.util.Optional;
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class ProvisionerActionsApiFacade {
 
@@ -42,6 +43,12 @@ public class ProvisionerActionsApiFacade {
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
+
+    @Value("${component-provisioner.awx.workflows.provision-wrapper-workflow-id}")
+    private String provisionWrapperWorkflowId;
+
+    @Value("${component-provisioner.awx.workflows.marketplace-default-provision-workflow-id}")
+    private String defaultProvisionWorkflowId;
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
@@ -108,10 +115,11 @@ public class ProvisionerActionsApiFacade {
         var locationProvisionWrapper = addClusterLocationToAction(provisionActionWrapper);
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
+        var addProvisionWorkflowWrapper = addProvisionWorkflowWrapper(bearerTokenWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
+        log.debug("Added system parameters to provision action: '{}'", addProvisionWorkflowWrapper);
 
-        return bearerTokenWrapper;
+        return addProvisionWorkflowWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
@@ -187,6 +195,23 @@ public class ProvisionerActionsApiFacade {
                 .build();
 
         return provisionActionWrapper.cloneWithParameters(bearerTokenParameter);
+    }
+
+    private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {
+        var workflowToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse(defaultProvisionWorkflowId);
+        var provisionActionWrapperWithoutWorkflow = provisionActionWrapper.cloneWithoutParameterByName("workflow");
+        return provisionActionWrapperWithoutWorkflow.cloneWithParameters(List.of(
+                ProvisionActionParameter.builder()
+                        .name("provision_workflow_id")
+                        .type(ParameterType.STRING.getValue())
+                        .value(workflowToDispatch)
+                        .build(),
+                ProvisionActionParameter.builder()
+                        .name("workflow")
+                        .type(ParameterType.STRING.getValue())
+                        .value(provisionWrapperWorkflowId)
+                        .build()
+        ));
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(ProvisionAction provisionAction) {

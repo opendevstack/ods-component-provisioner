@@ -82,6 +82,10 @@ public class ProvisionActionWrapper {
         return getParameterValue("access_token");
     }
 
+    public String getWorkflow() {
+        return getParameterValue("workflow");
+    }
+
     public String getParameterValue(String parameterName) {
         var parameter = parametersMap.get(parameterName);
         return parameter != null ? parameter.getValue().toString() : null;
