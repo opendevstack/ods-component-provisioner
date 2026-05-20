@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.ods_api_server.v1.model.CreateProjectResponse;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -44,7 +46,10 @@ public class OdsApiService {
 
             return response;
         } catch (HttpClientErrorException e) {
-            if (e.getStatusCode().is4xxClientError()) {
+            if (HttpStatus.FORBIDDEN == e.getStatusCode()) {
+                log.error("Invalid credentials while calling ODS API for project '{}': {}", projectKey, e.getMessage());
+                throw e;
+            } else if (HttpStatus.NOT_FOUND == e.getStatusCode()) {
                 log.warn("Project with key '{}' not found in ODS API", projectKey);
                 return null;
             } else {
