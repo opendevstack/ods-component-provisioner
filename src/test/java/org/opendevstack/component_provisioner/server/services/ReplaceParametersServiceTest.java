@@ -117,6 +117,40 @@ class ReplaceParametersServiceTest {
     }
 
     @Test
+    void givenOnlySomeParamsConfiguredToOverride_whenReplaceProvisioningParametersFromOdsApi_thenOnlyConfiguredParamsAreReplaced() {
+        // given
+        initializeService("project_name");
+        ProvisionActionParameter paramToOverride = ProvisionActionParameterMother.of("project_name", "oldValue");
+        ProvisionActionParameter paramNotConfigured = ProvisionActionParameterMother.of("project_description", "descValue");
+
+        var projectKey = "projectKey";
+        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
+        var params = Map.of(
+                "project_name", paramToOverride,
+                "project_description", paramNotConfigured,
+                "project_key", projectKeyParam
+        );
+
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("project_name", params);
+
+        var projectData = new CreateProjectResponse();
+        Map<String, Object> odsApiValues = Map.of(
+                "project_name", "newValue",
+                "project_description", "newDescription"
+        );
+
+        when(odsApiService.getProject(anyString())).thenReturn(projectData);
+        when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
+
+        // when
+        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
+
+        // then: only the configured "project_name" should be replaced, "project_description" must remain original
+        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
+        Assertions.assertThat(result.getParametersMap().get("project_description").getValue()).isEqualTo("descValue");
+    }
+
+    @Test
     void givenParameterNotInOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenKeepsOriginalValue() {
         // given
         initializeService("project_name");
@@ -167,5 +201,33 @@ class ReplaceParametersServiceTest {
         Assertions.assertThatThrownBy(() -> replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper))
                 .isInstanceOf(IllegalConfigurationException.class)
                 .hasMessageContaining("Only type string and singlelist are supported");
+    }
+
+    @Test
+    void givenEmptyValueFromOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenKeepsOriginalValue() {
+        // given
+        initializeService("project_name");
+        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("project_name", "originalValue");
+
+        var projectKey = "projectKey";
+        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
+        var params = Map.of(
+                "project_name", parameter,
+                "project_key", projectKeyParam
+        );
+
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("project_name", params);
+
+        var projectData = new CreateProjectResponse();
+        Map<String, Object> odsApiValues = Map.of("project_name", "");
+
+        when(odsApiService.getProject(anyString())).thenReturn(projectData);
+        when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
+
+        // when
+        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
+
+        // then
+        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
     }
 }

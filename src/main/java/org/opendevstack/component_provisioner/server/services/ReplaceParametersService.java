@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.facade.exceptions.IllegalConfigurationException;
@@ -59,21 +60,30 @@ public class ReplaceParametersService {
 
         var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
         var parametersMap = provisionActionWrapper.getParametersMap();
-        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap, paramsToOverrideFromOdsApi);
 
         return provisionActionWrapper.cloneWithParameters(updatedParametersMap.values());
     }
 
-    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
+    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap, List<String> paramsToOverrideFromOdsApi) {
         Map<String, ProvisionActionParameter> updatedParameters = new HashMap<>();
 
         // Iterate over all parameters and set update value if required, otherwise keep the same value
         for (Map.Entry<String, ProvisionActionParameter> entry : parametersMap.entrySet()) {
-            if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
+            var odsContainsParameter = odsApiSnakeCaseValuesMap.containsKey(entry.getKey());
+            var isAParamToBeOverriddenFromOds = paramsToOverrideFromOdsApi.contains(entry.getKey());
+
+            if (odsContainsParameter && isAParamToBeOverriddenFromOds) {
                 log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
 
-                if (entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
-                        entry.getValue().getType().equals(ParameterType.SINGLELIST.getValue())) {
+                var properType = entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
+                        entry.getValue().getType().equals(ParameterType.SINGLELIST.getValue());
+
+                var emptyOdsValue = StringUtils.isAllBlank(odsApiSnakeCaseValuesMap.get(entry.getKey()).toString());
+
+                if (!properType) {
+                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of valid type. Only type string and singlelist are supported for overriding from ODS API.");
+                } else if (!emptyOdsValue) {
                     var parameter = ProvisionActionParameter.builder()
                             .name(entry.getValue().getName())
                             .type(entry.getValue().getType())
@@ -82,7 +92,15 @@ public class ReplaceParametersService {
 
                     updatedParameters.put(entry.getKey(), parameter);
                 } else {
-                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of valid type. Only type string and singlelist are supported for overriding from ODS API.");
+                    log.debug("Found parameter, but with empty value, keeping it as it is: {}", entry.getKey());
+
+                    var parameter = ProvisionActionParameter.builder()
+                            .name(entry.getValue().getName())
+                            .type(entry.getValue().getType())
+                            .value(entry.getValue().getValue())
+                            .build();
+
+                    updatedParameters.put(entry.getKey(), parameter);
                 }
             } else {
                 log.debug("Found parameter, but not in ods, keeping it as it is: {}", entry.getKey());
