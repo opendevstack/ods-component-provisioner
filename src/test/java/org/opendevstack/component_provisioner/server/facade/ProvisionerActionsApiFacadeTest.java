@@ -673,32 +673,6 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_whenNoWorkflowProvided_thenUsesDefaultProvisionWorkflowId() {
-        // given
-        var wrapper = ProvisionActionWrapperMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "PRJ"),
-                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
-        ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn("token");
-        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
-
-        var projectInfo = new ProjectInfo();
-        projectInfo.setClusters(List.of("cluster"));
-        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
-
-        ReflectionTestUtils.setField(facade, "defaultProvisionWorkflowId", "DEFAULT_WF");
-        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
-
-        // when
-        var result = facade.addSystemParametersToAction(wrapper);
-
-        // then
-        assertThat(result.getParameterValue("workflow")).isEqualTo("WRAPPER_WF");
-        assertThat(result.getParameterValue("provision_workflow_id")).isEqualTo("DEFAULT_WF");
-    }
-
-    @Test
     void addSystemParametersToAction_whenWorkflowNameProvided_thenUsesProvisionWorkflowName() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(

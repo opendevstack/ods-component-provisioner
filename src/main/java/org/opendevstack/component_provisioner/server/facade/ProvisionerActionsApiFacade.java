@@ -47,9 +47,6 @@ public class ProvisionerActionsApiFacade {
     @Value("${component-provisioner.awx.workflows.provision-wrapper-workflow-id}")
     private String provisionWrapperWorkflowId;
 
-    @Value("${component-provisioner.awx.workflows.marketplace-default-provision-workflow-id}")
-    private String defaultProvisionWorkflowId;
-
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
         provisionerActionsApiValidator.validate(provisionAction);
@@ -198,7 +195,7 @@ public class ProvisionerActionsApiFacade {
     }
 
     private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {
-        var workflowIdToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse(defaultProvisionWorkflowId);
+        var workflowIdToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse("");
         var workflowNameToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflowName()).orElse("");
         var workflowTimeout = Optional.ofNullable(provisionActionWrapper.getParameterValue("workflow_timeout_seconds")).orElse("");
 
