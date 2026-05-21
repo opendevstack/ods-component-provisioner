@@ -51,16 +51,18 @@ public class ProvisionerActionsApiValidator {
         var projectKey = getProjectKey(provisionAction);
         var componentId = getComponentId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
-        var workflow = getWorkflow(provisionAction);
-        var workflowName = getWorkflowName(provisionAction);
 
         validateInputParams(projectKey, accessToken, componentId);
 
         validateComponentIsNotProvisioned(projectKey, componentId);
 
-        validateWorkflowPresence(workflow, workflowName);
-
         validateUserHasPermissionsToProvision(projectKey, accessToken);
+    }
+
+    public void validateActionHasWorkflowDefined(ProvisionAction provisionAction) {
+        var workflow = getWorkflow(provisionAction);
+        var workflowName = getWorkflowName(provisionAction);
+        validateWorkflowPresence(workflow, workflowName);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
