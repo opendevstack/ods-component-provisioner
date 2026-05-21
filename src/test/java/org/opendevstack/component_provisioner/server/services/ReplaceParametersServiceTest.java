@@ -168,4 +168,32 @@ class ReplaceParametersServiceTest {
                 .isInstanceOf(IllegalConfigurationException.class)
                 .hasMessageContaining("Only type string and singlelist are supported");
     }
+
+    @Test
+    void givenEmptyValueFromOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenKeepsOriginalValue() {
+        // given
+        initializeService("project_name");
+        ProvisionActionParameter parameter = ProvisionActionParameterMother.of("project_name", "originalValue");
+
+        var projectKey = "projectKey";
+        var projectKeyParam = ProvisionActionParameterMother.of("project_key", projectKey);
+        var params = Map.of(
+                "project_name", parameter,
+                "project_key", projectKeyParam
+        );
+
+        ProvisionActionWrapper wrapper = ProvisionActionWrapperMother.of("project_name", params);
+
+        var projectData = new CreateProjectResponse();
+        Map<String, Object> odsApiValues = Map.of("project_name", "");
+
+        when(odsApiService.getProject(anyString())).thenReturn(projectData);
+        when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
+
+        // when
+        ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
+
+        // then
+        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
+    }
 }
