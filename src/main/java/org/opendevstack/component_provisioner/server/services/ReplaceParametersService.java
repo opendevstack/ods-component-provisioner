@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.facade.exceptions.IllegalConfigurationException;
@@ -72,8 +73,14 @@ public class ReplaceParametersService {
             if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
                 log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
 
-                if (entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
-                        entry.getValue().getType().equals(ParameterType.SINGLELIST.getValue())) {
+                var properType = entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
+                        entry.getValue().getType().equals(ParameterType.SINGLELIST.getValue());
+
+                var emptyOdsValue = StringUtils.isAllBlank(odsApiSnakeCaseValuesMap.get(entry.getKey()).toString());
+
+                if (!properType) {
+                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of valid type. Only type string and singlelist are supported for overriding from ODS API.");
+                } else if (!emptyOdsValue) {
                     var parameter = ProvisionActionParameter.builder()
                             .name(entry.getValue().getName())
                             .type(entry.getValue().getType())
@@ -82,7 +89,15 @@ public class ReplaceParametersService {
 
                     updatedParameters.put(entry.getKey(), parameter);
                 } else {
-                    throw new IllegalConfigurationException("Parameter " + entry.getKey() + " is not of valid type. Only type string and singlelist are supported for overriding from ODS API.");
+                    log.debug("Found parameter, but with empty value, keeping it as it is: {}", entry.getKey());
+
+                    var parameter = ProvisionActionParameter.builder()
+                            .name(entry.getValue().getName())
+                            .type(entry.getValue().getType())
+                            .value(entry.getValue().getValue())
+                            .build();
+
+                    updatedParameters.put(entry.getKey(), parameter);
                 }
             } else {
                 log.debug("Found parameter, but not in ods, keeping it as it is: {}", entry.getKey());
