@@ -198,20 +198,49 @@ public class ProvisionerActionsApiFacade {
     }
 
     private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {
-        var workflowToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse(defaultProvisionWorkflowId);
-        var provisionActionWrapperWithoutWorkflow = provisionActionWrapper.cloneWithoutParameterByName("workflow");
-        return provisionActionWrapperWithoutWorkflow.cloneWithParameters(List.of(
-                ProvisionActionParameter.builder()
-                        .name("provision_workflow_id")
-                        .type(ParameterType.STRING.getValue())
-                        .value(workflowToDispatch)
-                        .build(),
+        var workflowIdToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse(defaultProvisionWorkflowId);
+        var workflowNameToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflowName()).orElse("");
+        var workflowTimeout = Optional.ofNullable(provisionActionWrapper.getParameterValue("workflow_timeout_seconds")).orElse("");
+
+        var provisionActionWrapperWithoutWorkflowInfo = provisionActionWrapper.cloneWithoutParameterByName("workflow").cloneWithoutParameterByName("workflow_name");
+
+        var parametersToAdd = new java.util.ArrayList<>(List.of(
                 ProvisionActionParameter.builder()
                         .name("workflow")
                         .type(ParameterType.STRING.getValue())
                         .value(provisionWrapperWorkflowId)
                         .build()
         ));
+
+        // We should prioritize the workflow name introduced
+        if (StringUtils.isNotBlank(workflowNameToDispatch)) {
+            parametersToAdd.add(
+                    ProvisionActionParameter.builder()
+                            .name("provision_workflow_name")
+                            .type(ParameterType.STRING.getValue())
+                            .value(workflowNameToDispatch)
+                            .build()
+            );
+        } else {
+            parametersToAdd.add(
+                    ProvisionActionParameter.builder()
+                            .name("provision_workflow_id")
+                            .type(ParameterType.STRING.getValue())
+                            .value(workflowIdToDispatch)
+                            .build()
+            );
+        }
+        if (StringUtils.isNotBlank(workflowTimeout)) {
+            parametersToAdd.add(
+                    ProvisionActionParameter.builder()
+                            .name("provision_workflow_timeout_seconds")
+                            .type(ParameterType.STRING.getValue())
+                            .value(workflowTimeout)
+                            .build()
+            );
+        }
+
+        return provisionActionWrapperWithoutWorkflowInfo.cloneWithParameters(parametersToAdd);
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(ProvisionAction provisionAction) {
