@@ -202,7 +202,10 @@ public class ProvisionerActionsApiFacade {
         var workflowNameToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflowName()).orElse("");
         var workflowTimeout = Optional.ofNullable(provisionActionWrapper.getParameterValue("workflow_timeout_seconds")).orElse("");
 
-        var provisionActionWrapperWithoutWorkflowInfo = provisionActionWrapper.cloneWithoutParameterByName("workflow").cloneWithoutParameterByName("workflow_name");
+        var provisionActionWrapperWithoutWorkflowInfo = provisionActionWrapper
+                .cloneWithoutParameterByName("workflow")
+                .cloneWithoutParameterByName("workflow_name")
+                .cloneWithoutParameterByName("workflow_timeout_seconds");
 
         var parametersToAdd = new java.util.ArrayList<>(List.of(
                 ProvisionActionParameter.builder()

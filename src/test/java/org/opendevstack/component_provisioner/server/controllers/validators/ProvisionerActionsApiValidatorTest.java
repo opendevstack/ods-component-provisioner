@@ -107,7 +107,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("project_key", projectKey),
                 ProvisionActionParameterMother.of("component_id", componentId),
                 ProvisionActionParameterMother.of("catalog_item_id", "111"),
-                ProvisionActionParameterMother.of("access_token", accessToken)
+                ProvisionActionParameterMother.of("access_token", accessToken),
+                ProvisionActionParameterMother.of("workflow", "123")
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
@@ -144,7 +145,8 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("project_key", projectKey),
                 ProvisionActionParameterMother.of("component_id", componentId),
                 ProvisionActionParameterMother.of("catalog_item_id", "111"),
-                ProvisionActionParameterMother.of("access_token", accessToken)
+                ProvisionActionParameterMother.of("access_token", accessToken),
+                ProvisionActionParameterMother.of("workflow", "123")
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
@@ -250,10 +252,6 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any())).thenThrow(new RuntimeException("Service error"));
-
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
@@ -268,9 +266,6 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups(any())).thenReturn(List.of("group"));
-        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenThrow(new RuntimeException("Evaluator error"));
 
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
@@ -507,5 +502,84 @@ class ProvisionerActionsApiValidatorTest {
 
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
+    }
+
+    @Test
+    void validate_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+
+        // when / then
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_succeeds_whenWorkflowProvided() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken"),
+                ProvisionActionParameterMother.of("workflow", "wf-123")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
+        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
+
+        // then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_succeeds_whenWorkflowNameProvided() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken"),
+                ProvisionActionParameterMother.of("workflow_name", "wf-name")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
+        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
+
+        // then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
+    void validate_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken"),
+                ProvisionActionParameterMother.of("workflow", "wf-123"),
+                ProvisionActionParameterMother.of("workflow_name", "wf-name")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
+        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
+        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
+        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
+
+        // then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
     }
 }

@@ -40,6 +40,7 @@ import org.opendevstack.component_provisioner.server.services.ReplaceParametersS
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
@@ -671,4 +672,110 @@ class ProvisionerActionsApiFacadeTest {
         assertThat(addedParam.getValue()).isEqualTo(List.of("v1", "v2"));
     }
 
+    @Test
+    void addSystemParametersToAction_whenNoWorkflowProvided_thenUsesDefaultProvisionWorkflowId() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
+        ));
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
+
+        ReflectionTestUtils.setField(facade, "defaultProvisionWorkflowId", "DEFAULT_WF");
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("workflow")).isEqualTo("WRAPPER_WF");
+        assertThat(result.getParameterValue("provision_workflow_id")).isEqualTo("DEFAULT_WF");
+    }
+
+    @Test
+    void addSystemParametersToAction_whenWorkflowNameProvided_thenUsesProvisionWorkflowName() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow_name", "custom-wf")
+        ));
+
+        setupSystemParameterMocks();
+
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("provision_workflow_name")).isEqualTo("custom-wf");
+        assertThat(result.getParameterValue("provision_workflow_id")).isNull();
+    }
+
+    @Test
+    void addSystemParametersToAction_whenWorkflowIdProvided_thenUsesProvidedWorkflowId() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow", "custom-id")
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("provision_workflow_id")).isEqualTo("custom-id");
+    }
+
+    @Test
+    void addSystemParametersToAction_whenTimeoutProvided_thenAddsProvisionWorkflowTimeout() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow_timeout_seconds", "120")
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("provision_workflow_timeout_seconds")).isEqualTo("120");
+    }
+
+    @Test
+    void addSystemParametersToAction_removesWorkflowNameAndWorkflowTimeoutParameters() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow", "old"),
+                ProvisionActionParameterMother.of("workflow_name", "old-name"),
+                ProvisionActionParameterMother.of("workflow_timeout_seconds", "120")
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("workflow_timeout_seconds")).isNull();
+        assertThat(result.getWorkflowName()).isNull();
+    }
 }
