@@ -26,6 +26,14 @@ public class ProvisionerActionsParameterExtractor {
         return getParameterString(provisionAction, "cluster_location");
     }
 
+    public static String getWorkflow(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "workflow");
+    }
+
+    public static String getWorkflowName(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "workflow_name");
+    }
+
     public static String getParameterString(ProvisionAction provisionAction, String parameterName) {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))

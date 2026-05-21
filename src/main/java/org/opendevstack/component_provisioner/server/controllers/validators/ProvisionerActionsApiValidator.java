@@ -29,8 +29,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.*;
 
 @Service
 @AllArgsConstructor
@@ -52,10 +51,14 @@ public class ProvisionerActionsApiValidator {
         var projectKey = getProjectKey(provisionAction);
         var componentId = getComponentId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
+        var workflow = getWorkflow(provisionAction);
+        var workflowName = getWorkflowName(provisionAction);
 
         validateInputParams(projectKey, accessToken, componentId);
 
         validateComponentIsNotProvisioned(projectKey, componentId);
+
+        validateWorkflowPresence(workflow, workflowName);
 
         validateUserHasPermissionsToProvision(projectKey, accessToken);
     }
@@ -143,6 +146,14 @@ public class ProvisionerActionsApiValidator {
 
         if (StringUtils.isBlank(projectKey) || StringUtils.isBlank(accessToken) || StringUtils.isBlank(componentId)) {
             throw new InvalidRestEntityException("project_key, access_token, component_id are required.");
+        }
+    }
+
+    private void validateWorkflowPresence(String workflow, String workflowName) {
+        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
+
+        if (StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName)) {
+            throw new InvalidRestEntityException("Either workflow or workflow_name are required.");
         }
     }
 

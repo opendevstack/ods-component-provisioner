@@ -211,4 +211,49 @@ class ProvisionActionWrapperTest {
         assertThat(action.getParameters())
                 .anyMatch(p -> "catalog_item_id".equals(p.getName()) && "cat-123".equals(p.getValue()));
     }
+
+    @Test
+    void getWorkflow_whenPresent_returnsValue() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow", "wf-123")
+        ));
+
+        // when / then
+        assertThat(wrapper.getWorkflow()).isEqualTo("wf-123");
+    }
+
+    @Test
+    void getWorkflow_whenAbsent_returnsNull() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ")
+        ));
+
+        // when / then
+        assertThat(wrapper.getWorkflow()).isNull();
+    }
+
+    @Test
+    void getWorkflowName_whenPresent_returnsValue() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow_name", "delete-wf")
+        ));
+
+        // when / then
+        assertThat(wrapper.getWorkflowName()).isEqualTo("delete-wf");
+    }
+
+    @Test
+    void getWorkflowName_whenAbsent_returnsNull() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ")
+        ));
+
+        // when / then
+        assertThat(wrapper.getWorkflowName()).isNull();
+    }
+
 }
