@@ -60,17 +60,20 @@ public class ReplaceParametersService {
 
         var odsApiSnakeCaseValuesMap = snakeCaseExtractor.toSnakeCaseMap(projectKeyData);
         var parametersMap = provisionActionWrapper.getParametersMap();
-        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap);
+        var updatedParametersMap = replaceProvisioningParametersFromOdsApi(parametersMap, odsApiSnakeCaseValuesMap, paramsToOverrideFromOdsApi);
 
         return provisionActionWrapper.cloneWithParameters(updatedParametersMap.values());
     }
 
-    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap) {
+    private Map<String, ProvisionActionParameter> replaceProvisioningParametersFromOdsApi(Map<String, ProvisionActionParameter> parametersMap, Map<String, Object> odsApiSnakeCaseValuesMap, List<String> paramsToOverrideFromOdsApi) {
         Map<String, ProvisionActionParameter> updatedParameters = new HashMap<>();
 
         // Iterate over all parameters and set update value if required, otherwise keep the same value
         for (Map.Entry<String, ProvisionActionParameter> entry : parametersMap.entrySet()) {
-            if (odsApiSnakeCaseValuesMap.containsKey(entry.getKey())) {
+            var odsContainsParameter = odsApiSnakeCaseValuesMap.containsKey(entry.getKey());
+            var isAParamToBeOverriddenFromOds = paramsToOverrideFromOdsApi.contains(entry.getKey());
+
+            if (odsContainsParameter && isAParamToBeOverriddenFromOds) {
                 log.debug("Found ods parameter at request, overriding: {}", entry.getKey());
 
                 var properType = entry.getValue().getType().equals(ParameterType.STRING.getValue()) ||
