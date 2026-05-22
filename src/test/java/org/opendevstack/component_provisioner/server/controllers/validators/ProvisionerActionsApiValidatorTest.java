@@ -514,12 +514,9 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-
         // when / then
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validate(action));
+                () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
