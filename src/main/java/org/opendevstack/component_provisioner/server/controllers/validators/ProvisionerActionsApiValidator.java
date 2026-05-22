@@ -60,12 +60,6 @@ public class ProvisionerActionsApiValidator {
         validateUserHasPermissionsToProvision(projectKey, accessToken);
     }
 
-    public void validateActionHasWorkflowDefined(ProvisionAction provisionAction) {
-        var workflow = getWorkflow(provisionAction);
-        var workflowName = getWorkflowName(provisionAction);
-        validateWorkflowPresence(workflow, workflowName);
-    }
-
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
         var catalogItemProvisionUserAction = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
