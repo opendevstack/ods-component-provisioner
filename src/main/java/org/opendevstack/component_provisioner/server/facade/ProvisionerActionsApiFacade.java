@@ -15,6 +15,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
@@ -24,9 +25,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
@@ -56,9 +59,10 @@ public class ProvisionerActionsApiFacade {
         provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
-        provisionerActionsApiValidator.validateActionHasWorkflowDefined(requiredCatalogItemParamsWrapper.toProvisionAction());
-        provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
-        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
+        var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);
+        provisionerActionsApiValidator.validateWorkflowPresence(workflowWrapperParamsActionWrapper.toProvisionAction());
+        provisionerActionsApiValidator.validateMandatoryFields(workflowWrapperParamsActionWrapper.toProvisionAction(), catalogItem);
+        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
         notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
@@ -113,11 +117,10 @@ public class ProvisionerActionsApiFacade {
         var locationProvisionWrapper = addClusterLocationToAction(provisionActionWrapper);
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
-        var addProvisionWorkflowWrapper = addProvisionWorkflowWrapper(bearerTokenWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", addProvisionWorkflowWrapper);
+        log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
 
-        return addProvisionWorkflowWrapper;
+        return bearerTokenWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
@@ -240,6 +243,15 @@ public class ProvisionerActionsApiFacade {
                             .build()
             );
         }
+
+        var dispatchedWorkflowParams = provisionActionWrapperWithoutWorkflowInfo.getParametersMap().values().stream().map(ProvisionActionParameter::getName).collect(Collectors.toSet());
+        dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
+        var provisionParamDispatchedWorkflowParams = ProvisionActionParameter.builder()
+                .name("dispatched_workflow_params")
+                .value(dispatchedWorkflowParams)
+                .type(ParameterType.MULTIPLELIST.getValue())
+                .build();
+        parametersToAdd.add(provisionParamDispatchedWorkflowParams);
 
         return provisionActionWrapperWithoutWorkflowInfo.cloneWithParameters(parametersToAdd);
     }

@@ -10,6 +10,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
+import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -57,12 +58,6 @@ public class ProvisionerActionsApiValidator {
         validateComponentIsNotProvisioned(projectKey, componentId);
 
         validateUserHasPermissionsToProvision(projectKey, accessToken);
-    }
-
-    public void validateActionHasWorkflowDefined(ProvisionAction provisionAction) {
-        var workflow = getWorkflow(provisionAction);
-        var workflowName = getWorkflowName(provisionAction);
-        validateWorkflowPresence(workflow, workflowName);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
@@ -151,9 +146,11 @@ public class ProvisionerActionsApiValidator {
         }
     }
 
-    private void validateWorkflowPresence(String workflow, String workflowName) {
-        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
+    public void validateWorkflowPresence(ProvisionAction provisionAction) {
+        var workflow = getWorkflow(provisionAction);
+        var workflowName = getWorkflowName(provisionAction);
 
+        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
         if (StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName)) {
             throw new InvalidRestEntityException("Either workflow or workflow_name are required.");
         }

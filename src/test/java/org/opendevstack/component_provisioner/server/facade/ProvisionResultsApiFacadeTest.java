@@ -780,4 +780,46 @@ class ProvisionResultsApiFacadeTest {
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @Test
+    void givenWrapperWorkflow_whenAddDeletionWrapperWorkflowParametersIsCalled_thenDispatchedWorkflowParamsContainsAllParametersAndNotification() {
+        // given
+        var action = CreateIncidentActionMother.of();
+        action.setParameters(new ArrayList<>());
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+
+        // when
+        ReflectionTestUtils.invokeMethod(
+                facade,
+                "addDeletionWrapperWorkflowParameters",
+                "catalogId",
+                "wfId",
+                "wfName",
+                "60",
+                action
+        );
+
+        // then
+        var dispatchedParam = action.getParameters().stream()
+                .filter(p -> "dispatched_workflow_params".equals(p.getName()))
+                .findFirst()
+                .orElse(null);
+
+        assertThat(dispatchedParam).isNotNull();
+        assertThat(dispatchedParam.getValue()).isInstanceOf(java.util.Set.class);
+
+        @SuppressWarnings("unchecked")
+        var dispatchedSet = (java.util.Set<String>) dispatchedParam.getValue();
+
+        var expectedParamNames = action.getParameters().stream()
+                .map(CreateIncidentParameter::getName)
+                .filter(name -> !"dispatched_workflow_params".equals(name))
+                .toList();
+
+        assertThat(dispatchedSet).containsAll(expectedParamNames);
+
+        assertThat(dispatchedSet).contains("notifications_group_id");
+    }
+
+
 }

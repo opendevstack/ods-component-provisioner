@@ -505,7 +505,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validateActionHasWorkflowDefined_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
+    void validateWorkflowPresence_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -513,40 +513,41 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
+        // when / then
         assertThrows(InvalidRestEntityException.class,
-                () -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+                () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateActionHasWorkflowDefined_succeeds_whenWorkflowProvidedByUser() {
+    void validateWorkflowPresence_succeeds_whenWorkflowProvidedByUser() {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateActionHasWorkflowDefined_succeeds_whenWorkflowNameProvidedByUser() {
+    void validateWorkflowPresence_succeeds_whenWorkflowNameProvidedByUser() {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateActionHasWorkflowDefined_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
+    void validateWorkflowPresence_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123"),
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateActionHasWorkflowDefined_succeeds_whenWorkflowComesFromHiddenCatalogItemParam() {
+    void validateWorkflowPresence_succeeds_whenWorkflowComesFromHiddenCatalogItemParam() {
         // Workflow was not provided by the user but was injected from the catalog item's
         // hidden (non-visible) mandatory parameter before this validation is invoked
         var action = ProvisionActionMother.of(List.of(
@@ -556,6 +557,6 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("workflow", "wf-from-hidden-param")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 }

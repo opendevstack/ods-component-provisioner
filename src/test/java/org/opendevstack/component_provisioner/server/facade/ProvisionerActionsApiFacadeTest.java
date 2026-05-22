@@ -673,7 +673,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_whenWorkflowNameProvided_thenUsesProvisionWorkflowName() {
+    void addSystemParametersToAction_whenWorkflowNameProvided_thenDoesNotAddProvisionWorkflowParams() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -689,12 +689,12 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.addSystemParametersToAction(wrapper);
 
         // then
-        assertThat(result.getParameterValue("provision_workflow_name")).isEqualTo("custom-wf");
-        assertThat(result.getParameterValue("provision_workflow_id")).isNull();
+        assertThat(result.getParameterValue("provision_workflow_name")).isNull();
+        assertThat(result.getParameterValue("workflow")).isNull();
     }
 
     @Test
-    void addSystemParametersToAction_whenWorkflowIdProvided_thenUsesProvidedWorkflowId() {
+    void addSystemParametersToAction_whenWorkflowIdProvided_thenDoesNotAddProvisionWorkflowId() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -709,11 +709,11 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.addSystemParametersToAction(wrapper);
 
         // then
-        assertThat(result.getParameterValue("provision_workflow_id")).isEqualTo("custom-id");
+        assertThat(result.getParameterValue("provision_workflow_id")).isNull();
     }
 
     @Test
-    void addSystemParametersToAction_whenTimeoutProvided_thenAddsProvisionWorkflowTimeout() {
+    void addSystemParametersToAction_whenTimeoutProvided_thenDoesNotAddProvisionWorkflowTimeout() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -728,11 +728,11 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.addSystemParametersToAction(wrapper);
 
         // then
-        assertThat(result.getParameterValue("provision_workflow_timeout_seconds")).isEqualTo("120");
+        assertThat(result.getParameterValue("provision_workflow_timeout_seconds")).isNull();
     }
 
     @Test
-    void addSystemParametersToAction_removesWorkflowNameAndWorkflowTimeoutParameters() {
+    void addSystemParametersToAction_doesNotRemoveWorkflowParameters() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -749,7 +749,147 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.addSystemParametersToAction(wrapper);
 
         // then
-        assertThat(result.getParameterValue("workflow_timeout_seconds")).isNull();
-        assertThat(result.getWorkflowName()).isNull();
+        assertThat(result.getParameterValue("workflow")).isEqualTo("old");
+        assertThat(result.getWorkflowName()).isEqualTo("old-name");
+        assertThat(result.getParameterValue("workflow_timeout_seconds")).isEqualTo("120");
     }
+
+    @Test
+    void addSystemParametersToAction_doesNotAddDispatchedWorkflowParams() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("custom_param", "value"),
+                ProvisionActionParameterMother.of("workflow", "wf-id"),
+                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
+                ProvisionActionParameterMother.of("workflow_timeout_seconds", "120")
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        assertThat(result.getParameterValue("dispatched_workflow_params")).isNull();
+    }
+
+    @Test
+    void triggerProvisionAction_addsProvisionWorkflowParameters() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow_name", "custom-wf")
+        ));
+
+        setupSystemParameterMocks();
+
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(placeholderPostProcessor.process(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<ProvisionActionWrapper> captor = ArgumentCaptor.forClass(ProvisionActionWrapper.class);
+
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(captor.capture()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(awxWorkflowJobLaunch);
+
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob))
+                .thenReturn(provisionActionResponse);
+
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        var wrapper = captor.getValue();
+
+        var provisionWorkflowName = wrapper.getParametersMap().values().stream()
+                .filter(p -> "provision_workflow_name".equals(p.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        assertThat(provisionWorkflowName.getValue()).isEqualTo("custom-wf");
+
+        assertThat(wrapper.getParametersMap()).containsKey("workflow");
+    }
+
+    @Test
+    void triggerProvisionAction_callsValidateWorkflowPresence() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
+        ));
+
+        setupSystemParameterMocks();
+
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(placeholderPostProcessor.process(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(AwxWorkflowJobLaunchMother.of());
+        when(entitiesMapper.asProvisionActionResponse(any()))
+                .thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxWorkflowJobMother.of())));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(provisionerActionsApiValidator)
+                .validateWorkflowPresence(any());
+    }
+
+    @Test
+    void triggerProvisionAction_appliesWorkflowWrapper_beforePlaceholderProcessing() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
+        ));
+
+        setupSystemParameterMocks();
+
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(placeholderPostProcessor.process(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(AwxWorkflowJobLaunchMother.of());
+        when(entitiesMapper.asProvisionActionResponse(any()))
+                .thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxWorkflowJobMother.of())));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        var order = inOrder(provisionerActionsApiValidator, placeholderPostProcessor);
+
+        order.verify(provisionerActionsApiValidator).validateWorkflowPresence(any());
+        order.verify(placeholderPostProcessor).process(any());
+    }
+
 }

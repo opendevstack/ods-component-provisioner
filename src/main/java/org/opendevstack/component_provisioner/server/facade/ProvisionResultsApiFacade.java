@@ -1,5 +1,6 @@
 package org.opendevstack.component_provisioner.server.facade;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
@@ -21,10 +22,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class ProvisionResultsApiFacade {
 
@@ -42,22 +47,6 @@ public class ProvisionResultsApiFacade {
 
     @Value("${component-provisioner.awx.workflows.deletion-wrapper-workflow-id}")
     private String deletionWrapperWorkflowId;
-
-    public ProvisionResultsApiFacade(AwxService awxService,
-                                     ComponentCatalogService componentCatalogService,
-                                     EntitiesMapper entitiesMapper,
-                                     ProvisionService provisionService,
-                                     AuthenticationProvider authenticationProvider,
-                                     ProjectsInfoService projectsInfoService,
-                                     ApplicationAuthenticationProvider applicationAuthenticationProvider) {
-        this.awxService = awxService;
-        this.componentCatalogService = componentCatalogService;
-        this.entitiesMapper = entitiesMapper;
-        this.provisionService = provisionService;
-        this.authenticationProvider = authenticationProvider;
-        this.projectsInfoService = projectsInfoService;
-        this.applicationAuthenticationProvider = applicationAuthenticationProvider;
-    }
 
     public AwxResponse requestDeletion(
             String projectKey,
@@ -302,6 +291,18 @@ public class ProvisionResultsApiFacade {
                     .build()
             );
         }
+        var dispatchedWorkflowParams = action.getParameters().stream().map(CreateIncidentParameter::getName).collect(Collectors.toSet());
+        dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
+
+        var allParams = new ArrayList<>(action.getParameters());
+        var createIncidentParamDispatchedWorkflowParams = CreateIncidentParameter.builder()
+                .name("dispatched_workflow_params")
+                .value(dispatchedWorkflowParams)
+                .type(ParameterType.MULTIPLELIST.getValue())
+                .build();
+        allParams.add(createIncidentParamDispatchedWorkflowParams);
+
+        action.setParameters(allParams);
     }
 
     private void addCallerParameter(CreateIncidentAction action) {
