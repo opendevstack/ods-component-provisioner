@@ -817,8 +817,6 @@ class ProvisionResultsApiFacadeTest {
                 .toList();
 
         assertThat(dispatchedSet).containsAll(expectedParamNames);
-
-        assertThat(dispatchedSet).contains("notifications_group_id");
     }
 
 

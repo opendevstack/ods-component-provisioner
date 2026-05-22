@@ -225,6 +225,7 @@ public class ProvisionResultsApiFacade {
     public void addSystemParametersToAction(String projectKey, CreateIncidentAction action) {
         addClusterLocationParameter(projectKey, action);
         addCallerParameter(action);
+        addNotificationsGroupIdParameter(projectKey, action);
     }
 
     private void addClusterLocationParameter(String projectKey, CreateIncidentAction action) {
@@ -292,7 +293,6 @@ public class ProvisionResultsApiFacade {
             );
         }
         var dispatchedWorkflowParams = action.getParameters().stream().map(CreateIncidentParameter::getName).collect(Collectors.toSet());
-        dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
 
         var allParams = new ArrayList<>(action.getParameters());
         var createIncidentParamDispatchedWorkflowParams = CreateIncidentParameter.builder()
@@ -311,6 +311,14 @@ public class ProvisionResultsApiFacade {
                 .name("caller")
                 .type(ParameterType.STRING.getValue())
                 .value(caller)
+                .build());
+    }
+
+    private void addNotificationsGroupIdParameter(String projectKey, CreateIncidentAction action) {
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("notifications_group_id")
+                .type(ParameterType.STRING.getValue())
+                .value(projectKey)
                 .build());
     }
 

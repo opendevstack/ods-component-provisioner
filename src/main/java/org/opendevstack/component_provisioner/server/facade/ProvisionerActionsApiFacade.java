@@ -15,7 +15,6 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
@@ -25,7 +24,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -117,10 +115,11 @@ public class ProvisionerActionsApiFacade {
         var locationProvisionWrapper = addClusterLocationToAction(provisionActionWrapper);
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
+        var notificationsGroupIdWrapper = addNotificationsGroupIdToAction(bearerTokenWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
+        log.debug("Added system parameters to provision action: '{}'", notificationsGroupIdWrapper);
 
-        return bearerTokenWrapper;
+        return notificationsGroupIdWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
@@ -198,6 +197,16 @@ public class ProvisionerActionsApiFacade {
         return provisionActionWrapper.cloneWithParameters(bearerTokenParameter);
     }
 
+    private ProvisionActionWrapper addNotificationsGroupIdToAction(ProvisionActionWrapper provisionActionWrapper) {
+        var notificationsGroupIdParameter = ProvisionActionParameter.builder()
+                .name("notifications_group_id")
+                .type(ParameterType.STRING.getValue())
+                .value(provisionActionWrapper.getProjectKey())
+                .build();
+
+        return provisionActionWrapper.cloneWithParameters(notificationsGroupIdParameter);
+    }
+
     private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {
         var workflowIdToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflow()).orElse("");
         var workflowNameToDispatch = Optional.ofNullable(provisionActionWrapper.getWorkflowName()).orElse("");
@@ -205,8 +214,7 @@ public class ProvisionerActionsApiFacade {
 
         var provisionActionWrapperWithoutWorkflowInfo = provisionActionWrapper
                 .cloneWithoutParameterByName("workflow")
-                .cloneWithoutParameterByName("workflow_name")
-                .cloneWithoutParameterByName("workflow_timeout_seconds");
+                .cloneWithoutParameterByName("workflow_name");
 
         var parametersToAdd = new java.util.ArrayList<>(List.of(
                 ProvisionActionParameter.builder()
@@ -245,7 +253,7 @@ public class ProvisionerActionsApiFacade {
         }
 
         var dispatchedWorkflowParams = provisionActionWrapperWithoutWorkflowInfo.getParametersMap().values().stream().map(ProvisionActionParameter::getName).collect(Collectors.toSet());
-        dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
+
         var provisionParamDispatchedWorkflowParams = ProvisionActionParameter.builder()
                 .name("dispatched_workflow_params")
                 .value(dispatchedWorkflowParams)
