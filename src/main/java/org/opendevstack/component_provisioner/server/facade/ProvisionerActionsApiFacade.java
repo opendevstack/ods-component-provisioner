@@ -59,8 +59,10 @@ public class ProvisionerActionsApiFacade {
         provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
-        provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsWrapper.toProvisionAction(), catalogItem);
-        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(requiredCatalogItemParamsWrapper);
+        var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);
+        provisionerActionsApiValidator.validateWorkflowPresence(workflowWrapperParamsActionWrapper.toProvisionAction());
+        provisionerActionsApiValidator.validateMandatoryFields(workflowWrapperParamsActionWrapper.toProvisionAction(), catalogItem);
+        var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
         notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
@@ -115,11 +117,10 @@ public class ProvisionerActionsApiFacade {
         var locationProvisionWrapper = addClusterLocationToAction(provisionActionWrapper);
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
-        var addProvisionWorkflowWrapper = addProvisionWorkflowWrapper(bearerTokenWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", addProvisionWorkflowWrapper);
+        log.debug("Added system parameters to provision action: '{}'", bearerTokenWrapper);
 
-        return addProvisionWorkflowWrapper;
+        return bearerTokenWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
