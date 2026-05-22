@@ -15,6 +15,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
@@ -24,9 +25,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getLocation;
 
@@ -240,6 +243,15 @@ public class ProvisionerActionsApiFacade {
             );
         }
 
+        var dispatchedWorkflowParams = provisionActionWrapperWithoutWorkflowInfo.getParametersMap().values().stream().map(ProvisionActionParameter::getName).collect(Collectors.toSet());
+        dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
+        parametersToAdd.add(
+                ProvisionActionParameter.builder()
+                    .name("dispatched_workflow_params")
+                    .value(dispatchedWorkflowParams)
+                    .type(ParameterType.MULTIPLELIST.getValue())
+                    .build()
+        );
         return provisionActionWrapperWithoutWorkflowInfo.cloneWithParameters(parametersToAdd);
     }
 
