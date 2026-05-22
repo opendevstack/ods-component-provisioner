@@ -295,12 +295,13 @@ public class ProvisionResultsApiFacade {
         dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
 
         var allParams = new ArrayList<>(action.getParameters());
-        allParams.add(CreateIncidentParameter.builder()
+        var createIncidentParamDispatchedWorkflowParams = CreateIncidentParameter.builder()
                 .name("dispatched_workflow_params")
                 .value(dispatchedWorkflowParams)
                 .type(ParameterType.MULTIPLELIST.getValue())
-                .build()
-        );
+                .build();
+        allParams.add(createIncidentParamDispatchedWorkflowParams);
+
         action.setParameters(allParams);
     }
 

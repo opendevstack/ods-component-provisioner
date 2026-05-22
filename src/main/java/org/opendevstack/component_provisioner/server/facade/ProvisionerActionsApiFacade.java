@@ -245,13 +245,13 @@ public class ProvisionerActionsApiFacade {
 
         var dispatchedWorkflowParams = provisionActionWrapperWithoutWorkflowInfo.getParametersMap().values().stream().map(ProvisionActionParameter::getName).collect(Collectors.toSet());
         dispatchedWorkflowParams.add("notifications_group_id"); // This param is added later by the entitiesMapper, so we need to manually add it
-        parametersToAdd.add(
-                ProvisionActionParameter.builder()
-                    .name("dispatched_workflow_params")
-                    .value(dispatchedWorkflowParams)
-                    .type(ParameterType.MULTIPLELIST.getValue())
-                    .build()
-        );
+        var provisionParamDispatchedWorkflowParams = ProvisionActionParameter.builder()
+                .name("dispatched_workflow_params")
+                .value(dispatchedWorkflowParams)
+                .type(ParameterType.MULTIPLELIST.getValue())
+                .build();
+        parametersToAdd.add(provisionParamDispatchedWorkflowParams);
+
         return provisionActionWrapperWithoutWorkflowInfo.cloneWithParameters(parametersToAdd);
     }
 
