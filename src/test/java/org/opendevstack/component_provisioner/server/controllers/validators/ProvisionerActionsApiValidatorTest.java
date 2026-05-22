@@ -505,8 +505,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validate_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
-        // given
+    void validateActionHasWorkflowDefined_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -520,63 +519,44 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validate_succeeds_whenWorkflowProvided() {
-        // given
+    void validateActionHasWorkflowDefined_succeeds_whenWorkflowProvidedByUser() {
         var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken"),
                 ProvisionActionParameterMother.of("workflow", "wf-123")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
-        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
-
-        // then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
     }
 
     @Test
-    void validate_succeeds_whenWorkflowNameProvided() {
-        // given
+    void validateActionHasWorkflowDefined_succeeds_whenWorkflowNameProvidedByUser() {
         var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken"),
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
-        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
-
-        // then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
     }
 
     @Test
-    void validate_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
-        // given
+    void validateActionHasWorkflowDefined_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
         var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken"),
                 ProvisionActionParameterMother.of("workflow", "wf-123"),
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("accessToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenReturn(List.of());
-        when(projectsInfoService.getProjectGroups("accessToken")).thenReturn(List.of("group"));
-        when(groupsRestrictionsEvaluator.evaluate(any(), any())).thenReturn(Pair.of(true, ""));
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
+    }
 
-        // then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+    @Test
+    void validateActionHasWorkflowDefined_succeeds_whenWorkflowComesFromHiddenCatalogItemParam() {
+        // Workflow was not provided by the user but was injected from the catalog item's
+        // hidden (non-visible) mandatory parameter before this validation is invoked
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("workflow", "wf-from-hidden-param")
+        ));
+
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateActionHasWorkflowDefined(action));
     }
 }
