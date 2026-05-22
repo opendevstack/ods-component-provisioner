@@ -752,4 +752,43 @@ class ProvisionerActionsApiFacadeTest {
         assertThat(result.getParameterValue("workflow_timeout_seconds")).isNull();
         assertThat(result.getWorkflowName()).isNull();
     }
+
+    @Test
+    void addSystemParametersToAction_addsDispatchedWorkflowParamsContainingAllParametersAndNotificationsGroup() {
+        // given
+        var wrapper = ProvisionActionWrapperMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("custom_param", "value"),
+                ProvisionActionParameterMother.of("workflow", "wf-id"),
+                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
+                ProvisionActionParameterMother.of("workflow_timeout_seconds", "120")
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        // when
+        var result = facade.addSystemParametersToAction(wrapper);
+
+        // then
+        var dispatchedValue = result.getParameterValue("dispatched_workflow_params");
+
+        assertThat(dispatchedValue).isNotNull();
+
+        var expectedParamNames = List.of(
+                "project_key",
+                "catalog_item_id",
+                "custom_param",
+                "cluster_location",
+                "caller",
+                "access_token"
+        );
+
+        expectedParamNames.forEach(name ->
+                assertThat(dispatchedValue).contains(name)
+        );
+
+        assertThat(dispatchedValue).contains("notifications_group_id");
+    }
 }
