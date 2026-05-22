@@ -58,8 +58,9 @@ public class ProvisionerActionsApiFacade {
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
         var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);
-        provisionerActionsApiValidator.validateWorkflowPresence(workflowWrapperParamsActionWrapper.toProvisionAction());
-        provisionerActionsApiValidator.validateMandatoryFields(workflowWrapperParamsActionWrapper.toProvisionAction(), catalogItem);
+        var workflowWrapperParamsAction = workflowWrapperParamsActionWrapper.toProvisionAction();
+        provisionerActionsApiValidator.validateWorkflowPresence(workflowWrapperParamsAction);
+        provisionerActionsApiValidator.validateMandatoryFields(workflowWrapperParamsAction, catalogItem);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
