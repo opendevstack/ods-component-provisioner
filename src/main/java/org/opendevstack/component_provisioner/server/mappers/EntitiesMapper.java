@@ -99,11 +99,6 @@ public class EntitiesMapper {
                     .mapToEntry(ProvisionActionParameter::getName, ProvisionActionParameter::getValue)
                     .toMap();
 
-            // Supply AWX with the notification group ID for building nats.io subjects
-            var notificationsGroupId = extraParams.getOrDefault("project_key", "MISSING_NOTIFICATIONS_GROUP_ID");
-
-            extraParams.put("notifications_group_id", notificationsGroupId);
-
             return uncheckedFrom(objectMapper::writeValueAsString).apply(extraParams);
         };
 
