@@ -18,6 +18,7 @@ import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.opendevstack.component_provisioner.server.services.exceptions.AwxClientException;
+import org.opendevstack.component_provisioner.server.services.model.AwxResultNames;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -25,6 +26,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -185,5 +187,91 @@ class AwxServiceTest {
         // when & then
         assertThrows(AwxClientException.class, () -> awxService.getWorkflowJobById(jobId));
     }
+
+    @Test
+    void givenWorkflowNodesWithNullJobId_whenGetWorkflowJobById_thenIgnoresNullAndReturnsEmpty() {
+        // given
+        String workflowJobId = "wf-id";
+
+        WorkflowJobNodeList nodeWithNull = new WorkflowJobNodeList();
+        nodeWithNull.setJob(null);
+
+        var response = ApiWorkflowJobNodesList200ResponseMother.of(
+                List.of(nodeWithNull)
+        );
+
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(
+                AWX_API_VERSION, workflowJobId, null, null, null))
+                .thenReturn(response);
+
+        // when
+        var result = awxService.getWorkflowJobById(workflowJobId);
+
+        // then
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void givenNullAndValidNodes_whenGetWorkflowJobById_thenSkipsNullAndReturnsValidJobDetail() {
+        // given
+        String workflowJobId = "wf-id";
+        String validJobId = "123";
+
+        WorkflowJobNodeList nullNode = new WorkflowJobNodeList();
+        nullNode.setJob(null);
+
+        WorkflowJobNodeList validNode = WorkflowJobNodeListMother.of(Integer.valueOf(validJobId));
+
+        var response = ApiWorkflowJobNodesList200ResponseMother.of(
+                List.of(nullNode, validNode)
+        );
+
+        var jobDetail = JobDetailMother.of().toBuilder()
+                .artifacts(Map.of(AwxResultNames.RESULT_CODE.getValue(), "value"))
+                .build();
+
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(
+                AWX_API_VERSION, workflowJobId, null, null, null))
+                .thenReturn(response);
+
+        when(jobsApi.apiJobsRead(AWX_API_VERSION, validJobId))
+                .thenReturn(jobDetail);
+
+        // when
+        var result = awxService.getWorkflowJobById(workflowJobId);
+
+        // then
+        assertTrue(result.isPresent());
+        assertEquals(jobDetail, result.get());
+    }
+
+    @Test
+    void givenAllNodesNull_whenGetWorkflowJobById_thenJobsApiIsNeverCalled() {
+        // given
+        String workflowJobId = "wf-id";
+
+        WorkflowJobNodeList n1 = new WorkflowJobNodeList();
+        n1.setJob(null);
+
+        WorkflowJobNodeList n2 = new WorkflowJobNodeList();
+        n2.setJob(null);
+
+        var response = ApiWorkflowJobNodesList200ResponseMother.of(
+                List.of(n1, n2)
+        );
+
+        when(workflowJobNodesApi.apiWorkflowJobsWorkflowNodesList(
+                AWX_API_VERSION, workflowJobId, null, null, null))
+                .thenReturn(response);
+
+        // when
+        var result = awxService.getWorkflowJobById(workflowJobId);
+
+        // then
+        assertTrue(result.isEmpty());
+
+        org.mockito.Mockito.verifyNoInteractions(jobsApi);
+    }
+
 
 }
