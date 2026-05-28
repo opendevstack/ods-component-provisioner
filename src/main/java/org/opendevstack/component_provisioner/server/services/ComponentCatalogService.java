@@ -3,14 +3,15 @@ package org.opendevstack.component_provisioner.server.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -170,7 +171,15 @@ public class ComponentCatalogService {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
 
-        return componentsApi.getProjectComponentById(projectKey, componentId);
+        try {
+            return componentsApi.getProjectComponentById(projectKey, componentId);
+        } catch (HttpStatusCodeException e) {
+            if (e.getStatusCode().value() == HttpStatus.FORBIDDEN.value()) {
+                log.warn("Forbidden response from component catalog for project '{}', componentId '{}': {}", projectKey, componentId, e.getMessage());
+                throw new UserNotAllowedException("Access to component catalog is forbidden for project '" + projectKey + "', componentId '" + componentId + "'");
+            }
+            throw e;
+        }
     }
 
     private Map<String, List<String>> obfuscateParameters(Map<String, List<String>> parameters) {

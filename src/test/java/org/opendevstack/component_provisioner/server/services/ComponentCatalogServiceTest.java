@@ -585,4 +585,47 @@ class ComponentCatalogServiceTest {
         verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
     }
 
+    @Test
+    void givenComponentCatalogReturns403_whenGetProjectComponentByIdIsCalled_thenThrowsUserNotAllowedException() throws MalformedURLException {
+        // given
+        String accessToken = "bearerToken";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId))
+                .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+
+        // when / then
+        assertThatThrownBy(() -> componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .isInstanceOf(org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException.class);
+    }
+
+    @Test
+    void givenComponentCatalogReturnsNon403HttpError_whenGetProjectComponentByIdIsCalled_thenRethrowsOriginalException() throws MalformedURLException {
+        // given
+        String accessToken = "bearerToken";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var originalException = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+        when(projectComponentsApi.getProjectComponentById(projectKey, componentId))
+                .thenThrow(originalException);
+
+        // when / then
+        assertThatThrownBy(() -> componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
+                .isSameAs(originalException);
+    }
+
 }
