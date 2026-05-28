@@ -102,6 +102,10 @@ public class AwxService {
                     .toList();
 
             for (Integer nodeId:  innerNodesList) {
+                // Nodes with null nodeId have not been executed in AAP. This can be due to
+                // reasons such as diverging paths.
+                if (nodeId == null) continue;
+
                 var jobDetail = jobsApi.apiJobsRead(AWX_API_VERSION, nodeId.toString());
 
                 boolean someArtifactIsAnAwxResult =
