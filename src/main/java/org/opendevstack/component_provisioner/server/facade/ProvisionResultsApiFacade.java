@@ -293,6 +293,14 @@ public class ProvisionResultsApiFacade {
             );
         }
         var dispatchedWorkflowParams = action.getParameters().stream().map(CreateIncidentParameter::getName).collect(Collectors.toSet());
+        // We need to add in a static way these parameters, so the dispatcher can send them
+        // to the dispatched workflow
+        dispatchedWorkflowParams.add("project_key");
+        dispatchedWorkflowParams.add("cluster_location");
+        dispatchedWorkflowParams.add("component_id");
+        dispatchedWorkflowParams.add("is_deployed");
+        dispatchedWorkflowParams.add("change_number");
+        dispatchedWorkflowParams.add("reason");
 
         var allParams = new ArrayList<>(action.getParameters());
         var createIncidentParamDispatchedWorkflowParams = CreateIncidentParameter.builder()

@@ -709,6 +709,31 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
+    void givenWrapperWorkflow_whenRequestDeletion_thenAddsMandatoryStaticParameters() {
+        var action = CreateIncidentActionMother.of();
+        action.setParameters(new ArrayList<>());
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+
+        ReflectionTestUtils.invokeMethod(
+                facade,
+                "addDeletionWrapperWorkflowParameters",
+                "catalogId",
+                "wfId",
+                null,
+                "60",
+                action
+        );
+
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("project_key");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("cluster_location");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("component_id");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("is_deployed");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("change_number");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("reason");
+    }
+
+    @Test
     void givenBothCatalogItemIdAndSlugEmpty_whenResolveCatalogItemIdIsCalled_thenReturnsNull() {
         // when
         var result = ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, null);
