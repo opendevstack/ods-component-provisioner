@@ -386,7 +386,7 @@ paths:
       summary: Returns the information of the project's components in the Bitbucket
         repository.
       tags:
-        - ProjectComponents
+        - Project-components-with-provision-status
       x-accepts:
         - application/json
 components:
