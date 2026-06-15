@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.controllers;
 
 import lombok.AllArgsConstructor;
+import lombok.Generated;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.api.ProjectComponentsWithProvisionStatusApi;
 import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApiFacade;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.annotation.processing.Generated;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class ProjectComponentsApiController implements ProjectComponentsWithProv
     }
 
     // MOCKED RESULT
-    @Generated("mock-endpoint")
+    @Generated
     @Override
     public ResponseEntity<ProjectComponentListResponse> getAllProjectComponents(Integer page, Integer size) {
         log.debug("getAllProjectComponents with page {} and page size of {}", page, size);
