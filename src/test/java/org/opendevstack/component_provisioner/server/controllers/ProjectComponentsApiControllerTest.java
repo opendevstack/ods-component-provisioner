@@ -67,4 +67,48 @@ class ProjectComponentsApiControllerTest {
         assertThat(result.getBody()).isEqualTo(baseStatus);
         verify(projectComponentsApiFacade).enrichWithAapInfo(projectKey, projectComponentExtendedInfo);
     }
+
+    @Test
+    void givenPageAndSize_whenGetAllProjectComponents_thenReturnsOkWithBody() {
+        // given
+        Integer page = 1;
+        Integer size = 10;
+
+        var expectedResponse = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+
+        when(projectComponentsApiFacade.getPaginatedProjectComponents(page, size))
+                .thenReturn(expectedResponse);
+
+        // when
+        ResponseEntity<org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse> result =
+                controller.getAllProjectComponents(page, size);
+
+        // then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isSameAs(expectedResponse);
+
+        verify(projectComponentsApiFacade)
+                .getPaginatedProjectComponents(page, size);
+    }
+
+    @Test
+    void givenNullPageAndSize_whenGetAllProjectComponents_thenDelegatesWithNulls() {
+        // given
+        Integer page = null;
+        Integer size = null;
+
+        var response = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+
+        when(projectComponentsApiFacade.getPaginatedProjectComponents(page, size))
+                .thenReturn(response);
+
+        // when
+        ResponseEntity<?> result = controller.getAllProjectComponents(page, size);
+
+        // then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isSameAs(response);
+
+        verify(projectComponentsApiFacade).getPaginatedProjectComponents(null, null);
+    }
 }

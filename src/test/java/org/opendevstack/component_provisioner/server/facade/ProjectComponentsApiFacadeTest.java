@@ -7,16 +7,21 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.mappers.ProjectComponentListResponseMapper;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.util.JwtUtils;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -35,6 +40,15 @@ class ProjectComponentsApiFacadeTest {
 
     @Mock
     private EntitiesMapper entitiesMapper;
+
+    @Mock
+    private ApplicationAuthenticationProvider applicationAuthenticationProvider;
+
+    @Mock
+    private ProjectComponentListResponseMapper projectComponentListResponseMapper;
+
+    @Mock
+    private ApplicationPropertiesConfiguration.OdsApiServerServiceProps odsApiServerServiceProps;
 
     @InjectMocks
     private ProjectComponentsApiFacade projectComponentsApiFacade;
@@ -101,4 +115,70 @@ class ProjectComponentsApiFacadeTest {
         verify(entitiesMapper).asProjectComponentProvisionStatus(projectKey, componentInfo, null);
         verifyNoInteractions(awxService);
     }
+
+    @Test
+    void givenValidOidToken_whenGetPaginatedProjectComponents_thenReturnsMappedResponse() {
+        // given
+        String userToken = "user-token";
+        String appToken = "app-token";
+        Integer page = 1;
+        Integer size = 10;
+
+        var serviceResponse = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentListResponse();
+        var mappedResponse = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+
+        when(authenticationProvider.getAccessToken()).thenReturn(userToken);
+        when(applicationAuthenticationProvider.getAccessToken()).thenReturn(appToken);
+
+        when(odsApiServerServiceProps.getOid()).thenReturn("valid-oid");
+
+        try (var mocked = org.mockito.Mockito.mockStatic(JwtUtils.class)) {
+            mocked.when(() -> JwtUtils.extractClaim(userToken, "oid"))
+                    .thenReturn(Optional.of("valid-oid"));
+
+            when(componentCatalogService.getPaginatedProjectComponents(appToken, page, size))
+                    .thenReturn(serviceResponse);
+
+            when(projectComponentListResponseMapper.map(serviceResponse))
+                    .thenReturn(mappedResponse);
+
+            // when
+            var result = projectComponentsApiFacade.getPaginatedProjectComponents(page, size);
+
+            // then
+            assertThat(result).isSameAs(mappedResponse);
+
+            verify(authenticationProvider).getAccessToken();
+            verify(applicationAuthenticationProvider).getAccessToken();
+            verify(componentCatalogService)
+                    .getPaginatedProjectComponents(appToken, page, size);
+            verify(projectComponentListResponseMapper)
+                    .map(serviceResponse);
+        }
+    }
+
+    @Test
+    void givenInvalidOidToken_whenGetPaginatedProjectComponents_thenThrowsUserNotAllowedException() {
+        // given
+        String userToken = "user-token";
+
+        when(authenticationProvider.getAccessToken()).thenReturn(userToken);
+        when(odsApiServerServiceProps.getOid()).thenReturn("expected-oid");
+
+        try (var mocked = org.mockito.Mockito.mockStatic(JwtUtils.class)) {
+            mocked.when(() -> JwtUtils.extractClaim(userToken, "oid"))
+                    .thenReturn(Optional.of("different-oid"));
+
+            // when / then
+            assertThatThrownBy(() ->
+                    projectComponentsApiFacade.getPaginatedProjectComponents(0, 10)
+            ).isInstanceOf(org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException.class);
+
+            verify(authenticationProvider).getAccessToken();
+
+            verifyNoInteractions(componentCatalogService);
+            verifyNoInteractions(projectComponentListResponseMapper);
+        }
+    }
+
 }
