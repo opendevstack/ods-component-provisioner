@@ -892,4 +892,74 @@ class ProvisionerActionsApiFacadeTest {
         order.verify(placeholderPostProcessor).process(any());
     }
 
+    @Test
+    void triggerProvisionAction_validatesHiddenMandatoryWorkflowName_beforeWorkflowWrapperTransformation() {
+        // given
+        var workflowName = "hidden-required-workflow-name";
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT"),
+                ProvisionActionParameterMother.of("workflow_name", workflowName)
+        ));
+
+        setupSystemParameterMocks();
+        ReflectionTestUtils.setField(facade, "provisionWrapperWorkflowId", "WRAPPER_WF");
+
+        var mandatoryWorkflowNameParam = CatalogItemUserActionParameter.builder()
+                .name("workflow_name")
+                .type("string")
+                .required(true)
+                .visible(false)
+                .build();
+        var provisionUserAction = CatalogItemUserAction.builder()
+                .id(action.getId())
+                .parameters(List.of(mandatoryWorkflowNameParam))
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(provisionUserAction))
+                .build();
+
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(componentCatalogService.getCatalogItem("token", "CAT", "PRJ")).thenReturn(catalogItem);
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ArgumentCaptor<ProvisionActionWrapper> wrapperCaptor = ArgumentCaptor.forClass(ProvisionActionWrapper.class);
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapperCaptor.capture()))
+                .thenAnswer(inv -> inv.getArgument(0));
+
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(awxWorkflowJobLaunch);
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob))
+                .thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+
+        doAnswer(inv -> {
+            var provisionActionArg = inv.getArgument(0, ProvisionAction.class);
+            boolean hasWorkflowName = provisionActionArg.getParameters().stream()
+                    .anyMatch(param -> "workflow_name".equals(param.getName()) && workflowName.equals(param.getValue()));
+            if (!hasWorkflowName) {
+                throw new IllegalStateException("workflow_name should be present during mandatory fields validation");
+            }
+            return null;
+        }).when(provisionerActionsApiValidator).validateMandatoryFields(any(), eq(catalogItem));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        ArgumentCaptor<ProvisionAction> mandatoryValidationCaptor = ArgumentCaptor.forClass(ProvisionAction.class);
+        verify(provisionerActionsApiValidator).validateMandatoryFields(mandatoryValidationCaptor.capture(), eq(catalogItem));
+        assertThat(mandatoryValidationCaptor.getValue().getParameters())
+                .anyMatch(param -> "workflow_name".equals(param.getName()) && workflowName.equals(param.getValue()));
+
+        var wrapperAfterWorkflowWrapping = wrapperCaptor.getValue();
+        assertThat(wrapperAfterWorkflowWrapping.getParameterValue("workflow_name")).isNull();
+        assertThat(wrapperAfterWorkflowWrapping.getParameterValue("provision_workflow_name")).isEqualTo(workflowName);
+    }
+
 }
