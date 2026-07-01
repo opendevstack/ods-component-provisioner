@@ -227,4 +227,10 @@ public class ComponentCatalogService {
             throw new CatalogClientException(e);
         }
     }
+
+    public ProjectComponentsMetrics getPaginatedProjectComponents(String accessToken, Integer page, Integer size) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+        return componentsApi.getAllProjectComponents(page, size);
+    }
 }

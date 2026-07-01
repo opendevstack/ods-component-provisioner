@@ -4,12 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration.OdsApiServerServiceProps;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.mappers.ProjectComponentsMetricsMapper;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentsMetrics;
+import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.util.JwtUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +27,9 @@ public class ProjectComponentsApiFacade {
     private final ComponentCatalogService componentCatalogService;
     private final AwxService awxService;
     private final EntitiesMapper entitiesMapper;
+    private final OdsApiServerServiceProps odsApiServerServiceProps;
+    private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
+    private final ProjectComponentsMetricsMapper projectComponentsMetricsMapper;
 
     public ProjectComponentExtendedInfo getProjectComponentById(String projectKey, String componentId) {
         var accessToken = authenticationProvider.getAccessToken();
@@ -47,5 +56,22 @@ public class ProjectComponentsApiFacade {
         log.debug("Generated project component provision status: {}", provisionStatus);
 
         return provisionStatus;
+    }
+
+    public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
+        String accessToken = authenticationProvider.getAccessToken();
+        if (!isATokenThatBelongsToOdsApiService(accessToken)) {
+            throw new UserNotAllowedException("Invalid caller. Please, provide a valid token within the request.");
+        }
+
+        String marketplaceAccessToken = applicationAuthenticationProvider.getAccessToken();
+
+        var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
+        return projectComponentsMetricsMapper.map(response);
+    }
+
+    private boolean isATokenThatBelongsToOdsApiService(String accessToken) {
+        var oid = JwtUtils.extractClaim(accessToken, "oid");
+        return oid.map(odsApiServerServiceProps.getOid()::equals).orElse(false);
     }
 }

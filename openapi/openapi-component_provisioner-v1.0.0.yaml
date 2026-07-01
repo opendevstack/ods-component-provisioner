@@ -361,7 +361,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ProjectComponentListResponse"
+                $ref: "#/components/schemas/ProjectComponentsMetrics"
           description: A paginated list of all the provisioned project components
         "401":
           content:
@@ -634,7 +634,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProjectComponentStatusParameter'
-    ProjectComponentListItem:
+    ProjectComponentMetrics:
       type: object
       example:
         projectKey: SOMEPROJECT
@@ -667,7 +667,7 @@ components:
           example: 1707043200000
           type: number
         updatedAt:
-          description: The timestamp of the last change of the catalog item.
+          description: The timestamp of the last change of the provisioned component.
           example: 1707043200000
           type: number
     Pagination:
@@ -709,7 +709,7 @@ components:
           nullable: true
           example: "https://api.example.com/resources?page=0&size=20"
           description: URL of the previous page (or null if the current is the first one)
-    ProjectComponentListResponse:
+    ProjectComponentsMetrics:
       type: object
       example:
         data:
@@ -736,6 +736,6 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ProjectComponentListItem'
+            $ref: '#/components/schemas/ProjectComponentMetrics'
         pagination:
           $ref: '#/components/schemas/Pagination'

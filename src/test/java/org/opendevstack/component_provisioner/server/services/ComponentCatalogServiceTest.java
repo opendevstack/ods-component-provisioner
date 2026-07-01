@@ -628,4 +628,89 @@ class ComponentCatalogServiceTest {
                 .isSameAs(originalException);
     }
 
+    @Test
+    void givenValidInput_whenGetPaginatedProjectComponents_thenReturnsResponse() throws MalformedURLException {
+        // given
+        String accessToken = "token";
+        int page = 1;
+        int size = 10;
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+
+        ProjectComponentsMetrics expectedResponse = new ProjectComponentsMetrics();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+        when(projectComponentsApi.getAllProjectComponents(page, size))
+                .thenReturn(expectedResponse);
+
+        // when
+        var result = componentCatalogService.getPaginatedProjectComponents(accessToken, page, size);
+
+        // then
+        assertThat(result).isSameAs(expectedResponse);
+
+        verify(apiClientsBuilder)
+                .componentCatalogApiClient(accessToken, baseUrl.toString());
+        verify(apiClientsBuilder)
+                .projectComponentsApi(componentCatalogApiClient);
+        verify(projectComponentsApi)
+                .getAllProjectComponents(page, size);
+
+        verifyNoMoreInteractions(projectComponentsApi);
+    }
+
+    @Test
+    void givenApiThrowsHttpClientError_whenGetPaginatedProjectComponents_thenExceptionPropagates() throws MalformedURLException {
+        // given
+        String token = "token";
+        int page = 0;
+        int size = 10;
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(token, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
+        when(projectComponentsApi.getAllProjectComponents(page, size))
+                .thenThrow(new HttpClientErrorException(HttpStatus.FORBIDDEN));
+
+        // when / then
+        assertThatThrownBy(() ->
+                componentCatalogService.getPaginatedProjectComponents(token, page, size)
+        ).isInstanceOf(HttpClientErrorException.class);
+    }
+
+    @Test
+    void givenApiThrowsRestClientException_whenGetPaginatedProjectComponents_thenExceptionPropagates() throws MalformedURLException {
+        // given
+        String token = "token";
+        int page = 0;
+        int size = 10;
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(token, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
+        when(projectComponentsApi.getAllProjectComponents(page, size))
+                .thenThrow(new RestClientException("error"));
+
+        // when / then
+        assertThatThrownBy(() ->
+                componentCatalogService.getPaginatedProjectComponents(token, page, size)
+        ).isInstanceOf(RestClientException.class);
+    }
+
+
+
 }

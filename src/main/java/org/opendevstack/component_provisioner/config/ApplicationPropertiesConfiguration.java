@@ -118,6 +118,7 @@ public class ApplicationPropertiesConfiguration {
     @Data
     public static class OdsApiServerServiceProps {
         private URL baseRestUrl;
+        private String oid;
     }
 
     @Builder // useful for unit testing
