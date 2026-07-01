@@ -60,7 +60,7 @@ public class ProjectComponentsApiFacade {
 
     public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
         String accessToken = authenticationProvider.getAccessToken();
-        if (!validateTokenBelongsToOdsApiService(accessToken)) {
+        if (!isATokenThatBelongsToOdsApiService(accessToken)) {
             throw new UserNotAllowedException("Invalid caller. Please, provide a valid token within the request.");
         }
 
@@ -70,7 +70,7 @@ public class ProjectComponentsApiFacade {
         return projectComponentsMetricsMapper.map(response);
     }
 
-    private boolean validateTokenBelongsToOdsApiService(String accessToken) {
+    private boolean isATokenThatBelongsToOdsApiService(String accessToken) {
         var oid = JwtUtils.extractClaim(accessToken, "oid");
         return oid.map(odsApiServerServiceProps.getOid()::equals).orElse(false);
     }
