@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.api.ProjectComponentsWithProvisionStatusApi;
 import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApiFacade;
-import org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentsMetrics;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +32,7 @@ public class ProjectComponentsApiController implements ProjectComponentsWithProv
     }
 
     @Override
-    public ResponseEntity<ProjectComponentListResponse> getAllProjectComponents(Integer page, Integer size) {
+    public ResponseEntity<ProjectComponentsMetrics> getAllProjectComponents(Integer page, Integer size) {
         log.debug("getAllProjectComponents with page {} and page size of {}", page, size);
 
         var paginatedProjectComponents = projectComponentsApiFacade.getPaginatedProjectComponents(page, size);

@@ -10,8 +10,9 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.mappers.ProjectComponentListResponseMapper;
+import org.opendevstack.component_provisioner.server.mappers.ProjectComponentsMetricsMapper;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentsMetrics;
 import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
@@ -45,7 +46,7 @@ class ProjectComponentsApiFacadeTest {
     private ApplicationAuthenticationProvider applicationAuthenticationProvider;
 
     @Mock
-    private ProjectComponentListResponseMapper projectComponentListResponseMapper;
+    private ProjectComponentsMetricsMapper projectComponentsMetricsMapper;
 
     @Mock
     private ApplicationPropertiesConfiguration.OdsApiServerServiceProps odsApiServerServiceProps;
@@ -124,8 +125,8 @@ class ProjectComponentsApiFacadeTest {
         Integer page = 1;
         Integer size = 10;
 
-        var serviceResponse = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentListResponse();
-        var mappedResponse = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+        var serviceResponse = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics();
+        var mappedResponse = new ProjectComponentsMetrics();
 
         when(authenticationProvider.getAccessToken()).thenReturn(userToken);
         when(applicationAuthenticationProvider.getAccessToken()).thenReturn(appToken);
@@ -139,7 +140,7 @@ class ProjectComponentsApiFacadeTest {
             when(componentCatalogService.getPaginatedProjectComponents(appToken, page, size))
                     .thenReturn(serviceResponse);
 
-            when(projectComponentListResponseMapper.map(serviceResponse))
+            when(projectComponentsMetricsMapper.map(serviceResponse))
                     .thenReturn(mappedResponse);
 
             // when
@@ -152,7 +153,7 @@ class ProjectComponentsApiFacadeTest {
             verify(applicationAuthenticationProvider).getAccessToken();
             verify(componentCatalogService)
                     .getPaginatedProjectComponents(appToken, page, size);
-            verify(projectComponentListResponseMapper)
+            verify(projectComponentsMetricsMapper)
                     .map(serviceResponse);
         }
     }
@@ -177,7 +178,7 @@ class ProjectComponentsApiFacadeTest {
             verify(authenticationProvider).getAccessToken();
 
             verifyNoInteractions(componentCatalogService);
-            verifyNoInteractions(projectComponentListResponseMapper);
+            verifyNoInteractions(projectComponentsMetricsMapper);
         }
     }
 

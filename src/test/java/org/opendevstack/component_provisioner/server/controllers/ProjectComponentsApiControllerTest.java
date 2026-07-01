@@ -9,6 +9,7 @@ import org.opendevstack.component_provisioner.org.opendevstack.component_provisi
 import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApiFacade;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatusMother;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentsMetrics;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -74,13 +75,13 @@ class ProjectComponentsApiControllerTest {
         Integer page = 1;
         Integer size = 10;
 
-        var expectedResponse = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+        var expectedResponse = new ProjectComponentsMetrics();
 
         when(projectComponentsApiFacade.getPaginatedProjectComponents(page, size))
                 .thenReturn(expectedResponse);
 
         // when
-        ResponseEntity<org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse> result =
+        ResponseEntity<ProjectComponentsMetrics> result =
                 controller.getAllProjectComponents(page, size);
 
         // then
@@ -97,7 +98,7 @@ class ProjectComponentsApiControllerTest {
         Integer page = null;
         Integer size = null;
 
-        var response = new org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse();
+        var response = new ProjectComponentsMetrics();
 
         when(projectComponentsApiFacade.getPaginatedProjectComponents(page, size))
                 .thenReturn(response);

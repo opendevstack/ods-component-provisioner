@@ -8,9 +8,9 @@ import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfig
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.mappers.ProjectComponentListResponseMapper;
-import org.opendevstack.component_provisioner.server.model.ProjectComponentListResponse;
+import org.opendevstack.component_provisioner.server.mappers.ProjectComponentsMetricsMapper;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
+import org.opendevstack.component_provisioner.server.model.ProjectComponentsMetrics;
 import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
@@ -29,7 +29,7 @@ public class ProjectComponentsApiFacade {
     private final EntitiesMapper entitiesMapper;
     private final OdsApiServerServiceProps odsApiServerServiceProps;
     private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
-    private final ProjectComponentListResponseMapper projectComponentListResponseMapper;
+    private final ProjectComponentsMetricsMapper projectComponentsMetricsMapper;
 
     public ProjectComponentExtendedInfo getProjectComponentById(String projectKey, String componentId) {
         var accessToken = authenticationProvider.getAccessToken();
@@ -58,7 +58,7 @@ public class ProjectComponentsApiFacade {
         return provisionStatus;
     }
 
-    public ProjectComponentListResponse getPaginatedProjectComponents(Integer page, Integer size) {
+    public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
         String accessToken = authenticationProvider.getAccessToken();
         if (!validateTokenBelongsToOdsApiService(accessToken)) {
             throw new UserNotAllowedException("Invalid caller. Please, provide a valid token within the request.");
@@ -67,7 +67,7 @@ public class ProjectComponentsApiFacade {
         String marketplaceAccessToken = applicationAuthenticationProvider.getAccessToken();
 
         var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
-        return projectComponentListResponseMapper.map(response);
+        return projectComponentsMetricsMapper.map(response);
     }
 
     private boolean validateTokenBelongsToOdsApiService(String accessToken) {

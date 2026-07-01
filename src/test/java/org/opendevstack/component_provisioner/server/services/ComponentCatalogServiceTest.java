@@ -637,7 +637,7 @@ class ComponentCatalogServiceTest {
 
         URL baseUrl = URI.create("http://component-catalog").toURL();
 
-        ProjectComponentListResponse expectedResponse = new ProjectComponentListResponse();
+        ProjectComponentsMetrics expectedResponse = new ProjectComponentsMetrics();
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
