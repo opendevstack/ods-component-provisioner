@@ -1,5 +1,8 @@
 package org.opendevstack.component_provisioner.server.facade;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -9,6 +12,7 @@ import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMothe
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.mappers.ProjectComponentsMetricsMapper;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
@@ -18,11 +22,16 @@ import org.opendevstack.component_provisioner.server.services.AuthenticationProv
 import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.util.JwtUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -53,6 +62,9 @@ class ProjectComponentsApiFacadeTest {
 
     @InjectMocks
     private ProjectComponentsApiFacade projectComponentsApiFacade;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @Test
     void givenProjectKeyAndComponentId_whenGetProjectComponentById_thenReturnComponentInfo() {
@@ -178,6 +190,57 @@ class ProjectComponentsApiFacadeTest {
             verify(authenticationProvider).getAccessToken();
 
             verifyNoInteractions(componentCatalogService);
+            verifyNoInteractions(projectComponentsMetricsMapper);
+        }
+    }
+
+    @Test
+    void givenInvalidPagination_whenComponentCatalogReturnsBadRequest_thenThrowsBadRequestException() throws Exception {
+        // given
+        String userToken = "user-token";
+        String appToken = "app-token";
+
+        when(authenticationProvider.getAccessToken()).thenReturn(userToken);
+        when(applicationAuthenticationProvider.getAccessToken()).thenReturn(appToken);
+        when(odsApiServerServiceProps.getOid()).thenReturn("valid-oid");
+
+        try (var mocked = org.mockito.Mockito.mockStatic(JwtUtils.class)) {
+            mocked.when(() -> JwtUtils.extractClaim(userToken, "oid"))
+                    .thenReturn(Optional.of("valid-oid"));
+
+            HttpClientErrorException exception =
+                    HttpClientErrorException.create(
+                            HttpStatus.BAD_REQUEST,
+                            "Bad Request",
+                            HttpHeaders.EMPTY,
+                            """
+                            {"message":"Page must be >= 0 and size must be between 0 and 100"}
+                            """.getBytes(),
+                            StandardCharsets.UTF_8
+                    );
+
+            when(componentCatalogService.getPaginatedProjectComponents(appToken, -1, 10))
+                    .thenThrow(exception);
+
+            JsonNode jsonNode = new ObjectMapper().readTree(
+                """
+                {"message":"Page must be >= 0 and size must be between 0 and 100"}
+                """
+            );
+
+            when(objectMapper.readTree(anyString()))
+                    .thenReturn(jsonNode);
+
+            // when / then
+            assertThatThrownBy(() ->
+                    projectComponentsApiFacade.getPaginatedProjectComponents(-1, 10)
+            )
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessage("Page must be >= 0 and size must be between 0 and 100");
+
+            verify(componentCatalogService)
+                    .getPaginatedProjectComponents(appToken, -1, 10);
+
             verifyNoInteractions(projectComponentsMetricsMapper);
         }
     }
