@@ -72,6 +72,16 @@ public class ControllerExceptionHandler {
         return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(SizeValueNotValidException.class)
+    public ResponseEntity<RestErrorMessage> handleSizeValueNotValidException(SizeValueNotValidException ex) {
+        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PageValueNotValidException.class)
+    public ResponseEntity<RestErrorMessage> handlePageValueNotValidException(PageValueNotValidException ex) {
+        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {
         // Explicitly setting MediaType.APPLICATION_JSON contentType is required, 
         // due to clients sending miscellaneous Accept headers on the request, 

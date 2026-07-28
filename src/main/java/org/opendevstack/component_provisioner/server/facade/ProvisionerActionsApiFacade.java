@@ -361,8 +361,7 @@ public class ProvisionerActionsApiFacade {
                 .toArray(ProvisionActionParameter[]::new);
 
         var res = provisionActionWrapper.cloneWithParameters(missingParams);
-
-        log.debug("Added missing mandatory params to the provisionAction: {}", missingParams);
+        log.debug("Added missing mandatory params to the provisionAction: {}", (Object) missingParams);
         return res;
     }
 

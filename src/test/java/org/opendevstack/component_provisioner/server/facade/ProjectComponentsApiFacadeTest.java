@@ -172,7 +172,7 @@ class ProjectComponentsApiFacadeTest {
 
             // when / then
             assertThatThrownBy(() ->
-                    projectComponentsApiFacade.getPaginatedProjectComponents(0, 10)
+                    projectComponentsApiFacade.getPaginatedProjectComponents(1, 10)
             ).isInstanceOf(org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException.class);
 
             verify(authenticationProvider).getAccessToken();

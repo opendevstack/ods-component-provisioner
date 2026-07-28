@@ -6,6 +6,8 @@ import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration.OdsApiServerServiceProps;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.PageValueNotValidException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.SizeValueNotValidException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.mappers.ProjectComponentsMetricsMapper;
@@ -60,6 +62,15 @@ public class ProjectComponentsApiFacade {
 
     public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
         String accessToken = authenticationProvider.getAccessToken();
+
+        if (!isPageValidValue(page)) {
+            throw new PageValueNotValidException("Invalid value for page parameter. Please provide a valid page parameter (between 1 and 2147483647).");
+        }
+
+        if (!isSizeValidValue(size)) {
+            throw new SizeValueNotValidException("Invalid value for size parameter. Please provide a valid size parameter (between 1 and 2147483647).");
+        }
+
         if (!isATokenThatBelongsToOdsApiService(accessToken)) {
             throw new UserNotAllowedException("Invalid caller. Please, provide a valid token within the request.");
         }
@@ -68,6 +79,14 @@ public class ProjectComponentsApiFacade {
 
         var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
         return projectComponentsMetricsMapper.map(response);
+    }
+
+    private boolean isSizeValidValue(Integer size) {
+        return size != null && size > 0 && size < 2147483647;
+    }
+
+    private boolean isPageValidValue(Integer page) {
+        return page != null && page > 0 && page < 2147483647;
     }
 
     private boolean isATokenThatBelongsToOdsApiService(String accessToken) {
