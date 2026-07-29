@@ -42,7 +42,7 @@ class ControllerExceptionHandlerTest {
         MissingServletRequestParameterException ex = new MissingServletRequestParameterException("param", "String");
 
         // when
-        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleRequestParamsExceptions(ex);
+        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleMissingServletRequestParameterException(ex);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -55,7 +55,7 @@ class ControllerExceptionHandlerTest {
         MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
 
         // when
-        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleRequestParamsExceptions(ex);
+        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleMissingServletRequestParameterException(ex);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

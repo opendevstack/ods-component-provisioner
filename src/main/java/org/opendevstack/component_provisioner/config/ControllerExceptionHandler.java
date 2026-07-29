@@ -33,7 +33,7 @@ public class ControllerExceptionHandler {
         var propertyName = ex.getPropertyName();
         return defaultErrResponse(
                 String.format(
-                        "Invalid request parameter: %s. It must be an integer between 0 and 2147483647",
+                        "Invalid request parameter: %s.",
                         propertyName),
                 HttpStatus.BAD_REQUEST);
     }
