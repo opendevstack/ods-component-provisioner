@@ -86,7 +86,7 @@ public class ProjectComponentsApiFacade {
     }
 
     private boolean isPageValidValue(Integer page) {
-        return page != null && page > 0 && page < 2147483647;
+        return page != null && page >= 0 && page < 2147483647;
     }
 
     private boolean isATokenThatBelongsToOdsApiService(String accessToken) {
