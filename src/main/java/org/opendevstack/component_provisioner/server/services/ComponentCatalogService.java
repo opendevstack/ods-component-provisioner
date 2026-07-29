@@ -9,8 +9,6 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.User
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +21,6 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 
-@CacheConfig(cacheNames = {ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME})
 @Service
 @Slf4j
 public class ComponentCatalogService {
@@ -143,7 +140,6 @@ public class ComponentCatalogService {
         return componentsApi.getProjectComponents(projectKey);
     }
 
-    @Cacheable(key = "#root.methodName + #projectKey + #catalogItemId")
     public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
@@ -155,7 +151,6 @@ public class ComponentCatalogService {
         return catalogItem;
     }
 
-    @Cacheable(key = "#root.methodName + #slug")
     public CatalogItem getCatalogItemBySlug(String accessToken, String slug) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
