@@ -15,6 +15,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ControllerExceptionHandlerTest {
@@ -59,6 +60,20 @@ class ControllerExceptionHandlerTest {
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    void givenMethodArgumentTypeMismatchException_whenHandleMethodArgumentTypeMismatchExceptionIsCalled_thenReturnsBadRequest() {
+        // given
+        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getPropertyName()).thenReturn("testParam");
+
+        // when
+        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleMethodArgumentTypeMismatchException(ex);
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody().getMessage()).isEqualTo("Invalid request parameter: testParam.");
     }
 
     @Test
