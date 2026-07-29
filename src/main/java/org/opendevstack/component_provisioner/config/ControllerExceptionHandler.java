@@ -22,9 +22,20 @@ public class ControllerExceptionHandler {
         return defaultErrResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler({ MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class })
-    public ResponseEntity<RestErrorMessage> handleRequestParamsExceptions(Exception ex) {
+    @ExceptionHandler({ MissingServletRequestParameterException.class })
+    public ResponseEntity<RestErrorMessage> handleMissingServletRequestParameterException(Exception ex) {
         return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<RestErrorMessage> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException ex) {
+        var propertyName = ex.getPropertyName();
+        return defaultErrResponse(
+                String.format(
+                        "Invalid request parameter: %s. It must be an integer between 0 and 2147483647",
+                        propertyName),
+                HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -72,16 +83,6 @@ public class ControllerExceptionHandler {
         return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(SizeValueNotValidException.class)
-    public ResponseEntity<RestErrorMessage> handleSizeValueNotValidException(SizeValueNotValidException ex) {
-        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler(PageValueNotValidException.class)
-    public ResponseEntity<RestErrorMessage> handlePageValueNotValidException(PageValueNotValidException ex) {
-        return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
-    }
-
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {
         // Explicitly setting MediaType.APPLICATION_JSON contentType is required, 
         // due to clients sending miscellaneous Accept headers on the request, 
@@ -90,6 +91,16 @@ public class ControllerExceptionHandler {
                 .status(errStatus)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
                 .body(defaultErrMsg(ex));
+    }
+
+    private static ResponseEntity<RestErrorMessage> defaultErrResponse(String errorMessage, HttpStatus errStatus) {
+        // Explicitly setting MediaType.APPLICATION_JSON contentType is required,
+        // due to clients sending miscellaneous Accept headers on the request,
+        // but error messages are always in JSON format
+        return ResponseEntity
+                .status(errStatus)
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(new RestErrorMessage(errorMessage));
     }
 
     private static RestErrorMessage defaultErrMsg(Exception ex) {

@@ -122,8 +122,8 @@ class ProjectComponentsApiFacadeTest {
         // given
         String userToken = "user-token";
         String appToken = "app-token";
-        Long page = 1L;
-        Long size = 10L;
+        Integer page = 1;
+        Integer size = 10;
 
         var serviceResponse = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics();
         var mappedResponse = new ProjectComponentsMetrics();
@@ -137,7 +137,7 @@ class ProjectComponentsApiFacadeTest {
             mocked.when(() -> JwtUtils.extractClaim(userToken, "oid"))
                     .thenReturn(Optional.of("valid-oid"));
 
-            when(componentCatalogService.getPaginatedProjectComponents(appToken, page.intValue(), size.intValue()))
+            when(componentCatalogService.getPaginatedProjectComponents(appToken, page, size))
                     .thenReturn(serviceResponse);
 
             when(projectComponentsMetricsMapper.map(serviceResponse))
@@ -152,7 +152,7 @@ class ProjectComponentsApiFacadeTest {
             verify(authenticationProvider).getAccessToken();
             verify(applicationAuthenticationProvider).getAccessToken();
             verify(componentCatalogService)
-                    .getPaginatedProjectComponents(appToken, page.intValue(), size.intValue());
+                    .getPaginatedProjectComponents(appToken, page, size);
             verify(projectComponentsMetricsMapper)
                     .map(serviceResponse);
         }
@@ -172,7 +172,7 @@ class ProjectComponentsApiFacadeTest {
 
             // when / then
             assertThatThrownBy(() ->
-                    projectComponentsApiFacade.getPaginatedProjectComponents(1L, 10L)
+                    projectComponentsApiFacade.getPaginatedProjectComponents(1, 10)
             ).isInstanceOf(org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException.class);
 
             verify(authenticationProvider).getAccessToken();

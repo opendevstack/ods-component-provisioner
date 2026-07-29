@@ -347,7 +347,6 @@ paths:
           required: false
           schema:
             type: integer
-            format: int64
             default: 0
 
         - name: size
@@ -356,7 +355,6 @@ paths:
           required: false
           schema:
             type: integer
-            format: int64
             default: 20
       responses:
         "200":

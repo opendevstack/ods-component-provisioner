@@ -32,7 +32,7 @@ public class ProjectComponentsApiController implements ProjectComponentsWithProv
     }
 
     @Override
-    public ResponseEntity<ProjectComponentsMetrics> getAllProjectComponents(Long page, Long size) {
+    public ResponseEntity<ProjectComponentsMetrics> getAllProjectComponents(Integer page, Integer size) {
         log.debug("getAllProjectComponents with page {} and page size of {}", page, size);
 
         var paginatedProjectComponents = projectComponentsApiFacade.getPaginatedProjectComponents(page, size);
