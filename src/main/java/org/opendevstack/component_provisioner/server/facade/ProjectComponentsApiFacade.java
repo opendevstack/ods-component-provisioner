@@ -60,7 +60,7 @@ public class ProjectComponentsApiFacade {
         return provisionStatus;
     }
 
-    public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
+    public ProjectComponentsMetrics getPaginatedProjectComponents(Long page, Long size) {
         String accessToken = authenticationProvider.getAccessToken();
 
         if (!isPageValidValue(page)) {
@@ -77,16 +77,16 @@ public class ProjectComponentsApiFacade {
 
         String marketplaceAccessToken = applicationAuthenticationProvider.getAccessToken();
 
-        var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
+        var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page.intValue(), size.intValue());
         return projectComponentsMetricsMapper.map(response);
     }
 
-    private boolean isSizeValidValue(Integer size) {
-        return size != null && size > 0 && size < 2147483647;
+    private boolean isSizeValidValue(Long size) {
+        return size != null && size > 0 && size < Integer.MAX_VALUE;
     }
 
-    private boolean isPageValidValue(Integer page) {
-        return page != null && page >= 0 && page < 2147483647;
+    private boolean isPageValidValue(Long page) {
+        return page != null && page >= 0 && page < Integer.MAX_VALUE;
     }
 
     private boolean isATokenThatBelongsToOdsApiService(String accessToken) {

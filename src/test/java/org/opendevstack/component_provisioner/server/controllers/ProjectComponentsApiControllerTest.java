@@ -72,8 +72,8 @@ class ProjectComponentsApiControllerTest {
     @Test
     void givenPageAndSize_whenGetAllProjectComponents_thenReturnsOkWithBody() {
         // given
-        Integer page = 1;
-        Integer size = 10;
+        Long page = 1L;
+        Long size = 10L;
 
         var expectedResponse = new ProjectComponentsMetrics();
 
@@ -95,8 +95,8 @@ class ProjectComponentsApiControllerTest {
     @Test
     void givenNullPageAndSize_whenGetAllProjectComponents_thenDelegatesWithNulls() {
         // given
-        Integer page = null;
-        Integer size = null;
+        Long page = null;
+        Long size = null;
 
         var response = new ProjectComponentsMetrics();
 
