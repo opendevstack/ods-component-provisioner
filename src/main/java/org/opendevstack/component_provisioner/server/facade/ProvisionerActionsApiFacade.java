@@ -64,7 +64,6 @@ public class ProvisionerActionsApiFacade {
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
-        return null;/*
         notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
 
         var awxResponse = requestProvisionToAwx(updatedProvisionActionWithOdsApiParametersWrapper.toProvisionAction());
@@ -73,7 +72,7 @@ public class ProvisionerActionsApiFacade {
 
         updateAwxJobIdIntoProjectComponents(provisionActionWrapper, awxResponse);
 
-        return awxResponse;*/
+        return awxResponse;
     }
 
     public AwxResponse requestProvisionToAwx(ProvisionAction provisionAction) {
