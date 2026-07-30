@@ -1,10 +1,13 @@
 package org.opendevstack.component_provisioner.server.facade;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration.OdsApiServerServiceProps;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
@@ -17,6 +20,7 @@ import org.opendevstack.component_provisioner.server.services.AwxService;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.util.JwtUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Service
 @AllArgsConstructor
@@ -30,6 +34,8 @@ public class ProjectComponentsApiFacade {
     private final OdsApiServerServiceProps odsApiServerServiceProps;
     private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
     private final ProjectComponentsMetricsMapper projectComponentsMetricsMapper;
+    private final ObjectMapper objectMapper;
+
 
     public ProjectComponentExtendedInfo getProjectComponentById(String projectKey, String componentId) {
         var accessToken = authenticationProvider.getAccessToken();
@@ -58,6 +64,7 @@ public class ProjectComponentsApiFacade {
         return provisionStatus;
     }
 
+    @SneakyThrows
     public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
         String accessToken = authenticationProvider.getAccessToken();
 
@@ -67,7 +74,17 @@ public class ProjectComponentsApiFacade {
 
         String marketplaceAccessToken = applicationAuthenticationProvider.getAccessToken();
 
-        var response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
+        org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics response;
+        try {
+            response = componentCatalogService.getPaginatedProjectComponents(marketplaceAccessToken, page, size);
+        } catch (HttpClientErrorException e) {
+            String message = objectMapper
+                    .readTree(e.getResponseBodyAsString())
+                    .path("message")
+                    .asText();
+
+            throw new BadRequestException(message);
+        }
         return projectComponentsMetricsMapper.map(response);
     }
 
