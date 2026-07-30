@@ -67,6 +67,7 @@ public class ProjectComponentsApiFacade {
     @SneakyThrows
     public ProjectComponentsMetrics getPaginatedProjectComponents(Integer page, Integer size) {
         String accessToken = authenticationProvider.getAccessToken();
+
         if (!isATokenThatBelongsToOdsApiService(accessToken)) {
             throw new UserNotAllowedException("Invalid caller. Please, provide a valid token within the request.");
         }
