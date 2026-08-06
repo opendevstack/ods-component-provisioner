@@ -66,8 +66,7 @@ public class CachingConfiguration implements CacheEventListener<Object, Object> 
                 .build();
 
         return Map.of(
-                ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, ehCacheConfig,
-                ApplicationPropertiesConfiguration.ComponentCatalogCacheProps.CACHE_NAME, ehCacheConfig
+                ApplicationPropertiesConfiguration.ProjectsInfoServicesCacheProps.CACHE_NAME, ehCacheConfig
         );
     }
 
