@@ -302,6 +302,7 @@ public class ProvisionResultsApiFacade {
         var dispatchedWorkflowParams = action.getParameters().stream().map(CreateIncidentParameter::getName).collect(Collectors.toSet());
         // We need to add in a static way these parameters, so the dispatcher can send them
         // to the dispatched workflow
+        dispatchedWorkflowParams.add("ods_namespace");
         dispatchedWorkflowParams.add("project_key");
         dispatchedWorkflowParams.add("cluster_location");
         dispatchedWorkflowParams.add("component_id");

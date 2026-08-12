@@ -728,6 +728,7 @@ class ProvisionResultsApiFacadeTest {
                 action
         );
 
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("ods_namespace");
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("project_key");
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("cluster_location");
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("component_id");
