@@ -79,7 +79,7 @@ public class ProvisionResultsApiFacade {
 
         var triggerDeletionWrapperWorkflow = Strings.isNotBlank(deletionWorkflowId) || Strings.isNotBlank(deletionWorkflowName);
         if (triggerDeletionWrapperWorkflow) {
-            addDeletionWrapperWorkflowParameters(catalogItemId, deletionWorkflowId, deletionWorkflowName, deletionWorkflowTimeoutSeconds, createIncidentAction);
+            addDeletionWrapperWorkflowParameters(catalogItemId, projectComponent.getComponentUrl(), deletionWorkflowId, deletionWorkflowName, deletionWorkflowTimeoutSeconds, createIncidentAction);
         }
 
         AwxResponse awxResponse = triggerDeletion(projectKey, componentId, triggerDeletionWrapperWorkflow, createIncidentAction);
@@ -252,6 +252,7 @@ public class ProvisionResultsApiFacade {
     }
 
     private void addDeletionWrapperWorkflowParameters(String catalogItemId,
+                                                      String componentUrl,
                                                       String customDeletionWorkflowId,
                                                       String customDeletionWorkflowName,
                                                       String deletionWorkflowTimeoutSeconds,
@@ -265,6 +266,12 @@ public class ProvisionResultsApiFacade {
         action.addParametersItem(CreateIncidentParameter.builder()
                 .name("catalog_item_id")
                 .value(catalogItemId)
+                .type(ParameterType.STRING.getValue())
+                .build()
+        );
+        action.addParametersItem(CreateIncidentParameter.builder()
+                .name("component_url")
+                .value(componentUrl)
                 .type(ParameterType.STRING.getValue())
                 .build()
         );

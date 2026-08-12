@@ -697,6 +697,7 @@ class ProvisionResultsApiFacadeTest {
                 facade,
                 "addDeletionWrapperWorkflowParameters",
                 "catalogId",
+                "componentUrl",
                 "wfId",
                 null,
                 "60",
@@ -704,6 +705,7 @@ class ProvisionResultsApiFacadeTest {
         );
 
         assertThat(facade.getParameterString(action, "catalog_item_id")).isEqualTo("catalogId");
+        assertThat(facade.getParameterString(action, "component_url")).isEqualTo("componentUrl");
         assertThat(facade.getParameterString(action, "deletion_workflow_id")).isEqualTo("wfId");
         assertThat(facade.getParameterString(action, "deletion_workflow_timeout_seconds")).isEqualTo("60");
     }
@@ -720,6 +722,7 @@ class ProvisionResultsApiFacadeTest {
                 "addDeletionWrapperWorkflowParameters",
                 "catalogId",
                 "wfId",
+                "componentUrl",
                 null,
                 "60",
                 action
@@ -818,6 +821,7 @@ class ProvisionResultsApiFacadeTest {
                 facade,
                 "addDeletionWrapperWorkflowParameters",
                 "catalogId",
+                "componentUrl",
                 "wfId",
                 "wfName",
                 "60",
