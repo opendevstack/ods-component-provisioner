@@ -563,7 +563,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenMissingDeletionWorkflowAndWorkflowProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+    void givenMissingDeletionWorkflowAndDeletionWorkflowNameAndWorkflowProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
         //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123")
@@ -575,7 +575,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenMissingDeletionWorkflowAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+    void givenMissingDeletionWorkflowAndDeletionWorkflowNameAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
         //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
@@ -605,6 +605,18 @@ class ProvisionerActionsApiValidatorTest {
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123"),
                 ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
+        ));
+
+        //when //then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+    }
+
+    @Test
+    void givenDeletionWorkflowNameProvided_whenValidatingWorkflowPresence_thenDoesNotThrow() {
+        //given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow", "wf-123"),
+                ProvisionActionParameterMother.of("deletion_workflow_name", "del-wf-name")
         ));
 
         //when //then

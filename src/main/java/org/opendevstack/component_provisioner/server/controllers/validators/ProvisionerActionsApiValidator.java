@@ -149,11 +149,12 @@ public class ProvisionerActionsApiValidator {
         var workflow = getWorkflow(provisionAction);
         var workflowName = getWorkflowName(provisionAction);
         var deletionWorkflow = getDeletionWorkflow(provisionAction);
+        var deletionWorkflowName = getDeletionWorkflowName(provisionAction);
 
         log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
 
         var workflowIsNotPresent = StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName);
-        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow);
+        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow) && StringUtils.isBlank(deletionWorkflowName);
 
         if (workflowIsNotPresent || deletionWorkflowIsNotPresent) {
             throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
