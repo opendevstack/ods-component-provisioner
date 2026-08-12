@@ -34,6 +34,10 @@ public class ProvisionerActionsParameterExtractor {
         return getParameterString(provisionAction, "workflow_name");
     }
 
+    public static String getDeletionWorkflow(ProvisionAction provisionAction) {
+        return getParameterString(provisionAction, "deletion_workflow");
+    }
+
     public static String getParameterString(ProvisionAction provisionAction, String parameterName) {
         return provisionAction.getParameters().stream()
                 .filter(parameter -> parameterName.equals(parameter.getName()))

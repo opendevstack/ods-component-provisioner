@@ -10,7 +10,6 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
-import org.opendevstack.component_provisioner.server.facade.ProvisionActionWrapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
@@ -23,10 +22,10 @@ import org.opendevstack.component_provisioner.server.services.restrictions.evalu
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
-import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -149,10 +148,15 @@ public class ProvisionerActionsApiValidator {
     public void validateWorkflowPresence(ProvisionAction provisionAction) {
         var workflow = getWorkflow(provisionAction);
         var workflowName = getWorkflowName(provisionAction);
+        var deletionWorkflow = getDeletionWorkflow(provisionAction);
 
         log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
-        if (StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName)) {
-            throw new InvalidRestEntityException("Either workflow or workflow_name are required.");
+
+        var workflowIsNotPresent = StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName);
+        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow);
+
+        if (workflowIsNotPresent || deletionWorkflowIsNotPresent) {
+            throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
         }
     }
 

@@ -62,15 +62,18 @@ class ProvisionerActionsApiValidatorTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "project_key", "component_id", "access_token"})
-    void validate_throwsInvalidRestEntityException_whenRequiredParameterMissing(String missingParam) {
-        var action = buildActionMissing(missingParam);
+    void givenRequiredParameterMissing_whenValidating_thenThrowsInvalidRestEntityException(String missingParam) {
+        //given
+        var action = givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(missingParam);
 
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsProjectComponentAlreadyProvisionedException_whenComponentAlreadyExistsInCatalog() {
+    void givenAlreadyProvisionedComponent_whenValidating_thenThrowsProjectComponentAlreadyProvisionedException() {
+        //given
         var projectKey = "pkey";
         var componentId = "cid";
         var accessToken = "accessToken";
@@ -92,13 +95,14 @@ class ProvisionerActionsApiValidatorTest {
         when(componentCatalogService.getProjectComponents(any(), any()))
                 .thenReturn(List.of(exists));
 
+        //when //then
         assertThrows(ProjectComponentAlreadyProvisionedException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsUserNotAllowedException_whenUserHasNoPermissions() {
-        // Given
+    void givenUserWithoutPermissions_whenValidating_thenThrowsUserNotAllowedException() {
+        //given
         var projectKey = "pkey";
         var componentId = "cid";
         var accessToken = "accessToken";
@@ -129,14 +133,14 @@ class ProvisionerActionsApiValidatorTest {
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
                 .thenReturn(Pair.of(false, "User is not allowed"));
 
-        // Expect exception
+        //when //then
         assertThrows(UserNotAllowedException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_allowsProvision_whenUserHasPermissions() {
-        // Given
+    void givenUserWithPermissions_whenValidating_thenDoesNotThrow() {
+        //given
         var projectKey = "pkey";
         var componentId = "cid";
         var accessToken = "accessToken";
@@ -167,12 +171,13 @@ class ProvisionerActionsApiValidatorTest {
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
                 .thenReturn(Pair.of(true, ""));
 
-        // Should NOT throw
+        //when //then
         provisionerActionsApiValidator.validate(action);
     }
 
     @Test
-    void validate_throwsInvalidRestEntityException_whenProjectKeyIsBlank() {
+    void givenBlankProjectKey_whenValidating_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", ""),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -180,12 +185,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsInvalidRestEntityException_whenComponentIdIsBlank() {
+    void givenBlankComponentId_whenValidating_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", ""),
@@ -193,12 +200,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsInvalidRestEntityException_whenAccessTokenIsBlank() {
+    void givenBlankAccessToken_whenValidating_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -206,12 +215,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "")
         ));
 
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsInvalidRestEntityException_whenMandatoryFieldsValidatorThrows() {
+    void givenMandatoryFieldsValidatorThrows_whenValidatingMandatoryFields_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -223,12 +234,14 @@ class ProvisionerActionsApiValidatorTest {
                 .when(mandatoryFieldsValidator)
                 .validate(any(), any());
 
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()));
     }
 
     @Test
-    void validate_throwsException_whenComponentCatalogServiceThrowsDuringProvisionCheck() {
+    void givenComponentCatalogServiceThrows_whenValidating_thenThrowsRuntimeException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -239,12 +252,14 @@ class ProvisionerActionsApiValidatorTest {
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
         when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
 
+        //when //then
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsException_whenProjectsInfoServiceThrowsDuringPermissionsCheck() {
+    void givenProjectsInfoServiceThrows_whenValidating_thenThrowsRuntimeException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -252,12 +267,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
+        //when //then
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
     @Test
-    void validate_throwsException_whenGroupsRestrictionsEvaluatorThrowsDuringPermissionsCheck() {
+    void givenGroupsRestrictionsEvaluatorThrows_whenValidating_thenThrowsRuntimeException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -267,12 +284,15 @@ class ProvisionerActionsApiValidatorTest {
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
 
+        //when //then
         assertThrows(RuntimeException.class,
                 () -> provisionerActionsApiValidator.validate(action));
     }
 
-    private ProvisionAction buildActionMissing(String missingParamName) {
+    private ProvisionAction givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(String missingParamName) {
+        //given
         var params = new ArrayList<ProvisionActionParameter>();
+        //when
         if (!"project_key".equals(missingParamName))
             params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
         if (!"component_id".equals(missingParamName))
@@ -282,41 +302,49 @@ class ProvisionerActionsApiValidatorTest {
         if (!"access_token".equals(missingParamName))
             params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
 
+        //then
         return ProvisionActionMother.of(params);
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenCatalogItemIsNull() {
+    void givenNullCatalogItem_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(Collections.emptyList());
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, null))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("does not exist");
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenCatalogItemHasNoUserActions() {
+    void givenCatalogItemWithoutUserActions_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var catalogItem = CatalogItem.builder().title("My Item").userActions(null).build();
         var action = ProvisionActionMother.of(Collections.emptyList());
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("does not exist");
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenNoPROVISIONUserAction() {
+    void givenCatalogItemWithoutProvisionUserAction_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var userAction = CatalogItemUserAction.builder().id("DELETE").parameters(List.of()).build();
         var catalogItem = CatalogItem.builder().title("My Item").userActions(List.of(userAction)).build();
         var action = ProvisionActionMother.of(Collections.emptyList());
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("doesn't have a PROVISION user action");
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenParameterIsNotDefinedInCatalog() {
+    void givenParameterNotDefinedInCatalog_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var visibleParam = CatalogItemUserActionParameter.builder()
                 .name("known_param")
                 .visible(true)
@@ -333,6 +361,7 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("unknown_param", "value")
         ));
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("unknown_param")
@@ -340,7 +369,8 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenParameterIsNotVisible() {
+    void givenNotVisibleParameter_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var hiddenParam = CatalogItemUserActionParameter.builder()
                 .name("hidden_param")
                 .visible(false)
@@ -357,6 +387,7 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("hidden_param", "value")
         ));
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("hidden_param")
@@ -364,7 +395,8 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_throwsWhenParameterVisibilityIsNull() {
+    void givenParameterWithNullVisibility_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+        //given
         var paramWithNullVisibility = CatalogItemUserActionParameter.builder()
                 .name("null_visibility_param")
                 .visible(null)
@@ -381,6 +413,7 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("null_visibility_param", "value")
         ));
 
+        //when //then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessageContaining("null_visibility_param")
@@ -388,7 +421,8 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_succeedsWhenAllParametersAreVisible() {
+    void givenAllVisibleParameters_whenValidatingReceivesOnlyVisibleParameters_thenDoesNotThrow() {
+        //given
         var mandatoryVisible = CatalogItemUserActionParameter.builder()
                 .name("mandatory_param")
                 .visible(true)
@@ -412,12 +446,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("optional_param", "val2")
         ));
 
+        //when //then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_succeedsWhenOnlyVisibleOptionalParamProvided() {
+    void givenOnlyVisibleOptionalParameter_whenValidatingReceivesOnlyVisibleParameters_thenDoesNotThrow() {
+        //given
         var optionalVisible = CatalogItemUserActionParameter.builder()
                 .name("optional_param")
                 .visible(true)
@@ -435,12 +471,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("optional_param", "value")
         ));
 
+        //when //then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_succeedsWhenNoParametersProvided() {
+    void givenNoParameters_whenValidatingReceivesOnlyVisibleParameters_thenDoesNotThrow() {
+        //given
         var visibleParam = CatalogItemUserActionParameter.builder()
                 .name("some_param")
                 .visible(true)
@@ -455,12 +493,14 @@ class ProvisionerActionsApiValidatorTest {
                 .build();
         var action = ProvisionActionMother.of(Collections.emptyList());
 
+        //when //then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_succeedsWhenOnlyInternalParamsProvided() {
+    void givenOnlyInternalParameters_whenValidatingReceivesOnlyVisibleParameters_thenDoesNotThrow() {
+        //given
         // catalog_item_id and project_key are not defined in catalog params but must always be allowed
         var userAction = CatalogItemUserAction.builder()
                 .id("PROVISION")
@@ -475,12 +515,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("project_key", "pkey")
         ));
 
+        //when //then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 
     @Test
-    void validateReceivesOnlyVisibleParameters_succeedsWhenInternalParamsCombinedWithVisibleParams() {
+    void givenInternalAndVisibleParameters_whenValidatingReceivesOnlyVisibleParameters_thenDoesNotThrow() {
+        //given
         // catalog_item_id and project_key mixed with regular visible params should still pass
         var visibleParam = CatalogItemUserActionParameter.builder()
                 .name("visible_param")
@@ -500,12 +542,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("visible_param", "value")
         ));
 
+        //when //then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
     }
 
     @Test
-    void validateWorkflowPresence_throwsInvalidRestEntityException_whenBothWorkflowAndWorkflowNameMissing() {
+    void givenMissingWorkflowAndWorkflowName_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
@@ -513,50 +557,99 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        // when / then
+        //when //then
         assertThrows(InvalidRestEntityException.class,
                 () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateWorkflowPresence_succeeds_whenWorkflowProvidedByUser() {
+    void givenMissingDeletionWorkflowAndWorkflowProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+        //when //then
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateWorkflowPresence_succeeds_whenWorkflowNameProvidedByUser() {
+    void givenMissingDeletionWorkflowAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")
         ));
 
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+        //when //then
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateWorkflowPresence_succeeds_whenBothWorkflowAndWorkflowNameProvided() {
+    void givenBlankDeletionWorkflow_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+        //given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123"),
-                ProvisionActionParameterMother.of("workflow_name", "wf-name")
+                ProvisionActionParameterMother.of("deletion_workflow", "   ")
         ));
 
+        //when //then
+        assertThrows(InvalidRestEntityException.class,
+                () -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+    }
+
+    @Test
+    void givenWorkflowProvidedByUser_whenValidatingWorkflowPresence_thenDoesNotThrow() {
+        //given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow", "wf-123"),
+                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
+        ));
+
+        //when //then
         assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 
     @Test
-    void validateWorkflowPresence_succeeds_whenWorkflowComesFromHiddenCatalogItemParam() {
+    void givenWorkflowNameProvidedByUser_whenValidatingWorkflowPresence_thenDoesNotThrow() {
+        //given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
+                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
+        ));
+
+        //when //then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+    }
+
+    @Test
+    void givenWorkflowAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenDoesNotThrow() {
+        //given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("workflow", "wf-123"),
+                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
+                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
+        ));
+
+        //when //then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+    }
+
+    @Test
+    void givenWorkflowFromHiddenCatalogItemParam_whenValidatingWorkflowPresence_thenDoesNotThrow() {
+        //given
         // Workflow was not provided by the user but was injected from the catalog item's
         // hidden (non-visible) mandatory parameter before this validation is invoked
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
                 ProvisionActionParameterMother.of("component_id", "cid"),
                 ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("workflow", "wf-from-hidden-param")
+                ProvisionActionParameterMother.of("workflow", "wf-from-hidden-param"),
+                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
         ));
 
+        //when //then
         assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 }

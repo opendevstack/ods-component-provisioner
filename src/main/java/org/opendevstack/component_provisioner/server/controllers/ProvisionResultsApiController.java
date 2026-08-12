@@ -6,8 +6,11 @@ import org.opendevstack.component_provisioner.server.api.ProvisionResultsApi;
 import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @AllArgsConstructor
 public class ProvisionResultsApiController implements ProvisionResultsApi {
 
-    private final AuthenticationProvider authenticationProvider;
     private final ProvisionResultsApiFacade provisionResultsApiFacade;
 
     @Override
