@@ -51,17 +51,21 @@ public class ProvisionerActionsApiFacade {
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
         provisionerActionsApiValidator.validate(provisionAction);
+
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
         provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
+
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
         var requiredCatalogItemParamsAction = requiredCatalogItemParamsWrapper.toProvisionAction();
         provisionerActionsApiValidator.validateWorkflowPresence(requiredCatalogItemParamsAction);
         provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsAction, catalogItem);
+
         var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);
+
         var updatedProvisionActionWithOdsApiParametersWrapper = replaceParametersService.replaceProvisioningParametersFromOdsApi(updateProvisionActionWithoutPlaceholdersWrapper);
 
         notifyComponentCatalogProvisionStarts(updatedProvisionActionWithOdsApiParametersWrapper);
@@ -317,7 +321,7 @@ public class ProvisionerActionsApiFacade {
         return wrapper.cloneWithoutParameterByName("catalog_item_slug").cloneWithParameters(catalogItemIdParameterItem);
     }
 
-    // In order to be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
+    // To be safe, we create a new ProvisionAction instance with the additional parameter instead of modifying the existing one (which might be immutable or shared).
     private ProvisionAction addParametersItem(ProvisionAction provisionAction, ProvisionActionParameter parameterItem) {
         return Optional.ofNullable(parameterItem)
                 .map(item -> {
