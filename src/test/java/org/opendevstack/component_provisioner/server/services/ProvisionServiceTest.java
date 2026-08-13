@@ -10,8 +10,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Ca
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
+import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentExtendedInfoMother;
 
@@ -51,6 +51,9 @@ class ProvisionServiceTest {
     @Mock
     private AuthenticationProvider authenticationProvider;
 
+    @Mock
+    private EntitiesMapper entitiesMapper;
+
     @InjectMocks
     private ProvisionService provisionService;
 
@@ -58,7 +61,8 @@ class ProvisionServiceTest {
     void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApiPut() throws Exception {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status =
+                org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED;
         var accessToken = "token";
         var baseUrl = "http://catalog.example.com";
 
@@ -70,19 +74,21 @@ class ProvisionServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
+        when(entitiesMapper.asProvisioningStatus(status)).thenReturn(ProvisioningStatus.CREATED);
 
         // when
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.CREATED, clientRequest);
     }
 
     @Test
     void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenInvokesProvisionerActionsApiPatch() throws Exception {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status =
+                org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED;
         var accessToken = "token";
         var baseUrl = "http://catalog.example.com";
 
@@ -94,12 +100,13 @@ class ProvisionServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
         when(apiClientsBuilder.provisionerActionsApi(accessToken, baseUrl)).thenReturn(provisionerActionsApi);
+        when(entitiesMapper.asProvisioningStatus(status)).thenReturn(ProvisioningStatus.CREATED);
 
         // when
         provisionService.notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, status.name(), clientRequest);
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, ProvisioningStatus.CREATED, clientRequest);
     }
 
     @Test
@@ -147,8 +154,8 @@ class ProvisionServiceTest {
 
         // then
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getName()).isEqualTo("param1");
-        assertThat(result.get(0).getValue()).isEqualTo("value1");
+        assertThat(result.getFirst().getName()).isEqualTo("param1");
+        assertThat(result.getFirst().getValue()).isEqualTo("value1");
     }
 
     @Test

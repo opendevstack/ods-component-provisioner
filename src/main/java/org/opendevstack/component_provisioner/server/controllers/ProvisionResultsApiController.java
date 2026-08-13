@@ -3,12 +3,12 @@ package org.opendevstack.component_provisioner.server.controllers;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.api.ProvisionResultsApi;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.facade.ProvisionResultsApiFacade;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
     @Override
     public ResponseEntity<Void> notifyProvisioningStatusUpdate(String projectKey,
-                                                               String status,
+                                                               ProvisioningStatus status,
                                                                ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
         log.debug("Notifying provision status update. ProjectKey: {}, Status: {}, provisioningStatusUpdateRequest: {}",
                 projectKey, status, provisioningStatusUpdateRequest);
@@ -35,7 +35,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdate(
                 projectKey,
-                ProjectComponentStatus.valueOf(status),
+                status,
                 provisioningStatusUpdateRequest
         );
 
@@ -44,7 +44,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
     @Override
     public ResponseEntity<Void> notifyProvisioningStatusUpdatePartially(String projectKey,
-                                                                        String status,
+                                                                        ProvisioningStatus status,
                                                                         ProvisioningStatusPartialUpdateRequest
                                                                                 provisioningStatusPartialUpdateRequest) {
         log.debug("Notifying provision status update partially. ProjectKey: {}, Status: {}, provisioningStatusPartialUpdateRequest: {}",
@@ -55,7 +55,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
         provisionResultsApiFacade.notifyProvisioningStatusUpdatePartially(
                 projectKey,
-                ProjectComponentStatus.valueOf(status),
+                status,
                 provisioningStatusPartialUpdateRequest
         );
 

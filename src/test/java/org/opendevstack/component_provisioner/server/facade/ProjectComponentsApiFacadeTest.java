@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.facade;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
@@ -91,7 +91,7 @@ class ProjectComponentsApiFacadeTest {
     void givenProjectKeyAndComponentInfo_andFailedState_whenEnrichWithAapInfo_thenCallAwx_AndReturnProvisionStatus() {
         // given
         var projectKey = "test-project";
-        var componentInfo = ProjectComponentExtendedInfoMother.of("FAILED");
+        var componentInfo = ProjectComponentExtendedInfoMother.of(ProvisioningStatus.FAILED);
         var jobDetail = JobDetailMother.of();
 
         ProjectComponentProvisionStatus expectedStatus = new ProjectComponentProvisionStatus();

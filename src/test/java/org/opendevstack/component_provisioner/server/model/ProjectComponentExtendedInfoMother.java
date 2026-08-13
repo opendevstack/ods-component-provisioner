@@ -1,10 +1,8 @@
 package org.opendevstack.component_provisioner.server.model;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
+
+import java.util.Collections;
 
 public final class ProjectComponentExtendedInfoMother {
 
@@ -20,7 +18,7 @@ public final class ProjectComponentExtendedInfoMother {
                 .componentId("component-id")
                 .catalogItemId("aHR0cDovL2JpdGJ1Y2tldC10ZXN0LmNvbQ")
                 .catalogItemRef("L3JlZmVyZW5jZT9wYXJhbT0xMA")
-                .status("CREATED")
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .componentUrl("https://example.com/component")
                 .parameters(Collections.emptyList())
                 .build();
@@ -31,7 +29,7 @@ public final class ProjectComponentExtendedInfoMother {
      */
     public static ProjectComponentExtendedInfo of(
             String componentId,
-            String status
+            org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus status
     ) {
         return ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
@@ -43,19 +41,4 @@ public final class ProjectComponentExtendedInfoMother {
                 .build();
     }
 
-    /**
-     * Variante si necesitas parámetros
-     */
-    public static ProjectComponentExtendedInfo withParameters(
-            List<ProjectComponentParameter> parameters
-    ) {
-        return ProjectComponentExtendedInfo.builder()
-                .componentId("component-id")
-                .catalogItemId("aHR0cDovL2JpdGJ1Y2tldC10ZXN0LmNvbQ")
-                .catalogItemRef("L3JlZmVyZW5jZT9wYXJhbT0xMA")
-                .status("CREATED")
-                .componentUrl("https://example.com/component")
-                .parameters(parameters)
-                .build();
-    }
 }

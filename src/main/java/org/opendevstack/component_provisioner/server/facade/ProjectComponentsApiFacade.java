@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration.OdsApiServerServiceProps;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
@@ -47,7 +48,7 @@ public class ProjectComponentsApiFacade {
         JobDetail jobDetail = null;
 
         if (projectComponentInfo.getStatus() != null &&
-                (projectComponentInfo.getStatus().equals("FAILED") || projectComponentInfo.getStatus().equals("UNKNOWN"))
+                (projectComponentInfo.getStatus().equals(ProvisioningStatus.FAILED) || projectComponentInfo.getStatus().equals(ProvisioningStatus.UNKNOWN))
         ) {
             jobDetail = awxService.getWorkflowJobById(projectComponentInfo.getWorkflowJobId()).orElseThrow( () -> new InvalidRestEntityException(
                     String.format("Workflow job template with id %s not found for project component %s",

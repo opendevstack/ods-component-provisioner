@@ -10,12 +10,21 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.*;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,7 +33,6 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -90,7 +98,7 @@ public class ProvisionResultsApiFacade {
 
     public boolean isInDeletingState(ProjectComponentExtendedInfo projectComponent) {
         if (projectComponent == null) return false;
-        return ProjectComponentStatus.DELETING.name().equals(projectComponent.getStatus());
+        return ProvisioningStatus.DELETING.getValue().equals(projectComponent.getStatus().getValue());
     }
 
     public AwxResponse triggerAwxIncidentWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
@@ -126,7 +134,7 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey,
-                                               ProjectComponentStatus status,
+                                               ProvisioningStatus status,
                                                ProvisioningStatusUpdateRequest provisioningStatusUpdateRequest) {
         var accessToken = applicationAuthenticationProvider.getAccessToken();
         var resolvedCatalogItemId = resolveCatalogItemId(accessToken,
@@ -142,7 +150,7 @@ public class ProvisionResultsApiFacade {
     }
 
     public void notifyProvisioningStatusUpdatePartially(String projectKey,
-                                                        ProjectComponentStatus status,
+                                                        ProvisioningStatus status,
                                                         ProvisioningStatusPartialUpdateRequest provisioningStatusPartialUpdateRequest) {
         var accessToken = authenticationProvider.getAccessToken();
         String resolvedCatalogItemId = resolveCatalogItemId(accessToken,
@@ -179,7 +187,7 @@ public class ProvisionResultsApiFacade {
         provisionService.deleteProvisioningStatus(projectKey, componentId);
     }
 
-    public void validate(String projectKey, String status, String catalogItemId, String catalogItemSlug) {
+    public void validate(String projectKey, ProvisioningStatus status, String catalogItemId, String catalogItemSlug) {
         validate(projectKey, status);
 
         if (StringUtils.isNotBlank(catalogItemId) && StringUtils.isNotBlank(catalogItemSlug)) {
@@ -191,16 +199,16 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void validate(String projectKey, String status) {
-        var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(status);
+    public void validate(String projectKey, ProvisioningStatus status) {
+        var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || status == null;
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, status are required.");
         }
 
-        if (Arrays.stream(ProjectComponentStatus.values())
-                .noneMatch(e -> e.name().equals(status))) {
-            throw new InvalidRestEntityException("Status is not valid. It can only be " + ProjectComponentStatus.valuesToString());
+        if (Arrays.stream(ProvisioningStatus.values())
+                .noneMatch(e -> e.name().equals(status.getValue()))) {
+            throw new InvalidRestEntityException("Status is not valid. It can only be " + Arrays.toString(ProvisioningStatus.values()));
         }
     }
 
@@ -414,7 +422,7 @@ public class ProvisionResultsApiFacade {
 
         notifyProvisioningStatusUpdatePartially(
                 projectKey,
-                ProjectComponentStatus.DELETING,
+                ProvisioningStatus.DELETING,
                 request
         );
     }

@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.server.mappers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
 
@@ -39,7 +40,7 @@ class EntitiesMapperTest {
         // Assert
         assertNotNull(result);
         assertEquals("comp-123", result.getComponentId());
-        assertEquals("PROVISIONED", result.getStatus());
+        assertEquals(org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED, result.getStatus());
         assertEquals("TEST_PROJECT", result.getProjectKey());
         assertEquals("12345", result.getWorkflowJobId());
         assertEquals("SUCCESS", result.getErrorMessage());
@@ -86,7 +87,7 @@ class EntitiesMapperTest {
         var jobDetail = JobDetailMother.of(99, artifacts);
 
         String projectKey = "TEST_PROJECT";
-        var projectComponentInfo = ProjectComponentExtendedInfoMother.of("FAILED");
+        var projectComponentInfo = ProjectComponentExtendedInfoMother.of(ProvisioningStatus.FAILED);
 
         // Act
         ProjectComponentProvisionStatus result = entitiesMapper.asProjectComponentProvisionStatus(
@@ -121,8 +122,8 @@ class EntitiesMapperTest {
         assertEquals("http://example.com", clientRequest.getComponentUrl());
         assertEquals("wf-1", clientRequest.getWorkflowJobId());
         assertEquals(1, clientRequest.getParameters().size());
-        assertEquals("env", clientRequest.getParameters().get(0).getName());
-        assertEquals(java.util.List.of("dev", "prod"), clientRequest.getParameters().get(0).getValues());
+        assertEquals("env", clientRequest.getParameters().getFirst().getName());
+        assertEquals(java.util.List.of("dev", "prod"), clientRequest.getParameters().getFirst().getValues());
     }
 
     @Test

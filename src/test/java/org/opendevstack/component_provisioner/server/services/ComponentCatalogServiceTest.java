@@ -191,7 +191,7 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ProvisioningStatus> statusCaptor = ArgumentCaptor.forClass(ProvisioningStatus.class);
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
@@ -206,7 +206,7 @@ class ComponentCatalogServiceTest {
         );
 
         assertThat(projectKeyCaptor.getValue()).isEqualTo(projectKey);
-        assertThat(statusCaptor.getValue()).isEqualTo("CREATING");
+        assertThat(statusCaptor.getValue()).isEqualTo(ProvisioningStatus.CREATING);
 
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
@@ -243,7 +243,7 @@ class ComponentCatalogServiceTest {
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, accessToken, null);
 
         //then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq("CREATING"), requestCaptor.capture());
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProvisioningStatus.CREATING), requestCaptor.capture());
         assertThat(requestCaptor.getValue().getParameters()).isEmpty();
     }
 
@@ -445,7 +445,7 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
 
         ArgumentCaptor<String> projectKeyCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> statusCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<ProvisioningStatus> statusCaptor = ArgumentCaptor.forClass(ProvisioningStatus.class);
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
@@ -460,7 +460,7 @@ class ComponentCatalogServiceTest {
         );
 
         assertThat(projectKeyCaptor.getValue()).isEqualTo(projectKey);
-        assertThat(statusCaptor.getValue()).isEqualTo("CREATING");
+        assertThat(statusCaptor.getValue()).isEqualTo(ProvisioningStatus.CREATING);
 
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
@@ -534,7 +534,7 @@ class ComponentCatalogServiceTest {
         componentCatalogService.setWorkflowJobId(projectKey, componentId, workflowJobId, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(eq(projectKey), eq("CREATING"), any(ProvisioningStatusUpdateRequest.class));
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(eq(projectKey), eq(ProvisioningStatus.CREATING), any(ProvisioningStatusUpdateRequest.class));
     }
 
     @Test

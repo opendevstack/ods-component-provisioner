@@ -14,7 +14,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.*;
@@ -134,7 +133,7 @@ class ProvisionResultsApiFacadeTest {
         // given
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId("componentId")
-                .status(ProjectComponentStatus.DELETING.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.DELETING)
                 .build();
 
         // when
@@ -145,24 +144,12 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAnInvalidStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var projectKey = "PRJ";
-        var status = "invalid";
-
-        // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, status));
-        assertThat(ex.getMessage()).contains("Status is not valid");
-    }
-
-    @Test
     void givenAMissingProjectKeyOrStatus_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = (String) null;
-        var status = "CREATED";
 
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, status));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, ProvisioningStatus.CREATED));
         assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null));
     }
 
@@ -202,7 +189,7 @@ class ProvisionResultsApiFacadeTest {
         // given
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId("componentId")
-                .status(ProjectComponentStatus.CREATED.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .build();
 
         // when
@@ -216,10 +203,9 @@ class ProvisionResultsApiFacadeTest {
     void givenAValidStatus_whenValidateIsCalled_thenDoesNotThrow() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED.name();
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate(projectKey, status));
+        assertDoesNotThrow(() -> facade.validate(projectKey, ProvisioningStatus.CREATED));
     }
 
     @Test
@@ -254,7 +240,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAProvisionService_whenNotifyProvisioningStatusUpdateIsCalled_thenDelegatesToProvisionService() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemId = "CAT";
         var catalogItemSlug = "SLUG";
@@ -286,7 +272,7 @@ class ProvisionResultsApiFacadeTest {
     void givenACatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenResolvesSlugToId() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemSlug = "SLUG";
         var resolvedCatalogItemId = "RESOLVED_ID";
@@ -322,7 +308,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsSlugNotFoundException() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemSlug = "INVALID_SLUG";
         var componentUrl = "http://example.com";
@@ -345,7 +331,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAProvisionService_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenDelegatesToProvisionService() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemId = "CAT";
         var componentUrl = "http://example.com";
@@ -373,7 +359,7 @@ class ProvisionResultsApiFacadeTest {
     void givenACatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenResolvesSlugToId() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemSlug = "SLUG";
         var resolvedCatalogItemId = "RESOLVED_ID";
@@ -407,7 +393,7 @@ class ProvisionResultsApiFacadeTest {
     void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsSlugNotFoundException() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED;
+        var status = ProvisioningStatus.CREATED;
         var componentId = "CID";
         var catalogItemSlug = "INVALID_SLUG";
         var componentUrl = "http://example.com";
@@ -428,26 +414,26 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CREATED", "ID", "SLUG"));
+        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", "SLUG"));
         assertThat(ex.getMessage()).contains("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
     }
 
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", "ID", ""));
+        assertDoesNotThrow(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", ""));
     }
 
     @Test
     void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CREATED", null, "SLUG"));
+        assertDoesNotThrow(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, "SLUG"));
     }
 
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", "CREATED", null, "");
+        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, "");
 
         // then
         var exception = assertThrows(InvalidRestEntityException.class, call);
@@ -487,10 +473,9 @@ class ProvisionResultsApiFacadeTest {
     void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
-        var status = ProjectComponentStatus.CREATED.name();
 
         // when / then
-        assertThatThrownBy(() -> facade.validate(projectKey, status, "ID", "SLUG"))
+        assertThatThrownBy(() -> facade.validate(projectKey, ProvisioningStatus.CREATED, "ID", "SLUG"))
                 .isInstanceOf(InvalidRestEntityException.class)
                 .hasMessage("Both catalogItemId and catalogItemSlug cannot be defined at the same time.");
     }
@@ -559,7 +544,7 @@ class ProvisionResultsApiFacadeTest {
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
-                .status(ProjectComponentStatus.DELETING.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.DELETING)
                 .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
@@ -588,7 +573,7 @@ class ProvisionResultsApiFacadeTest {
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
-                .status(ProjectComponentStatus.CREATED.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
@@ -624,7 +609,7 @@ class ProvisionResultsApiFacadeTest {
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
-                .status(ProjectComponentStatus.CREATED.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
@@ -658,7 +643,7 @@ class ProvisionResultsApiFacadeTest {
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
-                .status(ProjectComponentStatus.CREATED.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .build();
 
         when(authenticationProvider.getAccessToken()).thenReturn("token");
@@ -788,7 +773,7 @@ class ProvisionResultsApiFacadeTest {
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
-                .status(ProjectComponentStatus.CREATED.name())
+                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .build();
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");

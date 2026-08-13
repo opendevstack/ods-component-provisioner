@@ -5,14 +5,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
-import org.opendevstack.component_provisioner.server.mappers.ProvisioningStatusUpdateRequestParametersInnerMapper;
+import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
+import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -22,22 +21,25 @@ import static org.mockito.Mockito.when;
 class ProvisionerServiceTest {
 
     @Mock
-    private ProvisionerActionsApi provisionerActionsApi;
+    private ApiClientsBuilder apiClientsBuilder;
 
     @Mock
-    private ApiClientsBuilder apiClientsBuilder;
+    private ComponentCatalogService componentCatalogService;
 
     @Mock
     private ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps;
 
     @Mock
-    private ApiClient apiClient;
+    private CreateIncidentParameterMapper createIncidentParameterMapper;
 
     @Mock
-    private CatalogItemsApi catalogItemsApi;
+    private AuthenticationProvider authenticationProvider;
 
     @Mock
-    private ProvisioningStatusUpdateRequestParametersInnerMapper provisioningStatusUpdateRequestParametersInnerMapper;
+    private ProvisionerActionsApi provisionerActionsApi;
+
+    @Mock
+    private EntitiesMapper entitiesMapper;
 
     @InjectMocks
     private ProvisionService provisionService;
@@ -46,7 +48,8 @@ class ProvisionerServiceTest {
     void givenAProjectKeyAndStatusAndComponentIdAndCatalogItemIdAndComponentUrlAndAccessToken_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApi() throws java.net.MalformedURLException {
         // given
         var projectKey = "projectKey";
-        var status = ProjectComponentStatus.CREATED;
+        var status =
+                org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED;
         var componentId = "componentId";
         var catalogItemId = "catalogItemId";
         var componentUrl = "componentUrl";
@@ -61,12 +64,13 @@ class ProvisionerServiceTest {
 
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
         when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
+        when(entitiesMapper.asProvisioningStatus(status)).thenReturn(ProvisioningStatus.CREATED);
 
         // when
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
+        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.CREATED, clientRequest);
     }
 
     @Test

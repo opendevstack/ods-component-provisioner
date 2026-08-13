@@ -8,8 +8,8 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Pr
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
+import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -38,36 +38,38 @@ public class ProvisionService {
     private final CreateIncidentParameterMapper createIncidentParameterMapper;
     private final AuthenticationProvider authenticationProvider;
     private final ProvisionerActionsApi provisionerActionsBasicAuthApi;
+    private final EntitiesMapper entitiesMapper;
 
     public ProvisionService(ApiClientsBuilder apiClientsBuilder, ComponentCatalogService componentCatalogService,
                             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps, CreateIncidentParameterMapper createIncidentParameterMapper, AuthenticationProvider authenticationProvider,
-                            @Qualifier("provisionerActionsBasicAuthApi") ProvisionerActionsApi provisionerActionsBasicAuthApi) {
+                            @Qualifier("provisionerActionsBasicAuthApi") ProvisionerActionsApi provisionerActionsBasicAuthApi, EntitiesMapper entitiesMapper) {
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogService = componentCatalogService;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.createIncidentParameterMapper = createIncidentParameterMapper;
         this.authenticationProvider = authenticationProvider;
         this.provisionerActionsBasicAuthApi = provisionerActionsBasicAuthApi;
+        this.entitiesMapper = entitiesMapper;
     }
 
     public void notifyProvisioningStatusUpdate(String projectKey,
-                                               ProjectComponentStatus status,
+                                               org.opendevstack.component_provisioner.server.model.ProvisioningStatus status,
                                                ProvisioningStatusUpdateRequest clientRequest,
                                                String accessToken) {
         log.debug("PUT component-catalog /provision/{}/{} body={}", projectKey, status.name(), clientRequest);
 
         catalogProvisionerActionsApi(accessToken)
-                .notifyProvisioningStatusUpdate(projectKey, status.name(), clientRequest);
+                .notifyProvisioningStatusUpdate(projectKey, entitiesMapper.asProvisioningStatus(status), clientRequest);
     }
 
     public void notifyProvisioningStatusUpdatePartially(String projectKey,
-                                                        ProjectComponentStatus status,
+                                                        org.opendevstack.component_provisioner.server.model.ProvisioningStatus status,
                                                         ProvisioningStatusUpdateRequest clientRequest,
                                                         String accessToken) {
         log.debug("PATCH component-catalog /provision/{}/{} body={}", projectKey, status.name(), clientRequest);
 
         catalogProvisionerActionsApi(accessToken)
-                .notifyProvisioningStatusUpdatePartially(projectKey, status.name(), clientRequest);
+                .notifyProvisioningStatusUpdatePartially(projectKey, entitiesMapper.asProvisioningStatus(status), clientRequest);
     }
 
     public void deleteProvisioningStatus(String projectKey,

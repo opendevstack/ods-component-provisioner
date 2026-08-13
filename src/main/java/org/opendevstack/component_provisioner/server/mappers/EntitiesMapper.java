@@ -192,7 +192,7 @@ public class EntitiesMapper {
                 .componentId(projectComponentInfo.getComponentId())
                 .catalogItemId(projectComponentInfo.getCatalogItemId())
                 .catalogItemRef(projectComponentInfo.getCatalogItemRef())
-                .status(projectComponentInfo.getStatus())
+                .status(asProvisioningStatus(projectComponentInfo.getStatus()))
                 .componentUrl(projectComponentInfo.getComponentUrl())
                 .workflowJobId(projectComponentInfo.getWorkflowJobId())
                 .errorTask(Optional.ofNullable(workflowJob).map(JobDetail::getArtifacts).map(artifacts -> artifacts.getOrDefault(AwxResultNames.RESULT_OUTPUT.getValue(), "N/A")).orElse("N/A"))
@@ -238,5 +238,13 @@ public class EntitiesMapper {
                 .catalogItemId(provisioningStatusPartialUpdateRequest.getCatalogItemId())
                 .componentUrl(provisioningStatusPartialUpdateRequest.getComponentUrl())
                 .build();
+    }
+
+    public org.opendevstack.component_provisioner.server.model.ProvisioningStatus asProvisioningStatus(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus provisioningStatus) {
+        return org.opendevstack.component_provisioner.server.model.ProvisioningStatus.fromValue(provisioningStatus.getValue());
+    }
+
+    public org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus asProvisioningStatus(org.opendevstack.component_provisioner.server.model.ProvisioningStatus status) {
+        return org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.valueOf(status.name());
     }
 }
