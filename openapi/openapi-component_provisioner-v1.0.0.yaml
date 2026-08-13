@@ -509,7 +509,13 @@ components:
 
     ProvisioningStatus:
       type: string
-      enum: [ CREATING, CREATED, FAILED, DELETING, UNKNOWN ]
+      enum:
+        - CREATING
+        - CREATED
+        - FAILED
+        - DELETING
+        - DELETION_FAILED
+        - UNKNOWN
       example: CREATING
 
     ProvisioningStatusPartialUpdateRequest:
