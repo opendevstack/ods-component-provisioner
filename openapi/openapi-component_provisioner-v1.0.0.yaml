@@ -509,6 +509,7 @@ components:
 
     ProvisioningStatus:
       type: string
+      description: Provisioning status of a component.
       enum:
         - CREATING
         - CREATED
