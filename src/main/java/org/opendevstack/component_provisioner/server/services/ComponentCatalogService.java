@@ -3,10 +3,16 @@ package org.opendevstack.component_provisioner.server.services;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemUserActionMessageDefinitionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
-import org.opendevstack.component_provisioner.server.controllers.model.ProjectComponentStatus;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -16,7 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
@@ -113,7 +123,7 @@ public class ComponentCatalogService {
         log.debug("Calling provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisioningStatusUpdateRequest);
 
-        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, ProjectComponentStatus.CREATING.name(), provisioningStatusUpdateRequest);
+        provisionerActionsApi.notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.CREATING, provisioningStatusUpdateRequest);
     }
 
     public void setWorkflowJobId(String projectKey,
@@ -131,7 +141,7 @@ public class ComponentCatalogService {
         log.debug("Updating workflowJobId via provisionerActionsApi.notifyProvisioningStatusUpdate. ProjectKey: {}, status: {}, notifyProvisioningCompletedRequest: {}",
                 projectKey, "CREATING", provisionStatusUpdateRequest);
 
-        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProjectComponentStatus.CREATING.name(), provisionStatusUpdateRequest);
+        provisionerActionsApi.notifyProvisioningStatusUpdatePartially(projectKey, ProvisioningStatus.CREATING, provisionStatusUpdateRequest);
     }
 
     public List<ProjectComponentInfo> getProjectComponents(String accessToken, String projectKey) {
