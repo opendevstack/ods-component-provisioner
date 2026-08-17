@@ -87,6 +87,8 @@ public class ControllerExceptionHandler {
         // Explicitly setting MediaType.APPLICATION_JSON contentType is required, 
         // due to clients sending miscellaneous Accept headers on the request, 
         // but error messages are always in JSON format
+        log.debug("Handling exception", ex);
+
         return ResponseEntity
                 .status(errStatus)
                 .contentType(MediaType.APPLICATION_PROBLEM_JSON)
