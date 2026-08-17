@@ -81,6 +81,8 @@ public class ProvisionerActionsApiValidator {
                     }
                     var catalogParam = catalogParamsByName.get(param.getName());
                     if (catalogParam == null || !Boolean.TRUE.equals(catalogParam.getVisible())) {
+                        log.debug("The parameter '{}' is not defined at catalog item level. Due to that, it is not allowed when provisioning '{}'.", param.getName(), catalogItem.getTitle());
+
                         throw new InvalidRestEntityException(
                                 String.format("The parameter '%s' is not allowed when provisioning '%s'.", param.getName(), catalogItem.getTitle())
                         );
