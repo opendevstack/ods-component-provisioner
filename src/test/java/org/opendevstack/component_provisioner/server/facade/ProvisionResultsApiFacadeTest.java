@@ -155,12 +155,9 @@ class ProvisionResultsApiFacadeTest {
 
     @Test
     void givenAMissingMainParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = CreateIncidentActionMother.of();
-
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", "", action));
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null, "", "", action));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", ""));
+        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", (String) null, "", ""));
     }
 
     @Test
@@ -209,13 +206,9 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAMissingExtraParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = CreateIncidentAction.builder().parameters(new ArrayList<>()).build();
-
+    void givenAConfiguredDeletionWorkflow_whenValidateIsCalled_thenDoesNotValidateIncidentParameters() {
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", "CID", "", "", action));
-        assertThat(ex.getMessage()).contains("is_deployed, change_number and reason");
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "DELETE_WORKFLOW", ""));
     }
 
     @Test
@@ -441,12 +434,9 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAction_whenValidateIsCalled_thenDoesNotThrowIfValid() {
-        // given
-        var action = CreateIncidentActionMother.of();
-
+    void givenAProjectKeyAndAComponentIdWithWorkflowName_whenValidateIsCalled_thenDoesNotThrowIfValid() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", "", action));
+        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", "delete-workflow-name"));
     }
 
     @Test
@@ -550,6 +540,7 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
         when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -563,7 +554,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowNotFound_thenTriggersDefaultAwxWorkflow() {
+    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowNameIsConfigured_thenTriggersDeletionWorkflow() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -579,8 +570,9 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
         when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -594,7 +586,7 @@ class ProvisionResultsApiFacadeTest {
         // then
         assertNotNull(result, "Result should not be null");
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(awxService).triggerWorkflowJob(anyString(), any());
+        verify(awxService).triggerWorkflowJob(eq("DELETE"), any());
     }
 
     @Test
@@ -779,6 +771,8 @@ class ProvisionResultsApiFacadeTest {
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
         when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
+        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));

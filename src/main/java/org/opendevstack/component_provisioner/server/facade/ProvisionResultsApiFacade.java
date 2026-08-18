@@ -66,7 +66,7 @@ public class ProvisionResultsApiFacade {
         String deletionWorkflowId = getDeletionWorkflowId(projectKey, componentId);
         String deletionWorkflowName = getDeletionWorkflowName(projectKey, componentId);
         String deletionWorkflowTimeoutSeconds = getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
-        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName, createIncidentAction);
+        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName);
         addSystemParametersToAction(projectKey, createIncidentAction);
 
         var accessToken = authenticationProvider.getAccessToken();
@@ -212,20 +212,14 @@ public class ProvisionResultsApiFacade {
         }
     }
 
-    public void validate(String projectKey, String componentId, String deletionWorkflowId, String deletionWorkflowName, CreateIncidentAction createIncidentAction) {
-        var isDeployed = getParameterString(createIncidentAction, "is_deployed");
-        var changeNumber = getParameterString(createIncidentAction, "change_number");
-        var reason = getParameterString(createIncidentAction, "reason");
-
+    public void validate(String projectKey, String componentId, String deletionWorkflowId, String deletionWorkflowName) {
         var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
-        var extraParamsAreEmpty = StringUtils.isBlank(isDeployed)
-                || StringUtils.isBlank(changeNumber) || StringUtils.isBlank(reason);
 
         if (mainParamsAreEmpty) {
             throw new InvalidRestEntityException("project_key, component_id are required.");
         }
 
-        if (StringUtils.isBlank(deletionWorkflowId) && StringUtils.isBlank(deletionWorkflowName) && extraParamsAreEmpty) {
+        if (StringUtils.isBlank(deletionWorkflowId) && StringUtils.isBlank(deletionWorkflowName)) {
             throw new InvalidRestEntityException("The component has no deletion_workflow nor deletion_workflow_name configured, so params is_deployed, change_number and reason are required in the request.");
         }
     }
