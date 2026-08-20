@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,8 +16,20 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.*;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
+import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
+import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ProvisionService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.http.HttpStatus;
@@ -29,10 +42,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -62,9 +80,9 @@ class ProvisionResultsApiFacadeTest {
     @InjectMocks
     private ProvisionResultsApiFacade facade;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
-        String workflowJobId = "WORKFLOW_123";
+        var workflowJobId = "WORKFLOW_123";
         ReflectionTestUtils.setField(facade, "createIncidentWorkflowId", workflowJobId);
         ReflectionTestUtils.setField(facade, "deletionWrapperWorkflowId", workflowJobId);
     }
@@ -85,9 +103,9 @@ class ProvisionResultsApiFacadeTest {
         var result = facade.triggerAwxIncidentWorkflow("PRJ", "CID", action);
 
         // then
-        assertNotNull(result, "Result should not be null");
-        assertEquals(HttpStatus.OK, result.httpStatusCode());
-        assertEquals(response, result.awxResponseBody());
+        assertThat(result).isNotNull();
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.awxResponseBody()).isEqualTo(response);
     }
 
     @Test
@@ -97,6 +115,7 @@ class ProvisionResultsApiFacadeTest {
 
         // when
         var result = facade.getParameterString(action, "any");
+
 
         // then
         assertThat(result).isEmpty();
@@ -149,15 +168,19 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = (String) null;
 
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(projectKey, ProvisioningStatus.CREATED));
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", null));
+        assertThatThrownBy(() -> facade.validate(projectKey, ProvisioningStatus.CREATED))
+                .isInstanceOf(InvalidRestEntityException.class);
+        assertThatThrownBy(() -> facade.validate("PRJ", null))
+                .isInstanceOf(InvalidRestEntityException.class);
     }
 
     @Test
     void givenAMissingMainParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when / then
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate(null, "CID", "", ""));
-        assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", (String) null, "", ""));
+        assertThatThrownBy(() -> facade.validate(null, "CID", "", ""))
+                .isInstanceOf(InvalidRestEntityException.class);
+        assertThatThrownBy(() -> facade.validate("PRJ", (String) null, "", ""))
+                .isInstanceOf(InvalidRestEntityException.class);
     }
 
     @Test
@@ -202,13 +225,13 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = "PRJ";
 
         // when / then
-        assertDoesNotThrow(() -> facade.validate(projectKey, ProvisioningStatus.CREATED));
+        assertThatCode(() -> facade.validate(projectKey, ProvisioningStatus.CREATED)).doesNotThrowAnyException();
     }
 
     @Test
     void givenAConfiguredDeletionWorkflow_whenValidateIsCalled_thenDoesNotValidateIncidentParameters() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "DELETE_WORKFLOW", ""));
+        assertThatCode(() -> facade.validate("PRJ", "CID", "DELETE_WORKFLOW", "")).doesNotThrowAnyException();
     }
 
     @Test
@@ -224,8 +247,8 @@ class ProvisionResultsApiFacadeTest {
         var result = facade.triggerAwxIncidentWorkflow("PRJ", "CID", action);
 
         // then
-        assertNotNull(result, "Result should not be null");
-        assertEquals(HttpStatus.ACCEPTED, result.httpStatusCode());
+        assertThat(result).isNotNull();
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(result.awxResponseBody()).isNull();
     }
 
@@ -317,7 +340,8 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug(any(), any())).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdate(projectKey, status, request));
+        assertThatThrownBy(() -> facade.notifyProvisioningStatusUpdate(projectKey, status, request))
+                .isInstanceOf(SlugNotFoundException.class);
     }
 
     @Test
@@ -383,7 +407,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsSlugNotFoundException() {
+    void givenInvalidCatalogItemSlug_whenNotifyStatusUpdatePartially_thenThrowsSlugNotFoundException() {
         // given
         var projectKey = "PRJ";
         var status = ProvisioningStatus.CREATED;
@@ -401,42 +425,42 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenThrow(new RestClientException("Not found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request));
+        assertThatThrownBy(() -> facade.notifyProvisioningStatusUpdatePartially(projectKey, status, request))
+                .isInstanceOf(SlugNotFoundException.class);
     }
 
     @Test
     void givenBothCatalogItemIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when / then
-        var ex = assertThrows(InvalidRestEntityException.class, () -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", "SLUG"));
-        assertThat(ex.getMessage()).contains("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
+        assertThatThrownBy(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", "SLUG"))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessageContaining("Both catalogItemId and catalogItemSlug cannot be defined at the same time");
     }
 
     @Test
     void givenOnlyCatalogItemId_whenValidateIsCalled_thenDoesNotThrow() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", ""));
+        assertThatCode(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "ID", "")).doesNotThrowAnyException();
     }
 
     @Test
     void givenOnlyCatalogItemSlug_whenValidateIsCalled_thenDoesNotThrow() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, "SLUG"));
+        assertThatCode(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, "SLUG")).doesNotThrowAnyException();
     }
 
     @Test
     void givenNeitherCatalogItemIdNorCatalogItemSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
-        // when
-        var call = (org.junit.jupiter.api.function.Executable) () -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, "");
-
-        // then
-        var exception = assertThrows(InvalidRestEntityException.class, call);
-        assertThat(exception.getMessage()).isEqualTo("Either catalogItemId or catalogItemSlug must be defined.");
+        // when / then
+        assertThatThrownBy(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, null, ""))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessage("Either catalogItemId or catalogItemSlug must be defined.");
     }
 
     @Test
     void givenAProjectKeyAndAComponentIdWithWorkflowName_whenValidateIsCalled_thenDoesNotThrowIfValid() {
         // when / then
-        assertDoesNotThrow(() -> facade.validate("PRJ", "CID", "", "delete-workflow-name"));
+        assertThatCode(() -> facade.validate("PRJ", "CID", "", "delete-workflow-name")).doesNotThrowAnyException();
     }
 
     @Test
@@ -460,7 +484,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+    void givenBothIdAndSlug_whenValidate_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
 
@@ -521,12 +545,13 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(accessToken, projectKey)).thenReturn(projectInfo);
 
         // when / then
-        var ex = assertThrows(ProjectConfigurationException.class, () -> facade.addSystemParametersToAction(projectKey, action));
-        assertThat(ex.getMessage()).contains("PRJ");
+        assertThatThrownBy(() -> facade.addSystemParametersToAction(projectKey, action))
+                .isInstanceOf(ProjectConfigurationException.class)
+                .hasMessageContaining("PRJ");
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndComponentIsAlreadyDeleting_thenReturnsOkWithoutAwxCall() {
+    void givenComponentAlreadyDeleting_whenRequestDeletion_thenReturnsOkWithoutTriggeringWorkflow() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -554,7 +579,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowNameIsConfigured_thenTriggersDeletionWorkflow() {
+    void givenWorkflowNameConfigured_whenRequestDeletion_thenTriggersConfiguredWorkflow() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -584,7 +609,7 @@ class ProvisionResultsApiFacadeTest {
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
-        assertNotNull(result, "Result should not be null");
+        assertThat(result).isNotNull();
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
         verify(awxService).triggerWorkflowJob(eq("DELETE"), any());
     }
@@ -622,7 +647,7 @@ class ProvisionResultsApiFacadeTest {
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
-        assertNotNull(result, "Result should not be null");
+        assertThat(result).isNotNull();
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
         verify(awxService).triggerWorkflowJob(anyString(), any());
     }
@@ -752,7 +777,8 @@ class ProvisionResultsApiFacadeTest {
         when(componentCatalogService.getCatalogItemBySlug("token", "SLUG")).thenThrow(new RestClientException("Not Found"));
 
         // when / then
-        assertThrows(SlugNotFoundException.class, () -> ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, "SLUG"));
+        assertThatThrownBy(() -> ReflectionTestUtils.invokeMethod(facade, "resolveCatalogItemId", "token", null, "SLUG"))
+                .isInstanceOf(SlugNotFoundException.class);
     }
 
     @Test
@@ -784,12 +810,12 @@ class ProvisionResultsApiFacadeTest {
         var result = facade.requestDeletion(projectKey, componentId, action);
 
         // then
-        assertNotNull(result, "Result should not be null");
+        assertThat(result).isNotNull();
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
-    void givenWrapperWorkflow_whenAddDeletionWrapperWorkflowParametersIsCalled_thenDispatchedWorkflowParamsContainsAllParametersAndNotification() {
+    void givenWrapperWorkflow_whenAddDeletionWrapperWorkflowParams_thenDispatchedParamsContainAllAndNotification() {
         // given
         var action = CreateIncidentActionMother.of();
         action.setParameters(new ArrayList<>());

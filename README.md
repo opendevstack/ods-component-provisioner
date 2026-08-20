@@ -10,6 +10,43 @@ The software architecture is as follows:
 
 ![app-architecture-20250701.drawio.svg](doc/app-architecture-20250701.drawio.svg)
 
+## GitHub Copilot instructions
+
+This repository includes a `.github/copilot-instructions.md` file that provides GitHub Copilot (and other AI coding assistants) with project-specific guidance. The file covers:
+
+- Project snapshot (Java version, framework, main package, build tool).
+- Java style rules observed in this codebase (indentation, imports, line length, naming, etc.).
+- Architecture conventions (package boundaries, injection style, DTO separation, error handling).
+- API rules (OpenAPI as source of truth, backward compatibility, input validation).
+- Common code patterns (Lombok, builders, streams, SLF4J logging).
+- Test conventions (JUnit 5, Mockito, AssertJ, `given/when/then` naming, Mother pattern).
+- Build and dependency notes.
+
+When working with AI-assisted tooling in this repository, the instructions in that file are automatically picked up. If project conventions change, update `.github/copilot-instructions.md` first so future AI-generated code stays consistent.
+
+## IntelliJ code style and Checkstyle
+
+<!-- Future steps: once the team agrees on a single baseline, we can extend this section with a stricter Checkstyle setup and IDE-specific exports for other editors. -->
+
+Checkstyle is a static analysis tool that checks Java source code against a set of style rules. In practice, it helps keep indentation, imports, wrapping, naming, and brace placement consistent across the team.
+
+This repository keeps an IntelliJ formatting reference in `codeStyles/intellij/codeStyles.xml`. It can be imported into IntelliJ IDEA if needed, but there is no enforced Checkstyle setup yet.
+
+The `codeStyles/` folder is intended to host IDE-specific code style exports in the future too, for example:
+- `codeStyles/eclipse/`
+- `codeStyles/visualStudio/`
+
+### Import the IntelliJ scheme
+
+- Open the project in IntelliJ IDEA.
+- Go to `Settings` / `Preferences` > `Editor` > `Code Style`.
+- Click the gear icon next to the current scheme selector.
+- Choose `Import Scheme...` > `IntelliJ IDEA code style XML`.
+- Select `codeStyles/intellij/codeStyles.xml` from this repository.
+- Apply the imported scheme and set it as the current scheme for this project.
+
+If you update the formatting rules later, please update both the XML scheme and this documentation together.
+
 # Local Development Setup - IntelliJ IDEA
 For setting up a local development environment, the required steps are:
 1. Create a Spring Boot launch configuration

@@ -30,12 +30,12 @@ class ApplicationAuthenticationProviderTest {
     @Test
     void givenValidCredentials_whenGetAccessToken_thenReturnToken() {
         // given
-        String expectedToken = "expectedAccessToken";
+        var expectedToken = "expectedAccessToken";
         when(azureAdTokenService.getAccessToken("testClientId", "testClientSecret", "testScope"))
                 .thenReturn(expectedToken);
 
         // when
-        String actualToken = applicationAuthenticationProvider.getAccessToken();
+        var actualToken = applicationAuthenticationProvider.getAccessToken();
 
         // then
         assertThat(actualToken).isEqualTo(expectedToken);

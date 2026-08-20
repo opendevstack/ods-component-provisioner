@@ -27,20 +27,23 @@ class ProvisionerMessagesDefinitionsApiControllerTest {
     private ProvisionerMessagesDefinitionsApiController controller;
 
     @Test
-    void getMessageDefinitionByCatalogItemIdAndMessageId_callsFacade() {
-        String catalogItemId = "cat-1";
-        String action = "create";
-        String id = "msg-1";
-        Map<String, String> placeholders = Map.of("key", "value");
-        ProvisionerMessageDefinition definition = new ProvisionerMessageDefinition();
-        ResponseEntity<ProvisionerMessageDefinition> responseEntity = ResponseEntity.ok(definition);
+    void givenValidCatalogItemAndMessageId_whenGetMessageDefinitionByCatalogItemIdAndMessageId_thenDelegatesToFacade() {
+        // given
+        var catalogItemId = "cat-1";
+        var action = "create";
+        var id = "msg-1";
+        var placeholders = Map.of("key", "value");
+        var definition = new ProvisionerMessageDefinition();
+        var responseEntity = ResponseEntity.ok(definition);
 
         when(provisionerMessagesDefinitionsApiFacade.getMessageDefinition(any(Supplier.class)))
                 .thenReturn(responseEntity);
 
+        // when
         ResponseEntity<ProvisionerMessageDefinition> result = controller.getMessageDefinitionByCatalogItemIdAndMessageId(
                 catalogItemId, action, id, placeholders);
 
+        // then
         assertThat(result).isEqualTo(responseEntity);
         verify(provisionerMessagesDefinitionsApiFacade).getMessageDefinition(any(Supplier.class));
     }

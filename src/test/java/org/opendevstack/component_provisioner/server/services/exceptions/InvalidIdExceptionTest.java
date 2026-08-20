@@ -9,10 +9,10 @@ class InvalidIdExceptionTest {
     @Test
     void givenId_whenConstructorIsCalled_thenMessageIsCorrect() {
         // given
-        String id = "some-id";
+        var id = "some-id";
 
         // when
-        InvalidIdException exception = new InvalidIdException(id);
+        var exception = new InvalidIdException(id);
 
         // then
         assertThat(exception.getMessage()).contains("Invalid id: some-id");

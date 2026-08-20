@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ProvisionActionWrapperTest {
 
     @Test
-    void constructor_fromProvisionAction_buildsParametersMap() {
+    void givenProvisionAction_whenConstructing_thenBuildsParametersMap() {
         // given
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
@@ -32,7 +32,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void constructor_withNullMap_usesEmptyMap() {
+    void givenNullMap_whenConstructing_thenUsesEmptyMap() {
         // when
         var wrapper = new ProvisionActionWrapper("action-id", null);
 
@@ -41,7 +41,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getCatalogItemSlug_whenPresent_returnsValue() {
+    void givenCatalogItemSlugPresent_whenGetCatalogItemSlug_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_slug", "my-slug")
@@ -52,7 +52,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getCatalogItemSlug_whenAbsent_returnsNull() {
+    void givenCatalogItemSlugAbsent_whenGetCatalogItemSlug_thenReturnsNull() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -63,7 +63,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getCatalogItemId_whenPresent_returnsValue() {
+    void givenCatalogItemIdPresent_whenGetCatalogItemId_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "cat-123")
@@ -74,7 +74,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getProjectKey_whenPresent_returnsValue() {
+    void givenProjectKeyPresent_whenGetProjectKey_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "MY-PROJECT")
@@ -85,7 +85,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getComponentId_whenPresent_returnsValue() {
+    void givenComponentIdPresent_whenGetComponentId_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("component_id", "my-component")
@@ -96,7 +96,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getComponentUrl_whenPresent_returnsValue() {
+    void givenComponentUrlPresent_whenGetComponentUrl_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("component_url", "https://example.com/repo")
@@ -107,7 +107,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getAccessToken_whenPresent_returnsValue() {
+    void givenAccessTokenPresent_whenGetAccessToken_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("access_token", "bearer-xyz")
@@ -118,7 +118,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getParameterValue_whenAbsent_returnsNull() {
+    void givenAbsentParameter_whenGetParameterValue_thenReturnsNull() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of());
 
@@ -127,7 +127,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithParameter_addsParameter_withoutMutatingOriginal() {
+    void givenOriginalWrapper_whenCloneWithParameter_thenAddsParameterWithoutMutatingOriginal() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -144,7 +144,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithParameter_replacesExistingParameter() {
+    void givenExistingParameter_whenCloneWithParameter_thenReplacesIt() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "OLD")
@@ -160,7 +160,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithoutParameterByName_removesParameter_withoutMutatingOriginal() {
+    void givenParameterPresent_whenCloneWithoutParameterByName_thenRemovesItWithoutMutatingOriginal() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -177,7 +177,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void cloneWithoutParameterByName_whenParameterAbsent_returnsSameParameters() {
+    void givenParameterAbsent_whenCloneWithoutParameterByName_thenReturnsSameParameters() {
         // given
         var original = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -192,7 +192,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void toProvisionAction_mapsIdAndParameters() {
+    void givenWrapperWithParameters_whenToProvisionAction_thenMapsIdAndParameters() {
         // given
         var params = List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -213,7 +213,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getWorkflow_whenPresent_returnsValue() {
+    void givenWorkflowPresent_whenGetWorkflow_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123")
@@ -224,7 +224,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getWorkflow_whenAbsent_returnsNull() {
+    void givenWorkflowAbsent_whenGetWorkflow_thenReturnsNull() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -235,7 +235,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getWorkflowName_whenPresent_returnsValue() {
+    void givenWorkflowNamePresent_whenGetWorkflowName_thenReturnsValue() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow_name", "delete-wf")
@@ -246,7 +246,7 @@ class ProvisionActionWrapperTest {
     }
 
     @Test
-    void getWorkflowName_whenAbsent_returnsNull() {
+    void givenWorkflowNameAbsent_whenGetWorkflowName_thenReturnsNull() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ")

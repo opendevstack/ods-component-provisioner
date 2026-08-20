@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,27 +31,27 @@ class AzureAdTokenServiceTest {
     private AzureAdTokenService azureAdTokenService;
 
     @Test
-    void getAccessToken_shouldReturnToken_whenResponseIsSuccessful() {
-        // Arrange
-        String clientId = "test-client-id";
-        String clientSecret = "test-client-secret";
-        String scope = "test-scope";
-        String expectedToken = "test-access-token";
+    void givenValidCredentials_whenGetAccessTokenIsCalled_thenReturnsToken() {
+        // given
+        var clientId = "test-client-id";
+        var clientSecret = "test-client-secret";
+        var scope = "test-scope";
+        var expectedToken = "test-access-token";
 
-        AzureTokenResponse mockResponse = new AzureTokenResponse();
+        var mockResponse = new AzureTokenResponse();
         ReflectionTestUtils.setField(mockResponse, "accessToken", expectedToken);
 
-        ResponseEntity<AzureTokenResponse> responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
+        var responseEntity = new ResponseEntity<>(mockResponse, HttpStatus.OK);
 
-        when(azureAdTokenServiceProps.getUrl()).thenReturn("https://login.microsoftonline.com/example-tenant/oauth2/v2.0/token");
-
+        when(azureAdTokenServiceProps.getUrl())
+                .thenReturn("https://login.microsoftonline.com/example-tenant/oauth2/v2.0/token");
         when(restTemplate.postForEntity(anyString(), any(), eq(AzureTokenResponse.class)))
                 .thenReturn(responseEntity);
 
-        // Act
-        String actualToken = azureAdTokenService.getAccessToken(clientId, clientSecret, scope);
+        // when
+        var actualToken = azureAdTokenService.getAccessToken(clientId, clientSecret, scope);
 
-        // Assert
-        assertEquals(expectedToken, actualToken);
+        // then
+        assertThat(actualToken).isEqualTo(expectedToken);
     }
 }

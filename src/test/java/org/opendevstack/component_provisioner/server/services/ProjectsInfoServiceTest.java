@@ -13,7 +13,6 @@ import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfig
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,10 +44,10 @@ class ProjectsInfoServiceTest {
     @Test
     void givenTokens_whenGetProjectGroups_thenAzureGroupsReturned() throws MalformedURLException {
         // given
-        String accessToken = "access-token";
-        URL baseUrl = URI.create("http://projects-info").toURL();
+        var accessToken = "access-token";
+        var baseUrl = URI.create("http://projects-info").toURL();
 
-        List<String> expectedGroups = List.of("group-a", "group-b");
+        var expectedGroups = List.of("group-a", "group-b");
 
         when(projectsInfoServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
         when(apiClientsBuilder.projectsInfoServiceApiClient(accessToken, baseUrl.toString()))
@@ -59,7 +58,7 @@ class ProjectsInfoServiceTest {
                 .thenReturn(expectedGroups);
 
         // when
-        List<String> result = projectsInfoService.getProjectGroups(accessToken);
+        var result = projectsInfoService.getProjectGroups(accessToken);
 
         // then
         assertThat(result).isEqualTo(expectedGroups);
@@ -77,11 +76,11 @@ class ProjectsInfoServiceTest {
     @Test
     void givenTokenAndProjectKey_whenGetProjectClusters_thenProjectInfoReturned() throws MalformedURLException {
         // given
-        String accessToken = "access-token";
-        String projectKey = "MY-PROJECT";
-        URL baseUrl = URI.create("http://projects-info").toURL();
+        var accessToken = "access-token";
+        var projectKey = "MY-PROJECT";
+        var baseUrl = URI.create("http://projects-info").toURL();
 
-        ProjectInfo expectedProjectInfo = new ProjectInfo();
+        var expectedProjectInfo = new ProjectInfo();
 
         when(projectsInfoServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
         when(apiClientsBuilder.projectsInfoServiceApiClient(accessToken, baseUrl.toString()))
@@ -92,7 +91,7 @@ class ProjectsInfoServiceTest {
                 .thenReturn(expectedProjectInfo);
 
         // when
-        ProjectInfo result = projectsInfoService.getProjectClusters(accessToken, projectKey);
+        var result = projectsInfoService.getProjectClusters(accessToken, projectKey);
 
         // then
         assertThat(result).isEqualTo(expectedProjectInfo);

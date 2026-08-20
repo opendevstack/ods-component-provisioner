@@ -9,8 +9,7 @@ import org.opendevstack.component_provisioner.server.model.ProjectComponentProvi
 
 import java.util.HashMap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EntitiesMapperTest {
 
@@ -22,85 +21,81 @@ class EntitiesMapperTest {
     }
 
     @Test
-    void testAsProjectComponentProvisionStatusWithValidData() {
-        // Arrange
+    void givenValidJobDetail_whenAsProjectComponentProvisionStatusIsCalled_thenMapsAllFields() {
+        // given
         var artifacts = new HashMap<String, String>();
         artifacts.put("result_code", "SUCCESS");
         artifacts.put("result_output", "Component provisioned successfully");
 
         var jobDetail = JobDetailMother.of(42, artifacts);
-
-        String projectKey = "TEST_PROJECT";
+        var projectKey = "TEST_PROJECT";
         var projectComponentInfo = ProjectComponentExtendedInfoMother.of();
 
-        // Act
+        // when
         ProjectComponentProvisionStatus result = entitiesMapper.asProjectComponentProvisionStatus(
                 projectKey, projectComponentInfo, jobDetail);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals("comp-123", result.getComponentId());
-        assertEquals(org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED, result.getStatus());
-        assertEquals("TEST_PROJECT", result.getProjectKey());
-        assertEquals("12345", result.getWorkflowJobId());
-        assertEquals("SUCCESS", result.getErrorMessage());
-        assertEquals("Component provisioned successfully", result.getErrorTask());
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getComponentId()).isEqualTo("comp-123");
+        assertThat(result.getStatus()).isEqualTo(org.opendevstack.component_provisioner.server.model.ProvisioningStatus.CREATED);
+        assertThat(result.getProjectKey()).isEqualTo("TEST_PROJECT");
+        assertThat(result.getWorkflowJobId()).isEqualTo("12345");
+        assertThat(result.getErrorMessage()).isEqualTo("SUCCESS");
+        assertThat(result.getErrorTask()).isEqualTo("Component provisioned successfully");
     }
 
     @Test
-    void testAsProjectComponentProvisionStatusWithNullJobDetailId() {
-        // Arrange
+    void givenJobDetailWithNullId_whenAsProjectComponentProvisionStatusIsCalled_thenUsesWorkflowJobId() {
+        // given
         var jobDetail = JobDetailMother.of(null, new HashMap<>());
-
-        String projectKey = "TEST_PROJECT";
+        var projectKey = "TEST_PROJECT";
         var projectComponentInfo = ProjectComponentExtendedInfoMother.of();
 
-        // Act
+        // when
         ProjectComponentProvisionStatus result = entitiesMapper.asProjectComponentProvisionStatus(
                 projectKey, projectComponentInfo, jobDetail);
 
-        // Assert
-        assertEquals("12345", result.getWorkflowJobId());
+        // then
+        assertThat(result.getWorkflowJobId()).isEqualTo("12345");
     }
 
     @Test
-    void testAsProjectComponentProvisionStatusWithNullArtifacts() {
-        // Arrange
+    void givenJobDetailWithNullArtifacts_whenAsProjectComponentProvisionStatusIsCalled_thenUsesNaDefaults() {
+        // given
         var jobDetail = JobDetailMother.of(1, null);
-
-        String projectKey = "TEST_PROJECT";
+        var projectKey = "TEST_PROJECT";
         var projectComponentInfo = ProjectComponentExtendedInfoMother.of();
 
-        // Act
+        // when
         ProjectComponentProvisionStatus result = entitiesMapper.asProjectComponentProvisionStatus(
                 projectKey, projectComponentInfo, jobDetail);
 
-        // Assert
-        assertEquals("N/A", result.getErrorMessage());
-        assertEquals("N/A", result.getErrorTask());
+        // then
+        assertThat(result.getErrorMessage()).isEqualTo("N/A");
+        assertThat(result.getErrorTask()).isEqualTo("N/A");
     }
 
     @Test
-    void testAsProjectComponentProvisionStatusWithMissingArtifactKeys() {
-        // Arrange
+    void givenJobDetailWithMissingArtifactKeys_whenAsProjectComponentProvisionStatusIsCalled_thenUsesNaDefaults() {
+        // given
         var artifacts = new HashMap<String, String>();
         var jobDetail = JobDetailMother.of(99, artifacts);
-
-        String projectKey = "TEST_PROJECT";
+        var projectKey = "TEST_PROJECT";
         var projectComponentInfo = ProjectComponentExtendedInfoMother.of(ProvisioningStatus.FAILED);
 
-        // Act
+        // when
         ProjectComponentProvisionStatus result = entitiesMapper.asProjectComponentProvisionStatus(
                 projectKey, projectComponentInfo, jobDetail);
 
-        // Assert
-        assertEquals("N/A", result.getErrorMessage());
-        assertEquals("N/A", result.getErrorTask());
+        // then
+        assertThat(result.getErrorMessage()).isEqualTo("N/A");
+        assertThat(result.getErrorTask()).isEqualTo("N/A");
     }
 
     @Test
-    void givenAServerProvisioningStatusUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
-        // Arrange
+    void givenServerUpdateRequest_whenAsClientProvisioningStatusUpdateRequest_thenMapsAllFields() {
+        // given
         var parameter = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequestAllOfParameters();
         parameter.setName("env");
         parameter.setValues(java.util.List.of("dev", "prod"));
@@ -112,52 +107,52 @@ class EntitiesMapperTest {
         serverRequest.workflowJobId("wf-1");
         serverRequest.setParameters(java.util.List.of(parameter));
 
-        // Act
+        // when
         var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
 
-        // Assert
-        assertNotNull(clientRequest);
-        assertEquals("comp-1", clientRequest.getComponentId());
-        assertEquals("cat-1", clientRequest.getCatalogItemId());
-        assertEquals("http://example.com", clientRequest.getComponentUrl());
-        assertEquals("wf-1", clientRequest.getWorkflowJobId());
-        assertEquals(1, clientRequest.getParameters().size());
-        assertEquals("env", clientRequest.getParameters().getFirst().getName());
-        assertEquals(java.util.List.of("dev", "prod"), clientRequest.getParameters().getFirst().getValues());
+        // then
+        assertThat(clientRequest).isNotNull();
+        assertThat(clientRequest.getComponentId()).isEqualTo("comp-1");
+        assertThat(clientRequest.getCatalogItemId()).isEqualTo("cat-1");
+        assertThat(clientRequest.getComponentUrl()).isEqualTo("http://example.com");
+        assertThat(clientRequest.getWorkflowJobId()).isEqualTo("wf-1");
+        assertThat(clientRequest.getParameters()).hasSize(1);
+        assertThat(clientRequest.getParameters().getFirst().getName()).isEqualTo("env");
+        assertThat(clientRequest.getParameters().getFirst().getValues()).isEqualTo(java.util.List.of("dev", "prod"));
     }
 
     @Test
-    void givenAServerProvisioningStatusUpdateRequestWithNullParameters_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenReturnsEmptyList() {
-        // Arrange
+    void givenServerRequestWithNullParameters_whenAsClientProvisioningStatusUpdateRequest_thenReturnsEmptyList() {
+        // given
         var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest();
         serverRequest.setComponentId("comp-1");
         serverRequest.setCatalogItemId("cat-1");
         serverRequest.setParameters(null);
 
-        // Act
+        // when
         var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
 
-        // Assert
-        assertNotNull(clientRequest.getParameters());
-        assertEquals(0, clientRequest.getParameters().size());
+        // then
+        assertThat(clientRequest.getParameters()).isNotNull();
+        assertThat(clientRequest.getParameters()).isEmpty();
     }
 
     @Test
-    void givenAServerProvisioningStatusPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
-        // Arrange
+    void givenServerPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequest_thenMapsAllFields() {
+        // given
         var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest();
         serverRequest.setComponentId("comp-2");
         serverRequest.setCatalogItemId("cat-2");
         serverRequest.componentUrl("http://example.org");
 
-        // Act
+        // when
         var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(serverRequest);
 
-        // Assert
-        assertNotNull(clientRequest);
-        assertEquals("comp-2", clientRequest.getComponentId());
-        assertEquals("cat-2", clientRequest.getCatalogItemId());
-        assertEquals("http://example.org", clientRequest.getComponentUrl());
+        // then
+        assertThat(clientRequest).isNotNull();
+        assertThat(clientRequest.getComponentId()).isEqualTo("comp-2");
+        assertThat(clientRequest.getCatalogItemId()).isEqualTo("cat-2");
+        assertThat(clientRequest.getComponentUrl()).isEqualTo("http://example.org");
     }
 }
 

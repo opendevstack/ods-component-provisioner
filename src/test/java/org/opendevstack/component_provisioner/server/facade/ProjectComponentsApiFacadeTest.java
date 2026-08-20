@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
@@ -79,7 +78,7 @@ class ProjectComponentsApiFacadeTest {
                 .thenReturn(expectedInfo);
 
         // when
-        ProjectComponentExtendedInfo result = projectComponentsApiFacade.getProjectComponentById(projectKey, componentId);
+        var result = projectComponentsApiFacade.getProjectComponentById(projectKey, componentId);
 
         // then
         assertThat(result).isEqualTo(expectedInfo);
@@ -94,14 +93,14 @@ class ProjectComponentsApiFacadeTest {
         var componentInfo = ProjectComponentExtendedInfoMother.of(ProvisioningStatus.FAILED);
         var jobDetail = JobDetailMother.of();
 
-        ProjectComponentProvisionStatus expectedStatus = new ProjectComponentProvisionStatus();
+        var expectedStatus = new ProjectComponentProvisionStatus();
 
         when(awxService.getWorkflowJobById("12345")).thenReturn(Optional.of(jobDetail));
         when(entitiesMapper.asProjectComponentProvisionStatus(projectKey, componentInfo, jobDetail))
                 .thenReturn(expectedStatus);
 
         // when
-        ProjectComponentProvisionStatus result = projectComponentsApiFacade.enrichWithAapInfo(projectKey, componentInfo);
+        var result = projectComponentsApiFacade.enrichWithAapInfo(projectKey, componentInfo);
 
         // then
         assertThat(result).isEqualTo(expectedStatus);
@@ -115,13 +114,13 @@ class ProjectComponentsApiFacadeTest {
         var projectKey = "test-project";
         var componentInfo = ProjectComponentExtendedInfoMother.of();
 
-        ProjectComponentProvisionStatus expectedStatus = new ProjectComponentProvisionStatus();
+        var expectedStatus = new ProjectComponentProvisionStatus();
 
         when(entitiesMapper.asProjectComponentProvisionStatus(projectKey, componentInfo, null))
                 .thenReturn(expectedStatus);
 
         // when
-        ProjectComponentProvisionStatus result = projectComponentsApiFacade.enrichWithAapInfo(projectKey, componentInfo);
+        var result = projectComponentsApiFacade.enrichWithAapInfo(projectKey, componentInfo);
 
         // then
         assertThat(result).isEqualTo(expectedStatus);
@@ -132,10 +131,10 @@ class ProjectComponentsApiFacadeTest {
     @Test
     void givenValidOidToken_whenGetPaginatedProjectComponents_thenReturnsMappedResponse() {
         // given
-        String userToken = "user-token";
-        String appToken = "app-token";
-        Integer page = 1;
-        Integer size = 10;
+        var userToken = "user-token";
+        var appToken = "app-token";
+        var page = 1;
+        var size = 10;
 
         var serviceResponse = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics();
         var mappedResponse = new ProjectComponentsMetrics();
@@ -173,7 +172,7 @@ class ProjectComponentsApiFacadeTest {
     @Test
     void givenInvalidOidToken_whenGetPaginatedProjectComponents_thenThrowsUserNotAllowedException() {
         // given
-        String userToken = "user-token";
+        var userToken = "user-token";
 
         when(authenticationProvider.getAccessToken()).thenReturn(userToken);
         when(odsApiServerServiceProps.getOid()).thenReturn("expected-oid");
@@ -197,8 +196,8 @@ class ProjectComponentsApiFacadeTest {
     @Test
     void givenInvalidPagination_whenComponentCatalogReturnsBadRequest_thenThrowsBadRequestException() throws Exception {
         // given
-        String userToken = "user-token";
-        String appToken = "app-token";
+        var userToken = "user-token";
+        var appToken = "app-token";
 
         when(authenticationProvider.getAccessToken()).thenReturn(userToken);
         when(applicationAuthenticationProvider.getAccessToken()).thenReturn(appToken);

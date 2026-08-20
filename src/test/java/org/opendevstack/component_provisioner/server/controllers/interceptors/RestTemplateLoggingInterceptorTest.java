@@ -31,9 +31,9 @@ class RestTemplateLoggingInterceptorTest {
     @Test
     void givenRequestAndBody_whenIntercept_thenLogsAndExecutes() throws IOException {
         // given
-        HttpRequest request = mock(HttpRequest.class);
-        byte[] body = "test body".getBytes(StandardCharsets.UTF_8);
-        ClientHttpResponse response = mock(ClientHttpResponse.class);
+        var request = mock(HttpRequest.class);
+        var body = "test body".getBytes(StandardCharsets.UTF_8);
+        var response = mock(ClientHttpResponse.class);
 
         when(request.getURI()).thenReturn(URI.create("http://localhost"));
         when(request.getMethod()).thenReturn(HttpMethod.GET);
@@ -41,7 +41,7 @@ class RestTemplateLoggingInterceptorTest {
         when(execution.execute(request, body)).thenReturn(response);
 
         // when
-        ClientHttpResponse result = interceptor.intercept(request, body, execution);
+        var result = interceptor.intercept(request, body, execution);
 
         // then
         assertThat(result).isEqualTo(response);
@@ -50,19 +50,19 @@ class RestTemplateLoggingInterceptorTest {
     @Test
     void givenRequestAndEmptyBody_whenIntercept_thenLogsAndExecutes() throws IOException {
         // given
-        HttpRequest request = mock(HttpRequest.class);
-        byte[] body = new byte[0];
-        ClientHttpResponse response = mock(ClientHttpResponse.class);
+        var request = mock(HttpRequest.class);
+        var body = new byte[0];
+        var response = mock(ClientHttpResponse.class);
 
         when(request.getURI()).thenReturn(URI.create("http://localhost"));
         when(request.getMethod()).thenReturn(HttpMethod.POST);
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.add("Content-Type", "application/json");
         when(request.getHeaders()).thenReturn(headers);
         when(execution.execute(request, body)).thenReturn(response);
 
         // when
-        ClientHttpResponse result = interceptor.intercept(request, body, execution);
+        var result = interceptor.intercept(request, body, execution);
 
         // then
         assertThat(result).isEqualTo(response);

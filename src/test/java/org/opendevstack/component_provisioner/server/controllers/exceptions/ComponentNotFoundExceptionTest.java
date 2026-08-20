@@ -9,10 +9,10 @@ class ComponentNotFoundExceptionTest {
     @Test
     void givenMessage_whenConstructorIsCalled_thenMessageIsStored() {
         // given
-        String message = "Component not found";
+        var message = "Component not found";
 
         // when
-        ComponentNotFoundException exception = new ComponentNotFoundException(message);
+        var exception = new ComponentNotFoundException(message);
 
         // then
         assertThat(exception.getMessage()).isEqualTo(message);

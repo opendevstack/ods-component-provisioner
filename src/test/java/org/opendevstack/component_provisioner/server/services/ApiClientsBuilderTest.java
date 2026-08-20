@@ -6,10 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.ApiClient;
-import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.AzureGroupsApi;
-import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.api.ProjectsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
 import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,11 +22,11 @@ class ApiClientsBuilderTest {
     @Test
     void givenAccessTokenAndBaseUrl_whenProjectsInfoServiceApiClientIsCalled_thenClientIsConfiguredCorrectly() {
         // given
-        String accessToken = "test-token";
-        String baseUrl = "http://example.com";
+        var accessToken = "test-token";
+        var baseUrl = "http://example.com";
 
         // when
-        ApiClient client = builder.projectsInfoServiceApiClient(accessToken, baseUrl);
+        var client = builder.projectsInfoServiceApiClient(accessToken, baseUrl);
 
         // then
         assertThat(client).isNotNull();
@@ -43,8 +39,8 @@ class ApiClientsBuilderTest {
     @Test
     void givenBearerTokenAndBaseUrl_whenComponentCatalogApiClientIsCalled_thenClientIsConfiguredCorrectly() {
         // given
-        String accessToken = "test-token";
-        String baseUrl = "http://component-catalog";
+        var accessToken = "test-token";
+        var baseUrl = "http://component-catalog";
 
         // when
         var client = builder.componentCatalogApiClient(accessToken, baseUrl);
@@ -60,10 +56,10 @@ class ApiClientsBuilderTest {
     @Test
     void givenApiClient_whenProjectsApiIsCalled_thenReturnsProjectsApiInstance() {
         // given
-        ApiClient client = new ApiClient();
+        var client = new ApiClient();
 
         // when
-        ProjectsApi api = builder.projectsApi(client);
+        var api = builder.projectsApi(client);
 
         // then
         assertThat(api).isNotNull();
@@ -73,10 +69,10 @@ class ApiClientsBuilderTest {
     @Test
     void givenApiClient_whenAzureGroupsApiIsCalled_thenReturnsAzureGroupsApiInstance() {
         // given
-        ApiClient client = new ApiClient();
+        var client = new ApiClient();
 
         // when
-        AzureGroupsApi api = builder.azureGroupsApi(client);
+        var api = builder.azureGroupsApi(client);
 
         // then
         assertThat(api).isNotNull();
@@ -89,7 +85,7 @@ class ApiClientsBuilderTest {
         var client = new org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient();
 
         // when
-        CatalogItemsApi api = builder.catalogItemsApi(client);
+        var api = builder.catalogItemsApi(client);
 
         // then
         assertThat(api).isNotNull();
@@ -99,11 +95,11 @@ class ApiClientsBuilderTest {
     @Test
     void givenAccessTokenAndBaseUrl_whenProvisionerActionsApiIsCalled_thenReturnsProvisionerActionsApiInstance() {
         // given
-        String accessToken = "test-token";
-        String baseUrl = "http://component-catalog";
+        var accessToken = "test-token";
+        var baseUrl = "http://component-catalog";
 
         // when
-        ProvisionerActionsApi api = builder.provisionerActionsApi(accessToken, baseUrl);
+        var api = builder.provisionerActionsApi(accessToken, baseUrl);
 
         // then
         assertThat(api).isNotNull();
@@ -114,8 +110,8 @@ class ApiClientsBuilderTest {
     @Test
     void givenAccessTokenAndBaseUrl_whenOdsApiServerApiClient_thenReturnsConfiguredApiClient() {
         // given
-        String accessToken = "test-token";
-        String baseRestUrl = "http://test.url";
+        var accessToken = "test-token";
+        var baseRestUrl = "http://test.url";
 
         // when
         var result = builder.odsApiServerApiClient(accessToken, baseRestUrl);
