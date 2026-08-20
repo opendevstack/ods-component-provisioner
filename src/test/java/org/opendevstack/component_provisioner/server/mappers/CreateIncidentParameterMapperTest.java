@@ -42,7 +42,7 @@ class CreateIncidentParameterMapperTest {
     }
 
     @Test
-    void givenAProjectComponentParameterWithNullValues_whenToTargetIsCalled_thenReturnsCreateIncidentParameterWithNullValue() {
+    void givenParameterWithNullValues_whenToTarget_thenReturnsCreateIncidentParameterWithNullValue() {
         // given
         var param = CatalogItemUserActionParameter.builder()
                 .name("param2")
@@ -63,7 +63,7 @@ class CreateIncidentParameterMapperTest {
     }
 
     @Test
-    void givenAProjectComponentParameterWithEmptyValues_whenToTargetIsCalled_thenReturnsCreateIncidentParameterWithNullValue() {
+    void givenParameterWithEmptyValues_whenToTarget_thenReturnsCreateIncidentParameterWithNullValue() {
         // given
         var param = CatalogItemUserActionParameter.builder()
                 .name("param3")
@@ -89,7 +89,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(null).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
+        var result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isNull();
@@ -101,7 +101,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(List.of()).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
+        var result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isNull();
@@ -113,7 +113,7 @@ class CreateIncidentParameterMapperTest {
         var source = ProjectComponentParameter.builder().values(List.of("first", "second")).build();
 
         // when
-        Object result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
+        var result = mapper.resolveValue(ParameterType.STRING.getValue(), source.getValues());
 
         // then
         assertThat(result).isEqualTo("first");

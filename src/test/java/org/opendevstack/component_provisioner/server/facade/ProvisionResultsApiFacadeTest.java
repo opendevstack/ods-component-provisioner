@@ -1,6 +1,7 @@
 package org.opendevstack.component_provisioner.server.facade;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -79,9 +80,9 @@ class ProvisionResultsApiFacadeTest {
     @InjectMocks
     private ProvisionResultsApiFacade facade;
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     void setUp() {
-        String workflowJobId = "WORKFLOW_123";
+        var workflowJobId = "WORKFLOW_123";
         ReflectionTestUtils.setField(facade, "createIncidentWorkflowId", workflowJobId);
         ReflectionTestUtils.setField(facade, "deletionWrapperWorkflowId", workflowJobId);
     }
@@ -114,6 +115,7 @@ class ProvisionResultsApiFacadeTest {
 
         // when
         var result = facade.getParameterString(action, "any");
+
 
         // then
         assertThat(result).isEmpty();
@@ -405,7 +407,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAnInvalidCatalogItemSlug_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenThrowsSlugNotFoundException() {
+    void givenInvalidCatalogItemSlug_whenNotifyStatusUpdatePartially_thenThrowsSlugNotFoundException() {
         // given
         var projectKey = "PRJ";
         var status = ProvisioningStatus.CREATED;
@@ -482,7 +484,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenProjectKeyAndStatusAndRequestWithBothIdAndSlug_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
+    void givenBothIdAndSlug_whenValidate_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "PRJ";
 
@@ -549,7 +551,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndComponentIsAlreadyDeleting_thenReturnsOkWithoutAwxCall() {
+    void givenComponentAlreadyDeleting_whenRequestDeletion_thenReturnsOkWithoutTriggeringWorkflow() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -577,7 +579,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentId_whenRequestDeletionIsCalledAndWorkflowNameIsConfigured_thenTriggersDeletionWorkflow() {
+    void givenWorkflowNameConfigured_whenRequestDeletion_thenTriggersConfiguredWorkflow() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -813,7 +815,7 @@ class ProvisionResultsApiFacadeTest {
     }
 
     @Test
-    void givenWrapperWorkflow_whenAddDeletionWrapperWorkflowParametersIsCalled_thenDispatchedWorkflowParamsContainsAllParametersAndNotification() {
+    void givenWrapperWorkflow_whenAddDeletionWrapperWorkflowParams_thenDispatchedParamsContainAllAndNotification() {
         // given
         var action = CreateIncidentActionMother.of();
         action.setParameters(new ArrayList<>());

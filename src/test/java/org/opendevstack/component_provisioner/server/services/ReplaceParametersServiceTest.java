@@ -118,7 +118,7 @@ class ReplaceParametersServiceTest {
     }
 
     @Test
-    void givenOnlySomeParamsConfiguredToOverride_whenReplaceProvisioningParametersFromOdsApi_thenOnlyConfiguredParamsAreReplaced() {
+    void givenOnlySomeParamsConfiguredToOverride_whenReplaceParameters_thenOnlyConfiguredParamsAreOverridden() {
         // given
         initializeService("project_name");
         ProvisionActionParameter paramToOverride = ProvisionActionParameterMother.of("project_name", "oldValue");
@@ -180,7 +180,7 @@ class ReplaceParametersServiceTest {
     }
 
     @Test
-    void givenNonStringParameterInOdsApi_whenReplaceProvisioningParametersFromOdsApi_thenThrowsIllegalConfigurationException() {
+    void givenNonStringParameterInOdsApi_whenReplaceParameters_thenThrowsIllegalConfigurationException() {
         // given
         initializeService("non_string_param");
         ProvisionActionParameter parameter = ProvisionActionParameterMother.of("non_string_param", "INTEGER", 0);

@@ -65,7 +65,7 @@ class ProvisionServiceTest {
     private ProvisionService provisionService;
 
     @Test
-    void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApiPut() throws Exception {
+    void givenClientUpdateRequest_whenNotifyStatusUpdate_thenInvokesProvisionerActionsApiPut() throws Exception {
         // given
         var projectKey = "PRJ";
         var status =
@@ -87,11 +87,12 @@ class ProvisionServiceTest {
         provisionService.notifyProvisioningStatusUpdate(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.CREATED, clientRequest);
+        verify(provisionerActionsApi)
+                .notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.CREATED, clientRequest);
     }
 
     @Test
-    void givenAClientUpdateRequest_whenNotifyProvisioningStatusUpdatePartiallyIsCalled_thenInvokesProvisionerActionsApiPatch() throws Exception {
+    void givenClientUpdateRequest_whenNotifyStatusUpdatePartially_thenInvokesApiPatch() throws Exception {
         // given
         var projectKey = "PRJ";
         var status =
@@ -113,11 +114,12 @@ class ProvisionServiceTest {
         provisionService.notifyProvisioningStatusUpdatePartially(projectKey, status, clientRequest, accessToken);
 
         // then
-        verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(projectKey, ProvisioningStatus.CREATED, clientRequest);
+        verify(provisionerActionsApi)
+                .notifyProvisioningStatusUpdatePartially(projectKey, ProvisioningStatus.CREATED, clientRequest);
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalled_thenReturnsMappedParameters() throws Exception {
+    void givenProjectComponent_whenGetDeletionParameters_thenReturnsMappedParameters() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -166,7 +168,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndUserActionsIsNull_thenReturnsEmptyList() throws Exception {
+    void givenUserActionsIsNull_whenGetDeletionParameters_thenReturnsEmptyList() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -195,7 +197,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndActionParametersIsNull_thenReturnsEmptyList() throws Exception {
+    void givenActionParametersIsNull_whenGetDeletionParameters_thenReturnsEmptyList() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -226,7 +228,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndSendOnDeletionIsFalse_thenReturnsEmptyList() throws Exception {
+    void givenSendOnDeletionIsFalse_whenGetDeletionParameters_thenReturnsEmptyList() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";

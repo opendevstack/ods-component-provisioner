@@ -317,7 +317,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenCatalogItemWithoutUserActions_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+    void givenCatalogItemWithoutUserActions_whenValidatingVisibleParameters_thenThrowsInvalidRestEntityException() {
         // given
         var catalogItem = CatalogItem.builder().title("My Item").userActions(null).build();
         var action = ProvisionActionMother.of(Collections.emptyList());
@@ -329,7 +329,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenCatalogItemWithoutProvisionUserAction_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+    void givenCatalogItemWithoutProvisionUserAction_whenValidatingVisibleParams_thenThrowsInvalidRestEntityException() {
         // given
         var userAction = CatalogItemUserAction.builder().id("DELETE").parameters(List.of()).build();
         var catalogItem = CatalogItem.builder().title("My Item").userActions(List.of(userAction)).build();
@@ -342,7 +342,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenParameterNotDefinedInCatalog_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+    void givenParameterNotDefinedInCatalog_whenValidatingVisibleParameters_thenThrowsInvalidRestEntityException() {
         // given
         var visibleParam = CatalogItemUserActionParameter.builder()
                 .name("known_param")
@@ -394,7 +394,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenParameterWithNullVisibility_whenValidatingReceivesOnlyVisibleParameters_thenThrowsInvalidRestEntityException() {
+    void givenParameterWithNullVisibility_whenValidatingVisibleParameters_thenThrowsInvalidRestEntityException() {
         // given
         var paramWithNullVisibility = CatalogItemUserActionParameter.builder()
                 .name("null_visibility_param")
@@ -562,7 +562,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenMissingDeletionWorkflowAndDeletionWorkflowNameAndWorkflowProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+    void givenMissingDeletionNamesAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenNoExceptionThrown() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow", "wf-123")
@@ -574,7 +574,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenMissingDeletionWorkflowAndDeletionWorkflowNameAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
+    void givenMissingDeletionNamesAndOnlyWorkflowName_whenValidatingWorkflow_thenThrowsInvalidRestEntityException() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("workflow_name", "wf-name")

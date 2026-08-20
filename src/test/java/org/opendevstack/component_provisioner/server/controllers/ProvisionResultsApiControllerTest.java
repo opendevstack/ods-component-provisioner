@@ -139,7 +139,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenAProjectKeyAndAComponentIdAndCreateIncidentAction_whenCreateIncidentIsCalledAndComponentAlreadyInDeletingState_thenReturnsOkAndIgnoreAWXCall() {
+    void givenComponentAlreadyInDeletingState_whenCreateIncident_thenReturnsOkAndIgnoresAwxCall() {
         // given
         var projectKey = "project-key";
         var componentId = "componentId";
@@ -161,7 +161,7 @@ class ProvisionResultsApiControllerTest {
     }
 
     @Test
-    void givenNeitherCatalogItemIdNorCatalogItemSlug_whenNotifyProvisioningStatusUpdateIsCalled_thenThrowsInvalidRestEntityException() {
+    void givenNeitherCatalogItemIdNorSlug_whenNotifyStatusUpdate_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "project-key";
         var statusLowercase = ProvisioningStatus.FAILED;

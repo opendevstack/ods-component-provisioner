@@ -163,7 +163,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenRestClientException_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenThrowsCatalogClientException() {
+    void givenRestClientException_whenGetCatalogItemUserActionMessageDefinition_thenThrowsCatalogClientException() {
         // given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
@@ -186,7 +186,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenNotifyComponentCatalogProvisionStartsIsCalled_thenInvokesProvisionerActionsApiWithCreating() throws MalformedURLException {
+    void givenValidInput_whenNotifyComponentCatalogProvisionStarts_thenInvokesProvisionerActionsApi() throws Exception {
         // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -238,7 +238,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenNullParameters_whenNotifyComponentCatalogProvisionStartsIsCalled_thenEmptyMapIsUsed() throws MalformedURLException {
+    void givenNullParameters_whenNotifyComponentCatalogProvisionStarts_thenEmptyMapIsUsed() throws Exception {
         // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -371,7 +371,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponentsIsCalled_thenProjectComponentsAreReturned() throws MalformedURLException {
+    void givenValidInput_whenGetProjectComponents_thenProjectComponentsAreReturned() throws Exception {
         // given
         String accessToken = "bearerToken";
         String projectKey = "PRJ-1";
@@ -395,7 +395,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenGetProjectComponentExtendedInfoIsCalled_thenExtendedInfoIsReturned() throws MalformedURLException {
+    void givenValidInput_whenGetProjectComponentExtendedInfo_thenExtendedInfoIsReturned() throws Exception {
         // given
         String accessToken = "bearerToken";
         String projectKey = "PRJ-1";
@@ -446,7 +446,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenValidInput_whenSetWorkflowJobIdIsCalled_thenInvokesProvisionerActionsApiWithPartialUpdate() throws MalformedURLException {
+    void givenValidInput_whenSetWorkflowJobId_thenInvokesProvisionerActionsApiWithPartialUpdate() throws Exception {
         // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
@@ -532,7 +532,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndWorkflowJobIdAndAccessToken_whenSetWorkflowJobIdIsCalled_thenInvokesProvisionerActionsApi() throws Exception {
+    void givenProjectKeyAndWorkflowJobId_whenSetWorkflowJobId_thenInvokesProvisionerActionsApi() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -550,7 +550,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenAProjectKey_whenGetProjectComponentsIsCalled_thenInvokesProjectComponentsApi() throws MalformedURLException {
+    void givenAProjectKey_whenGetProjectComponents_thenInvokesProjectComponentsApi() throws Exception {
         // given
         String accessToken = "bearerToken";
         var projectKey = "PRJ";
@@ -573,7 +573,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentId_whenGetProjectComponentExtendedInfoIsCalled_thenInvokesProjectComponentsApi() throws MalformedURLException {
+    void givenAProjectKeyAndComponentId_whenGetProjectComponentById_thenInvokesProjectComponentsApi() throws Exception {
         // given
         String accessToken = "bearerToken";
         var projectKey = "PRJ";
@@ -598,7 +598,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenComponentCatalogReturns403_whenGetProjectComponentByIdIsCalled_thenThrowsUserNotAllowedException() throws MalformedURLException {
+    void givenCatalogReturns403_whenGetProjectComponentById_thenThrowsUserNotAllowedException() throws Exception {
         // given
         String accessToken = "bearerToken";
         var projectKey = "PRJ";
@@ -619,7 +619,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenComponentCatalogReturnsNon403HttpError_whenGetProjectComponentByIdIsCalled_thenRethrowsOriginalException() throws MalformedURLException {
+    void givenNon403HttpError_whenGetProjectComponentById_thenRethrowsOriginalException() throws Exception {
         // given
         String accessToken = "bearerToken";
         var projectKey = "PRJ";
@@ -676,7 +676,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenApiThrowsHttpClientError_whenGetPaginatedProjectComponents_thenExceptionPropagates() throws MalformedURLException {
+    void givenHttpClientError_whenGetPaginatedProjectComponents_thenExceptionPropagates() throws MalformedURLException {
         // given
         String token = "token";
         int page = 0;
@@ -700,7 +700,7 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
-    void givenApiThrowsRestClientException_whenGetPaginatedProjectComponents_thenExceptionPropagates() throws MalformedURLException {
+    void givenRestClientException_whenGetPaginatedComponents_thenExceptionPropagates() throws MalformedURLException {
         // given
         String token = "token";
         int page = 0;

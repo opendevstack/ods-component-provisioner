@@ -94,7 +94,7 @@ class EntitiesMapperTest {
     }
 
     @Test
-    void givenAServerProvisioningStatusUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+    void givenServerUpdateRequest_whenAsClientProvisioningStatusUpdateRequest_thenMapsAllFields() {
         // given
         var parameter = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequestAllOfParameters();
         parameter.setName("env");
@@ -122,7 +122,7 @@ class EntitiesMapperTest {
     }
 
     @Test
-    void givenServerRequestWithNullParameters_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenReturnsEmptyList() {
+    void givenServerRequestWithNullParameters_whenAsClientProvisioningStatusUpdateRequest_thenReturnsEmptyList() {
         // given
         var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest();
         serverRequest.setComponentId("comp-1");
@@ -138,7 +138,7 @@ class EntitiesMapperTest {
     }
 
     @Test
-    void givenAServerProvisioningStatusPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequestIsCalled_thenMapsAllFields() {
+    void givenServerPartialUpdateRequest_whenAsClientProvisioningStatusUpdateRequest_thenMapsAllFields() {
         // given
         var serverRequest = new org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest();
         serverRequest.setComponentId("comp-2");

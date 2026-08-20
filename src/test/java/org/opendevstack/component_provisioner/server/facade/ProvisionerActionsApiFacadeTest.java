@@ -105,7 +105,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void requestProvisionToAwx_mapsResponseCorrectly() {
+    void givenProvisionAction_whenRequestProvisionToAwx_thenMapsResponseCorrectly() {
         // given
         var params = new ArrayList<ProvisionActionParameter>();
         params.add(ProvisionActionParameterMother.of("project_key", "PRJ"));
@@ -134,7 +134,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void notifyComponentCatalogProvisionStarts_sendsParametersAsListOfStrings() {
+    void givenListParams_whenNotifyComponentCatalogProvisionStarts_thenSendsParametersAsListOfStrings() {
         // given
         var accessToken = "BEARER-TOKEN";
 
@@ -160,7 +160,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_addsClusterLocationCallerAndAccessToken() {
+    void givenValidClusters_whenAddSystemParametersToAction_thenAddsClusterLocationCallerAndAccessToken() {
         // given
         var accessToken = "BEARER-TOKEN";
 
@@ -204,7 +204,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_throwsIllegalStateException_whenClustersIsEmpty() {
+    void givenEmptyClusters_whenAddSystemParametersToAction_thenThrowsIllegalStateException() {
         // given
         var bearerToken = "BEARER";
 
@@ -225,7 +225,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_usesFirstCluster_whenMultipleClustersAreReturned() {
+    void givenMultipleClusters_whenAddSystemParametersToAction_thenUsesFirstCluster() {
         // given
         var bearerToken = "bearer-token";
         var params = new ArrayList<ProvisionActionParameter>();
@@ -340,7 +340,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenOnlyCatalogItemSlug_thenAddMandatoryCatalogItemParamsIfMissingReceivesResolvedId() {
+    void givenOnlyCatalogItemSlug_whenTriggerProvisionAction_thenAddMandatoryCatalogItemParamsReceivesResolvedId() {
         // given
         var catalogItemSlug = "my-catalog-slug";
         var resolvedCatalogItemId = "resolved-catalog-id";
@@ -431,7 +431,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void requestProvisionToAwx_addsActionIdParameter_whenParametersIsNull() {
+    void givenNullParameters_whenRequestProvisionToAwx_thenAddsActionIdParameter() {
         // given
         var action = ProvisionActionMother.of(null);
 
@@ -459,7 +459,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_addsMissingRequiredParameters() {
+    void givenMissingRequiredParams_whenAddMandatoryParamsIfMissing_thenAddsMissingParameters() {
         // given
         var actionId = "action-id";
 
@@ -499,7 +499,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_doesNothingWhenRequiredParamAlreadyPresent() {
+    void givenRequiredParamAlreadyPresent_whenAddMandatoryParamsIfMissing_thenDoesNothing() {
         // given
         var actionId = "ACTION_ID";
 
@@ -539,7 +539,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_stringType_usesDefaultValue() {
+    void givenStringTypeWithDefault_whenAddMandatoryParamsIfMissing_thenUsesDefaultValue() {
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -572,7 +572,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_stringType_usesLocationValue_whenNoDefault() {
+    void givenStringTypeWithLocationNoDefault_whenAddMandatoryParamsIfMissing_thenUsesLocationValue() {
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -611,7 +611,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_stringType_withoutDefaults_leavesValueNull() {
+    void givenStringTypeWithoutDefaults_whenAddMandatoryParamsIfMissing_thenLeavesValueNull() {
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -643,7 +643,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addMandatoryParamsIfMissing_multipleListType_usesDefaultValues() {
+    void givenMultipleListType_whenAddMandatoryParamsIfMissing_thenUsesDefaultValues() {
         var action = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("catalog_item_id", "CAT-1"),
                 ProvisionActionParameterMother.of("project_key", "PRJ")
@@ -676,7 +676,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_whenWorkflowNameProvided_thenDoesNotAddProvisionWorkflowParams() {
+    void givenWorkflowNameProvided_whenAddSystemParametersToAction_thenDoesNotAddProvisionWorkflowParams() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -697,7 +697,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_whenWorkflowIdProvided_thenDoesNotAddProvisionWorkflowId() {
+    void givenWorkflowIdProvided_whenAddSystemParametersToAction_thenDoesNotAddProvisionWorkflowId() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -716,7 +716,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_whenTimeoutProvided_thenDoesNotAddProvisionWorkflowTimeout() {
+    void givenTimeoutProvided_whenAddSystemParametersToAction_thenDoesNotAddProvisionWorkflowTimeout() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -735,7 +735,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_doesNotRemoveWorkflowParameters() {
+    void givenWorkflowParams_whenAddSystemParametersToAction_thenDoesNotRemoveWorkflowParameters() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -758,7 +758,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void addSystemParametersToAction_doesNotAddDispatchedWorkflowParams() {
+    void givenDispatchedParams_whenAddSystemParametersToAction_thenDoesNotAddDispatchedWorkflowParams() {
         // given
         var wrapper = ProvisionActionWrapperMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
