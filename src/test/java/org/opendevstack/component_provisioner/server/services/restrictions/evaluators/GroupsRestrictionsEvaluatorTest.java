@@ -16,7 +16,7 @@ class GroupsRestrictionsEvaluatorTest {
 
     @Test
     void givenValidRestrictions_AndValidParams_whenEvaluate_ThenEvaluationPass_AndReturnTrue() {
-        // Given
+        // given
         var projectKey = "projectKey";
 
         CatalogItemUserActionGroupsRestriction groupsRestriction = CatalogItemUserActionGroupsRestrictionMother.of();
@@ -25,16 +25,16 @@ class GroupsRestrictionsEvaluatorTest {
         params.setProjectKey(projectKey);
         var evaluationRestrictions = new EvaluationRestrictions(projectKey, restrictions);
 
-        // When
+        // when
         Pair<Boolean, String> evaluateResult = groupsRestrictionsEvaluator.evaluate(evaluationRestrictions, params);
 
-        // Then
+        // then
         assertThat(evaluateResult.getLeft()).isTrue();
     }
 
     @Test
     void givenValidRestrictions_AndInValidParams_whenEvaluate_ThenEvaluationNotPass_AndReturnFalse() {
-        // Given
+        // given
         var projectKey = "projectKey";
 
         CatalogItemUserActionGroupsRestriction groupsRestriction = CatalogItemUserActionGroupsRestrictionMother.of();
@@ -42,16 +42,16 @@ class GroupsRestrictionsEvaluatorTest {
         RestrictionsParams params = RestrictionsParamsMother.of(List.of("prefix-1-group-1-suffix-2"));
         var evaluationRestrictions = new EvaluationRestrictions(projectKey, restrictions);
 
-        // When
+        // when
         Pair<Boolean, String> evaluateResult = groupsRestrictionsEvaluator.evaluate(evaluationRestrictions, params);
 
-        // Then
+        // then
         assertThat(evaluateResult.getLeft()).isFalse();
     }
 
     @Test
     void givenValidRestrictions_AndValidParams_whenEvaluate_ThenEvaluationNotPass_AndReturnFalse() {
-        // Given
+        // given
         var projectKey = "projectKey";
 
         CatalogItemUserActionGroupsRestriction groupsRestriction = CatalogItemUserActionGroupsRestrictionMother.of();
@@ -60,17 +60,17 @@ class GroupsRestrictionsEvaluatorTest {
 
         var evaluationRestrictions = new EvaluationRestrictions(projectKey, restrictions);
 
-        // When
+        // when
         Pair<Boolean, String> evaluateResult = groupsRestrictionsEvaluator.evaluate(evaluationRestrictions, params);
 
-        // Then
+        // then
         assertThat(evaluateResult.getLeft()).isFalse();
         assertThat(evaluateResult.getRight()).isEqualTo("Only project members with Manager or Team roles can provision components.");
     }
 
     @Test
     void givenInvalidRestrictions_AndValidParams_whenEvaluate_ThenEvaluationNotPass_AndReturnFalse() {
-        // Given
+        // given
         var projectKey = "projectKey";
 
         UserActionEntityRestrictions restrictions = UserActionEntityRestrictionsMother.of();
@@ -78,10 +78,10 @@ class GroupsRestrictionsEvaluatorTest {
 
         var evaluationRestrictions = new EvaluationRestrictions(projectKey, restrictions);
 
-        // When
+        // when
         Pair<Boolean, String> evaluateResult = groupsRestrictionsEvaluator.evaluate(evaluationRestrictions, params);
 
-        // Then
+        // then
         assertThat(evaluateResult.getLeft()).isFalse();
         assertThat(evaluateResult.getRight()).isEqualTo("Only project members with Manager or Team roles can provision components.");
     }

@@ -21,8 +21,6 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobLaunchMother;
 import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
@@ -50,10 +48,15 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiFacadeTest {
@@ -122,8 +125,8 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.requestProvisionToAwx(action);
 
         // then
-        assertEquals(HttpStatus.OK, result.httpStatusCode());
-        assertEquals(response, result.awxResponseBody());
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.awxResponseBody()).isEqualTo(response);
 
         var capturedAction = actionCaptor.getValue();
         assertThat(capturedAction.getParameters())
@@ -446,8 +449,8 @@ class ProvisionerActionsApiFacadeTest {
         var result = facade.requestProvisionToAwx(action);
 
         // then
-        assertEquals(HttpStatus.OK, result.httpStatusCode());
-        assertEquals(response, result.awxResponseBody());
+        assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.awxResponseBody()).isEqualTo(response);
 
         var capturedAction = actionCaptor.getValue();
         assertThat(capturedAction.getParameters())
