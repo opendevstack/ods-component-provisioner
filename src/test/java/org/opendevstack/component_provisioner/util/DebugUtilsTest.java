@@ -1,33 +1,40 @@
 package org.opendevstack.component_provisioner.util;
 
-import org.junit.jupiter.api.Test;
-
 import java.nio.file.Files;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
-public class DebugUtilsTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class DebugUtilsTest {
+
     @Test
-    void json_serializesObjectAndWritesToFile() throws Exception {
+    void givenObjectAndFilePath_whenJsonApplied_thenSerializesAndWritesToFile() throws Exception {
+        // given
         var obj = Map.of("key", "value");
         var tempFile = Files.createTempFile("test", ".json");
-        String result = DebugUtils.json.apply(obj, tempFile.toString());
 
-        assertTrue(result.contains("\"key\""));
-        assertTrue(Files.exists(tempFile));
-        String fileContent = Files.readString(tempFile);
-        assertEquals(result, fileContent);
+        // when
+        var result = DebugUtils.json.apply(obj, tempFile.toString());
+
+        // then
+        assertThat(result).contains("\"key\"");
+        assertThat(Files.exists(tempFile)).isTrue();
+        assertThat(Files.readString(tempFile)).isEqualTo(result);
 
         Files.deleteIfExists(tempFile);
     }
 
     @Test
-    void json_throwsExceptionForInvalidPath() {
+    void givenInvalidFilePath_whenJsonApplied_thenThrowsException() {
+        // given
         var obj = Map.of("key", "value");
-        String invalidPath = "/invalid/path/file.json";
-        assertThrows(Exception.class, () -> DebugUtils.json.apply(obj, invalidPath));
+        var invalidPath = "/invalid/path/file.json";
+
+        // when / then
+        assertThatThrownBy(() -> DebugUtils.json.apply(obj, invalidPath))
+                .isInstanceOf(Exception.class);
     }
 }

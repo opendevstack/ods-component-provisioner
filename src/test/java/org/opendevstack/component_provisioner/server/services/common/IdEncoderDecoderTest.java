@@ -7,7 +7,10 @@ import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.opendevstack.component_provisioner.server.services.common.IdEncoderDecoder.*;
+import static org.opendevstack.component_provisioner.server.services.common.IdEncoderDecoder.idDecode;
+import static org.opendevstack.component_provisioner.server.services.common.IdEncoderDecoder.idEncode;
+import static org.opendevstack.component_provisioner.server.services.common.IdEncoderDecoder.nullableIdDecode;
+import static org.opendevstack.component_provisioner.server.services.common.IdEncoderDecoder.nullableIdEncode;
 
 class IdEncoderDecoderTest {
 

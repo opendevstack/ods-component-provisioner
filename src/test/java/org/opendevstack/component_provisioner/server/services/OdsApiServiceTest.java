@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,6 +18,9 @@ import java.net.URI;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class OdsApiServiceTest {
@@ -69,7 +71,7 @@ class OdsApiServiceTest {
         CreateProjectResponse result = odsApiService.getProject(projectKey);
 
         // then
-        Assertions.assertThat(result).isEqualTo(expectedResponse);
+        assertThat(result).isEqualTo(expectedResponse);
     }
 
     @Test
@@ -100,7 +102,7 @@ class OdsApiServiceTest {
         CreateProjectResponse result = odsApiService.getProject(projectKey);
 
         // then
-        Assertions.assertThat(result).isNull();
+        assertThat(result).isNull();
     }
 
     @Test
@@ -128,7 +130,7 @@ class OdsApiServiceTest {
         when(projectsApi.getProject(projectKey)).thenThrow(exception);
 
         // when & then
-        Assertions.assertThatThrownBy(() -> odsApiService.getProject(projectKey))
+        assertThatThrownBy(() -> odsApiService.getProject(projectKey))
                 .isInstanceOf(HttpClientErrorException.class);
     }
 }

@@ -1,39 +1,58 @@
 package org.opendevstack.component_provisioner.util;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
-public class EitherTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class EitherTest {
+
     @Test
-    void constructor_setsValueAndErrorCorrectly_whenNoError() {
+    void givenNoError_whenConstructingEither_thenSetsValueAndFlagsCorrectly() {
+        // given / when
         Either<String, Exception> either = new Either<>("ok", null);
-        assertEquals("ok", either.getValue());
-        assertNull(either.error);
-        assertTrue(either.ok);
-        assertFalse(either.failed);
+
+        // then
+        assertThat(either.getValue()).isEqualTo("ok");
+        assertThat(either.error).isNull();
+        assertThat(either.ok).isTrue();
+        assertThat(either.failed).isFalse();
     }
 
     @Test
-    void constructor_setsErrorAndFlagsCorrectly_whenErrorPresent() {
-        Exception ex = new Exception("fail");
+    void givenErrorPresent_whenConstructingEither_thenSetsErrorAndFlagsCorrectly() {
+        // given
+        var ex = new Exception("fail");
+
+        // when
         Either<String, Exception> either = new Either<>(null, ex);
-        assertNull(either.getValue());
-        assertEquals(ex, either.error);
-        assertFalse(either.ok);
-        assertTrue(either.failed);
+
+        // then
+        assertThat(either.getValue()).isNull();
+        assertThat(either.error).isEqualTo(ex);
+        assertThat(either.ok).isFalse();
+        assertThat(either.failed).isTrue();
     }
 
     @Test
-    void throwError_throwsRuntimeException_whenErrorPresent() {
-        Exception ex = new Exception("fail");
+    void givenErrorPresent_whenThrowError_thenThrowsRuntimeExceptionWithCause() {
+        // given
+        var ex = new Exception("fail");
         Either<String, Exception> either = new Either<>(null, ex);
-        RuntimeException thrown = assertThrows(RuntimeException.class, either::throwError);
-        assertEquals(ex, thrown.getCause());
+
+        // when / then
+        assertThatThrownBy(either::throwError)
+                .isInstanceOf(RuntimeException.class)
+                .hasCause(ex);
     }
 
     @Test
-    void throwError_throwsIllegalStateException_whenNoError() {
+    void givenNoError_whenThrowError_thenThrowsIllegalStateException() {
+        // given
         Either<String, Exception> either = new Either<>("ok", null);
-        assertThrows(IllegalStateException.class, either::throwError);
+
+        // when / then
+        assertThatThrownBy(either::throwError)
+                .isInstanceOf(IllegalStateException.class);
     }
 }

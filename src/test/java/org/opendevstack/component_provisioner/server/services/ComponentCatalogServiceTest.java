@@ -12,7 +12,14 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.api.Ca
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionMessageDefinition;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentsMetrics;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequestParametersInner;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.exceptions.CatalogClientException;
 import org.springframework.http.HttpStatus;
@@ -31,7 +38,12 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ComponentCatalogServiceTest {
@@ -68,7 +80,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenValidInputs_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsBodyAndStatus() {
-        //given
+        // given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
         String messageDefinitionId = "md-789";
@@ -81,12 +93,12 @@ class ComponentCatalogServiceTest {
                 catalogItemId, userActionId, messageDefinitionId, placeholders
         )).thenReturn(response);
 
-        //when
+        // when
         Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
                 componentCatalogService.getCatalogItemUserActionMessageDefinition(
                         catalogItemId, userActionId, messageDefinitionId, placeholders);
 
-        //then
+        // then
         assertThat(result.getLeft().value()).isEqualTo(HttpStatus.OK.value());
         assertThat(result.getRight()).isPresent().contains(definition);
 
@@ -97,7 +109,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenNullBody_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsEmptyOptionalAndStatus() {
-        //given
+        // given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
         String messageDefinitionId = "md-789";
@@ -110,12 +122,12 @@ class ComponentCatalogServiceTest {
                 catalogItemId, userActionId, messageDefinitionId, placeholders
         )).thenReturn(response);
 
-        //when
+        // when
         Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
                 componentCatalogService.getCatalogItemUserActionMessageDefinition(
                         catalogItemId, userActionId, messageDefinitionId, placeholders);
 
-        //then
+        // then
         assertThat(result.getLeft().value()).isEqualTo(HttpStatus.OK.value());
         assertThat(result.getRight()).isEmpty();
 
@@ -126,7 +138,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenApiReturns404_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenReturnsStatusAndEmptyOptional() {
-        //given
+        // given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
         String messageDefinitionId = "md-789";
@@ -136,12 +148,12 @@ class ComponentCatalogServiceTest {
                 catalogItemId, userActionId, messageDefinitionId, placeholders
         )).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND, "Not Found"));
 
-        //when
+        // when
         Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
                 componentCatalogService.getCatalogItemUserActionMessageDefinition(
                         catalogItemId, userActionId, messageDefinitionId, placeholders);
 
-        //then
+        // then
         assertThat(result.getLeft().value()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(result.getRight()).isEmpty();
 
@@ -152,7 +164,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenRestClientException_whenGetCatalogItemUserActionMessageDefinitionIsCalled_thenThrowsCatalogClientException() {
-        //given
+        // given
         String catalogItemId = "cat-123";
         String userActionId = "ua-456";
         String messageDefinitionId = "md-789";
@@ -162,7 +174,7 @@ class ComponentCatalogServiceTest {
                 catalogItemId, userActionId, messageDefinitionId, placeholders
         )).thenThrow(new RestClientException("Boom"));
 
-        //when //then
+        // when / then
         assertThatThrownBy(() ->
                 componentCatalogService.getCatalogItemUserActionMessageDefinition(
                         catalogItemId, userActionId, messageDefinitionId, placeholders))
@@ -175,7 +187,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenValidInput_whenNotifyComponentCatalogProvisionStartsIsCalled_thenInvokesProvisionerActionsApiWithCreating() throws MalformedURLException {
-        //given
+        // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
@@ -195,10 +207,10 @@ class ComponentCatalogServiceTest {
         ArgumentCaptor<ProvisioningStatusUpdateRequest> requestCaptor =
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
-        //when
+        // when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, componentUrl, accessToken, parameters);
 
-        //then
+        // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(
                 projectKeyCaptor.capture(),
                 statusCaptor.capture(),
@@ -227,7 +239,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenNullParameters_whenNotifyComponentCatalogProvisionStartsIsCalled_thenEmptyMapIsUsed() throws MalformedURLException {
-        //given
+        // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
         String catalogItemId = "CAT-001";
@@ -239,10 +251,10 @@ class ComponentCatalogServiceTest {
         when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://component-catalog").toURL());
         when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://component-catalog")).thenReturn(provisionerActionsApi);
 
-        //when
+        // when
         componentCatalogService.notifyComponentCatalogProvisionStarts(projectKey, componentId, catalogItemId, null, accessToken, null);
 
-        //then
+        // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdate(eq(projectKey), eq(ProvisioningStatus.CREATING), requestCaptor.capture());
         assertThat(requestCaptor.getValue().getParameters()).isEmpty();
     }
@@ -469,7 +481,7 @@ class ComponentCatalogServiceTest {
 
     @Test
     void givenValidInput_whenGetProjectComponentByIdIsCalled_thenExtendedInfoIsReturned() throws Exception {
-        //given
+        // given
         String accessToken = "token";
         String projectKey = "PRJ";
         String componentId = "CID";
@@ -481,32 +493,32 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.projectComponentsApi(apiClient)).thenReturn(projectComponentsApi);
         when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expected);
 
-        //when
+        // when
         ProjectComponentExtendedInfo result = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
 
-        //then
+        // then
         assertThat(result).isSameAs(expected);
         verify(projectComponentsApi).getProjectComponentById(projectKey, componentId);
     }
 
     @Test
     void givenSupplierReturnsNull_whenGetMessageDefinitionIsCalled_thenReturnsOkAndEmptyOptional() {
-        //given
-        //when
+        // given
+        // when
         Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
                 ReflectionTestUtils.invokeMethod(componentCatalogService, "getMessageDefinition",
                         (java.util.function.Supplier<ResponseEntity<CatalogItemUserActionMessageDefinition>>) () -> ResponseEntity.ok(null),
                         "err1", "err2");
 
-        //then
+        // then
         assertThat(result.getLeft()).isEqualTo(HttpStatus.OK);
         assertThat(result.getRight()).isEmpty();
     }
 
     @Test
     void givenSupplierThrows404_whenGetMessageDefinitionIsCalled_thenReturnsNotFoundAndEmptyOptional() {
-        //given
-        //when
+        // given
+        // when
         Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> result =
                 ReflectionTestUtils.invokeMethod(componentCatalogService, "getMessageDefinition",
                         (java.util.function.Supplier<ResponseEntity<CatalogItemUserActionMessageDefinition>>) () -> {
@@ -514,7 +526,7 @@ class ComponentCatalogServiceTest {
                         },
                         "err1", "err2");
 
-        //then
+        // then
         assertThat(result.getLeft()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(result.getRight()).isEmpty();
     }

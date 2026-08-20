@@ -1,7 +1,5 @@
 package org.opendevstack.component_provisioner.util;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,112 +7,170 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Test;
 
-public class FunctionalUtilsTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class FunctionalUtilsTest {
 
     @Test
-    void testFieldSorterAsc() {
+    void givenListOfStrings_whenFieldSorterAsc_thenSortsAscending() {
+        // given
         Comparator<String> comparator = FunctionalUtils.fieldSorter(Function.<String>identity(), FunctionalUtils.SortOrder.ASC);
         List<String> list = new ArrayList<>(List.of("b", "a", "c"));
+
+        // when
         list.sort(comparator);
-        assertEquals(List.of("a", "b", "c"), list);
+
+        // then
+        assertThat(list).isEqualTo(List.of("a", "b", "c"));
     }
 
     @Test
-    void testFieldSorterDesc() {
+    void givenListOfStrings_whenFieldSorterDesc_thenSortsDescending() {
+        // given
         Comparator<String> comparator = FunctionalUtils.fieldSorter(Function.<String>identity(), FunctionalUtils.SortOrder.DESC);
         List<String> list = new ArrayList<>(List.of("b", "a", "c"));
+
+        // when
         list.sort(comparator);
-        assertEquals(List.of("c", "b", "a"), list);
+
+        // then
+        assertThat(list).isEqualTo(List.of("c", "b", "a"));
     }
 
     @Test
-    void testSortBy() {
+    void givenFruitsAndKeysOrder_whenSortBy_thenSortsByKeyOrder() {
+        // given
         List<String> fruits = new ArrayList<>(List.of("kiwi", "pear", "plum"));
         List<Integer> keysOrder = List.of(4, 5);
+
+        // when
         FunctionalUtils.sortBy(fruits, String::length, keysOrder);
-        assertEquals(List.of("kiwi", "pear", "plum"), fruits);
+
+        // then
+        assertThat(fruits).isEqualTo(List.of("kiwi", "pear", "plum"));
     }
 
     @Test
-    void testLeftJoin() {
+    void givenLeftAndRightLists_whenLeftJoin_thenReturnsLeftJoinedPairs() {
+        // given
         List<String> left = List.of("a", "b");
         List<String> right = List.of("b", "c");
         Function<String, String> key = Function.<String>identity();
+
+        // when
         List<Pair<String, String>> result = FunctionalUtils.leftJoin(left, key, right, key);
-        assertEquals(2, result.size());
-        assertEquals(Pair.of("a", null), result.get(0));
-        assertEquals(Pair.of("b", "b"), result.get(1));
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0)).isEqualTo(Pair.of("a", null));
+        assertThat(result.get(1)).isEqualTo(Pair.of("b", "b"));
     }
 
     @Test
-    void testRightJoin() {
+    void givenLeftAndRightLists_whenRightJoin_thenReturnsRightJoinedPairs() {
+        // given
         List<String> left = List.of("a", "b");
         List<String> right = List.of("b", "c");
         Function<String, String> key = Function.<String>identity();
+
+        // when
         List<Pair<String, String>> result = FunctionalUtils.rightJoin(left, key, right, key);
-        assertEquals(2, result.size());
-        assertEquals(Pair.of("b", "b"), result.get(0));
-        assertEquals(Pair.of(null, "c"), result.get(1));
+
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0)).isEqualTo(Pair.of("b", "b"));
+        assertThat(result.get(1)).isEqualTo(Pair.of(null, "c"));
     }
 
     @Test
-    void testInnerJoin() {
+    void givenLeftAndRightLists_whenInnerJoin_thenReturnsOnlyMatchingPairs() {
+        // given
         List<String> left = List.of("a", "b");
         List<String> right = List.of("b", "c");
         Function<String, String> key = Function.<String>identity();
+
+        // when
         List<Pair<String, String>> result = FunctionalUtils.innerJoin(left, key, right, key);
-        assertEquals(1, result.size());
-        assertEquals(Pair.of("b", "b"), result.get(0));
+
+        // then
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0)).isEqualTo(Pair.of("b", "b"));
     }
 
     @Test
-    void testFullJoin() {
+    void givenLeftAndRightLists_whenFullJoin_thenReturnsAllPairs() {
+        // given
         List<String> left = List.of("a", "b");
         List<String> right = List.of("b", "c");
         Function<String, String> key = Function.<String>identity();
+
+        // when
         List<Pair<String, String>> result = FunctionalUtils.fullJoin(left, key, right, key);
-        assertEquals(3, result.size());
-        assertEquals(Pair.of("a", null), result.get(0));
-        assertEquals(Pair.of("b", "b"), result.get(1));
-        assertEquals(Pair.of(null, "c"), result.get(2));
+
+        // then
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0)).isEqualTo(Pair.of("a", null));
+        assertThat(result.get(1)).isEqualTo(Pair.of("b", "b"));
+        assertThat(result.get(2)).isEqualTo(Pair.of(null, "c"));
     }
 
     @Test
-    void testSplitBy() {
+    void givenListOfIntegers_whenSplitBy_thenSplitsIntoMatchingAndNonMatching() {
+        // given
         List<Integer> list = List.of(1, 2, 3, 4, 5);
         Predicate<Integer> isEven = x -> x % 2 == 0;
+
+        // when
         Pair<List<Integer>, List<Integer>> result = FunctionalUtils.splitBy(list, isEven);
-        assertEquals(List.of(2, 4), result.getLeft());
-        assertEquals(List.of(1, 3, 5), result.getRight());
+
+        // then
+        assertThat(result.getLeft()).isEqualTo(List.of(2, 4));
+        assertThat(result.getRight()).isEqualTo(List.of(1, 3, 5));
     }
 
     @Test
-    void testSplitByEmpty() {
+    void givenEmptyList_whenSplitBy_thenReturnsBothSidesEmpty() {
+        // given / when
         Pair<List<Integer>, List<Integer>> result = FunctionalUtils.splitBy(Collections.emptyList(), x -> true);
-        assertTrue(result.getLeft().isEmpty());
-        assertTrue(result.getRight().isEmpty());
+
+        // then
+        assertThat(result.getLeft()).isEmpty();
+        assertThat(result.getRight()).isEmpty();
     }
 
     @Test
-    void testSelect() {
+    void givenListOfStrings_whenSelect_thenReturnsMappedList() {
+        // given
         List<String> list = List.of("a", "bb", "ccc");
+
+        // when
         List<Integer> lengths = FunctionalUtils.select(list, String::length);
-        assertEquals(List.of(1, 2, 3), lengths);
+
+        // then
+        assertThat(lengths).isEqualTo(List.of(1, 2, 3));
     }
 
     @Test
-    void testMapList() {
+    void givenListOfStrings_whenMapList_thenReturnsMappedList() {
+        // given
         List<String> list = List.of("a", "bb", "ccc");
+
+        // when
         List<Integer> lengths = FunctionalUtils.mapList(list, String::length);
-        assertEquals(List.of(1, 2, 3), lengths);
+
+        // then
+        assertThat(lengths).isEqualTo(List.of(1, 2, 3));
     }
 
     @Test
-    void testMapListEmpty() {
+    void givenEmptyList_whenMapList_thenReturnsEmptyList() {
+        // given / when
         List<Integer> result = FunctionalUtils.mapList(Collections.emptyList(), x -> 1);
-        assertTrue(result.isEmpty());
+
+        // then
+        assertThat(result).isEmpty();
     }
 }

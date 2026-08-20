@@ -13,10 +13,11 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
 import org.opendevstack.component_provisioner.server.security.AuthorizationInfo;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,7 +36,7 @@ class ProvisionerActionsApiControllerTest {
 
     @Test
     void givenAProvisionAction_whenTriggerProvisionAction_thenReturnExpectedResponse() {
-        // Given
+        // given
         var parameters = new ArrayList<ProvisionActionParameter>();
         var provisionAction = ProvisionActionMother.of(parameters);
 
@@ -47,12 +48,12 @@ class ProvisionerActionsApiControllerTest {
         when(provisionerActionsApiFacade.triggerProvisionAction(any(ProvisionAction.class)))
                 .thenReturn(awxResponse);
 
-        // When
-        var responseEntity = controller.triggerProvisionAction(provisionAction);
+        // when
+        ResponseEntity<ProvisionActionResponse> responseEntity = controller.triggerProvisionAction(provisionAction);
 
-        // Then
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(awxResponseBody, responseEntity.getBody());
+        // then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody()).isEqualTo(awxResponseBody);
 
         verify(provisionerActionsApiFacade).triggerProvisionAction(provisionAction);
     }

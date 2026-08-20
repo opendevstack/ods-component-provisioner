@@ -1,9 +1,10 @@
 package org.opendevstack.component_provisioner.server.services;
 
 import org.junit.jupiter.api.Test;
-import org.assertj.core.api.Assertions;
 
 import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SnakeCaseExtractorTest {
 
@@ -18,7 +19,7 @@ class SnakeCaseExtractorTest {
         Map<String, Object> result = extractor.toSnakeCaseMap(obj);
 
         // then
-        Assertions.assertThat(result)
+        assertThat(result)
                 .containsEntry("first_name", "John")
                 .containsEntry("last_name", "Doe");
     }

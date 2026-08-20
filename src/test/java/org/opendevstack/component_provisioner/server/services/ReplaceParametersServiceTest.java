@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.services;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -15,6 +14,8 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -44,7 +45,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result).isEqualTo(wrapper);
+        assertThat(result).isEqualTo(wrapper);
     }
 
     @Test
@@ -59,7 +60,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result).isEqualTo(wrapper);
+        assertThat(result).isEqualTo(wrapper);
         verifyNoInteractions(odsApiService);
     }
 
@@ -82,7 +83,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result).isEqualTo(wrapper);
+        assertThat(result).isEqualTo(wrapper);
     }
 
     @Test
@@ -110,10 +111,10 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result.getParametersMap())
+        assertThat(result.getParametersMap())
                 .containsKey("project_name")
                 .extracting("project_name").isNotNull();
-        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
+        assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
     }
 
     @Test
@@ -146,8 +147,8 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then: only the configured "project_name" should be replaced, "project_description" must remain original
-        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
-        Assertions.assertThat(result.getParametersMap().get("project_description").getValue()).isEqualTo("descValue");
+        assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("newValue");
+        assertThat(result.getParametersMap().get("project_description").getValue()).isEqualTo("descValue");
     }
 
     @Test
@@ -175,7 +176,7 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
+        assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
     }
 
     @Test
@@ -198,7 +199,7 @@ class ReplaceParametersServiceTest {
         when(snakeCaseExtractor.toSnakeCaseMap(projectData)).thenReturn(odsApiValues);
 
         // when & then
-        Assertions.assertThatThrownBy(() -> replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper))
+        assertThatThrownBy(() -> replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper))
                 .isInstanceOf(IllegalConfigurationException.class)
                 .hasMessageContaining("Only type string and singlelist are supported");
     }
@@ -228,6 +229,6 @@ class ReplaceParametersServiceTest {
         ProvisionActionWrapper result = replaceParametersService.replaceProvisioningParametersFromOdsApi(wrapper);
 
         // then
-        Assertions.assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
+        assertThat(result.getParametersMap().get("project_name").getValue()).isEqualTo("originalValue");
     }
 }
