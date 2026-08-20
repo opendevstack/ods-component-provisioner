@@ -37,10 +37,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.opendevstack.component_provisioner.server.services.ProvisionService.getProjectComponentParameterMap;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class ProvisionResultsApiFacade {
+
+    private static final String DELETION_WORKFLOW_ID = "deletion_workflow";
+    private static final String DELETION_WORKFLOW_NAME = "deletion_workflow_name";
+    private static final String DELETION_WORKFLOW_TIMEOUT = "deletion_workflow_timeout_seconds";
 
     private final AwxService awxService;
     private final ComponentCatalogService componentCatalogService;
@@ -64,14 +70,14 @@ public class ProvisionResultsApiFacade {
 
         log.debug("Processing deletion. ProjectKey: {}, componentId: {}", projectKey, componentId);
 
-        String deletionWorkflowId = getDeletionWorkflowId(projectKey, componentId);
-        String deletionWorkflowName = getDeletionWorkflowName(projectKey, componentId);
-        String deletionWorkflowTimeoutSeconds = getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
-        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName);
-        addSystemParametersToAction(projectKey, createIncidentAction);
-
         var accessToken = authenticationProvider.getAccessToken();
         var projectComponent = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
+
+        String deletionWorkflowId = getDeletionWorkflowId(projectComponent);
+        String deletionWorkflowName = getDeletionWorkflowName(projectComponent);
+        String deletionWorkflowTimeoutSeconds = getDeletionWorkflowTimeoutSeconds(projectComponent);
+        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName);
+        addSystemParametersToAction(projectKey, createIncidentAction);
 
         if (isInDeletingState(projectComponent)) {
             log.debug("Project component already in DELETING state, skipping AWX call");
@@ -371,16 +377,40 @@ public class ProvisionResultsApiFacade {
                 .orElse(Strings.EMPTY);
     }
 
-    public String getDeletionWorkflowId(String projectKey, String componentId) {
-        return provisionService.getDeletionWorkflowId(projectKey, componentId);
+    public String getDeletionWorkflowId(ProjectComponentExtendedInfo projectComponent) {
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW_ID)) {
+            var deletionWorkflowId = parameterMap.get(DELETION_WORKFLOW_ID);
+            assert deletionWorkflowId.getValues() != null;
+            return deletionWorkflowId.getValues().getFirst();
+        }
+
+        return "";
     }
 
-    public String getDeletionWorkflowName(String projectKey, String componentId) {
-        return provisionService.getDeletionWorkflowName(projectKey, componentId);
+    public String getDeletionWorkflowName(ProjectComponentExtendedInfo projectComponent) {
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW_NAME)) {
+            var deletionWorkflowName = parameterMap.get(DELETION_WORKFLOW_NAME);
+            assert deletionWorkflowName.getValues() != null;
+            return deletionWorkflowName.getValues().getFirst();
+        }
+
+        return "";
     }
 
-    public String getDeletionWorkflowTimeoutSeconds(String projectKey, String componentId) {
-        return provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId);
+    public String getDeletionWorkflowTimeoutSeconds(ProjectComponentExtendedInfo projectComponent) {
+        var parameterMap = getProjectComponentParameterMap(projectComponent);
+
+        if (parameterMap.containsKey(DELETION_WORKFLOW_TIMEOUT)) {
+            var deletionWorkflowName = parameterMap.get(DELETION_WORKFLOW_TIMEOUT);
+            assert deletionWorkflowName.getValues() != null;
+            return deletionWorkflowName.getValues().getFirst();
+        }
+
+        return "";
     }
 
     private AwxWorkflowJobLaunch buildAwxWorkflowJobLaunch(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {

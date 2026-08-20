@@ -251,7 +251,7 @@ paths:
     post:
       tags:
         - ProvisionResults
-      summary: Request App Support to do operations to delete provision status component (and dependencies) from the file
+      summary: Delete a provision status component via AWX workflow
       description: >
         This endpoint receives project key and componentId and send an create an incident to app support.
       operationId: requestDeletion
