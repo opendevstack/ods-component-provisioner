@@ -1,5 +1,8 @@
 package org.opendevstack.component_provisioner.server.services;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -45,7 +48,7 @@ class ProvisionerServiceTest {
     private ProvisionService provisionService;
 
     @Test
-    void givenAProjectKeyAndStatusAndComponentIdAndCatalogItemIdAndComponentUrlAndAccessToken_whenNotifyProvisioningStatusUpdateIsCalled_thenInvokesProvisionerActionsApi() throws java.net.MalformedURLException {
+    void givenProjectKeyAndStatus_whenNotifyStatusUpdate_thenCallsProvisionerActionsApi() throws MalformedURLException {
         // given
         var projectKey = "projectKey";
         var status =
@@ -62,7 +65,7 @@ class ProvisionerServiceTest {
                 .componentUrl(componentUrl)
                 .build();
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(java.net.URI.create(baseUrl).toURL());
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create(baseUrl).toURL());
         when(apiClientsBuilder.provisionerActionsApi(eq(accessToken), eq(baseUrl))).thenReturn(provisionerActionsApi);
         when(entitiesMapper.asProvisioningStatus(status)).thenReturn(ProvisioningStatus.CREATED);
 

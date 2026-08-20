@@ -40,10 +40,10 @@ class AuthenticationProviderTest {
     }
 
     @Test
-    void shouldReturnAccessTokenWhenAuthenticated() {
+    void givenAuthenticated_whenGetAccessToken_thenReturnsBearerToken() {
         // given
-        String expectedBearerToken = "test-bearer-token";
-        String userName = "test-user";
+        var expectedBearerToken = "test-bearer-token";
+        var userName = "test-user";
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getName()).thenReturn(userName);
@@ -51,23 +51,23 @@ class AuthenticationProviderTest {
         when(userPrincipal.getAadIssuedBearerToken()).thenReturn(expectedBearerToken);
 
         // when
-        String actualBearerToken = authenticationProvider.getAccessToken();
+        var actualBearerToken = authenticationProvider.getAccessToken();
 
         // then
         assertThat(actualBearerToken).isEqualTo(expectedBearerToken);
     }
 
     @Test
-    void shouldReturnUserPrincipalNameWhenAuthenticated() {
+    void givenAuthenticated_whenGetUserPrincipalName_thenReturnsPrincipalName() {
         // given
-        String expectedUserPrincipalName = "user@example.com";
+        var expectedUserPrincipalName = "user@example.com";
 
         when(securityContext.getAuthentication()).thenReturn(authentication);
         when(authentication.getPrincipal()).thenReturn(userPrincipal);
         when(userPrincipal.getUserPrincipalName()).thenReturn(expectedUserPrincipalName);
 
         // when
-        String actualUserPrincipalName = authenticationProvider.getUserPrincipalName();
+        var actualUserPrincipalName = authenticationProvider.getUserPrincipalName();
 
         // then
         assertThat(actualUserPrincipalName).isEqualTo(expectedUserPrincipalName);

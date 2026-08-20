@@ -260,7 +260,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndProjectParametersIsNull_thenReturnsEmptyList() throws Exception {
+    void givenProjectParametersIsNull_whenGetDeletionParameters_thenReturnsEmptyList() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -295,7 +295,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentIdAndAccessToken_whenGetDeletionParametersIsCalledAndParamNameNotFoundInProject_thenReturnsEmptyList() throws Exception {
+    void givenParamNameNotFoundInProject_whenGetDeletionParameters_thenReturnsEmptyList() throws Exception {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -335,7 +335,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenAProjectKeyAndComponentId_whenDeleteProvisioningStatusIsCalled_thenInvokesProvisionerActionsBasicAuthApi() {
+    void givenProjectKeyAndComponentId_whenDeleteProvisioningStatus_thenInvokesProvisionerActionsApi() {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -466,7 +466,7 @@ class ProvisionServiceTest {
     }
 
     @Test
-    void givenProjectComponentWithoutDeletionWorkflowTimeout_whenGetDeletionWorkflowTimeoutIsCalled_thenReturnsEmptyString() {
+    void givenNoWorkflowTimeout_whenGetDeletionWorkflowTimeout_thenReturnsEmptyString() {
         // given
         var accessToken = "token";
         var projectKey = "PRJ";
@@ -523,6 +523,7 @@ class ProvisionServiceTest {
 
     @Test
     void givenParameterWithNullValues_whenGetDeletionWorkflowIsCalled_thenThrowsException() {
+        // given
         var accessToken = "token";
         var projectKey = "PRJ";
         var componentId = "CID";
@@ -538,6 +539,7 @@ class ProvisionServiceTest {
         when(componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId))
                 .thenReturn(projectComponent);
 
+        // when / then
         assertThatThrownBy(() ->
                 provisionService.getDeletionWorkflowName(projectKey, componentId)
         ).isInstanceOf(AssertionError.class);

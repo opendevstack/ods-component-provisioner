@@ -7,7 +7,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.ods_api_server.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.ods_api_server.v1.api.ProjectsApi;
-import org.opendevstack.component_provisioner.client.ods_api_server.v1.model.CreateProjectResponse;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.model.CreateProjectResponseMother;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -50,11 +49,11 @@ class OdsApiServiceTest {
         var clientSecret = "test-client-secret";
         var scope = "test-scope";
 
-        String projectKey = "test-project";
-        String accessToken = "test-token";
-        String baseUrl = "http://test.url";
+        var projectKey = "test-project";
+        var accessToken = "test-token";
+        var baseUrl = "http://test.url";
 
-        CreateProjectResponse expectedResponse = CreateProjectResponseMother.of("test-project");
+        var expectedResponse = CreateProjectResponseMother.of("test-project");
 
         ReflectionTestUtils.setField(odsApiService, "clientId", clientId);
         ReflectionTestUtils.setField(odsApiService, "clientSecret", clientSecret);
@@ -68,7 +67,7 @@ class OdsApiServiceTest {
         when(projectsApi.getProject(projectKey)).thenReturn(expectedResponse);
 
         // when
-        CreateProjectResponse result = odsApiService.getProject(projectKey);
+        var result = odsApiService.getProject(projectKey);
 
         // then
         assertThat(result).isEqualTo(expectedResponse);
@@ -81,10 +80,10 @@ class OdsApiServiceTest {
         var clientSecret = "test-client-secret";
         var scope = "test-scope";
 
-        String projectKey = "non-existent-project";
-        String accessToken = "test-token";
-        String baseUrl = "http://test.url";
-        HttpClientErrorException exception = mock(HttpClientErrorException.class);
+        var projectKey = "non-existent-project";
+        var accessToken = "test-token";
+        var baseUrl = "http://test.url";
+        var exception = mock(HttpClientErrorException.class);
 
         ReflectionTestUtils.setField(odsApiService, "clientId", clientId);
         ReflectionTestUtils.setField(odsApiService, "clientSecret", clientSecret);
@@ -99,7 +98,7 @@ class OdsApiServiceTest {
         when(projectsApi.getProject(projectKey)).thenThrow(exception);
 
         // when
-        CreateProjectResponse result = odsApiService.getProject(projectKey);
+        var result = odsApiService.getProject(projectKey);
 
         // then
         assertThat(result).isNull();
@@ -112,10 +111,10 @@ class OdsApiServiceTest {
         var clientSecret = "test-client-secret";
         var scope = "test-scope";
 
-        String projectKey = "test-project";
-        String accessToken = "test-token";
-        String baseUrl = "http://test.url";
-        HttpClientErrorException exception = mock(HttpClientErrorException.class);
+        var projectKey = "test-project";
+        var accessToken = "test-token";
+        var baseUrl = "http://test.url";
+        var exception = mock(HttpClientErrorException.class);
 
         ReflectionTestUtils.setField(odsApiService, "clientId", clientId);
         ReflectionTestUtils.setField(odsApiService, "clientSecret", clientSecret);
@@ -129,7 +128,7 @@ class OdsApiServiceTest {
         when(exception.getStatusCode()).thenReturn(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         when(projectsApi.getProject(projectKey)).thenThrow(exception);
 
-        // when & then
+        // when / then
         assertThatThrownBy(() -> odsApiService.getProject(projectKey))
                 .isInstanceOf(HttpClientErrorException.class);
     }

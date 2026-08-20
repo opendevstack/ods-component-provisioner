@@ -45,7 +45,7 @@ class ControllerExceptionHandlerTest {
     }
 
     @Test
-    void givenMissingServletRequestParameterException_whenHandleRequestParamsExceptionsIsCalled_thenReturnsBadRequest() {
+    void givenMissingRequestParam_whenHandleMissingRequestParam_thenReturnsBadRequest() {
         // given
         MissingServletRequestParameterException ex = new MissingServletRequestParameterException("param", "String");
 
@@ -70,7 +70,7 @@ class ControllerExceptionHandlerTest {
     }
 
     @Test
-    void givenMethodArgumentTypeMismatchException_whenHandleMethodArgumentTypeMismatchExceptionIsCalled_thenReturnsBadRequest() {
+    void givenMethodArgumentTypeMismatch_whenHandleTypeMismatchException_thenReturnsBadRequest() {
         // given
         MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
         when(ex.getPropertyName()).thenReturn("testParam");
@@ -123,7 +123,7 @@ class ControllerExceptionHandlerTest {
     }
 
     @Test
-    void givenProjectComponentAlreadyProvisionedException_whenHandleProjectComponentAlreadyProvisionedExceptionIsCalled_thenReturnsConflict() {
+    void givenComponentAlreadyProvisioned_whenHandleException_thenReturnsConflict() {
         // given
         ProjectComponentAlreadyProvisionedException ex = new ProjectComponentAlreadyProvisionedException("Already provisioned");
 
@@ -136,7 +136,7 @@ class ControllerExceptionHandlerTest {
     }
 
     @Test
-    void givenProjectConfigurationException_whenHandleProjectConfigurationExceptionIsCalled_thenReturnsUnprocessableEntity() {
+    void givenProjectConfigurationException_whenHandleException_thenReturnsUnprocessableEntity() {
         // given
         ProjectConfigurationException ex = new ProjectConfigurationException("Config error");
 
