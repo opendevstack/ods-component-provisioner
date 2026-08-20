@@ -21,8 +21,8 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobLaunchMother;
-import org.opendevstack.component_provisioner.server.model.AwxWorkflowJobMother;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;

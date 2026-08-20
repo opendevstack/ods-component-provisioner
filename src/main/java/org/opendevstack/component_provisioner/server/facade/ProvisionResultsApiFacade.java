@@ -34,6 +34,7 @@ import org.springframework.web.client.RestClientException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,6 +75,7 @@ public class ProvisionResultsApiFacade {
 
         if (isInDeletingState(projectComponent)) {
             log.debug("Project component already in DELETING state, skipping AWX call");
+
             return AwxResponse.builder()
                     .httpStatusCode(HttpStatus.OK)
                     .awxResponseBody(ProvisionActionResponse
@@ -91,6 +93,22 @@ public class ProvisionResultsApiFacade {
         }
 
         AwxResponse awxResponse = triggerDeletion(projectKey, componentId, triggerDeletionWrapperWorkflow, createIncidentAction);
+
+        if (awxResponse.httpStatusCode().is2xxSuccessful()) {
+            var deletionWorkflowJobId = Optional.ofNullable(awxResponse.awxResponseBody())
+                    .map(ProvisionActionResponse::getId)
+                    .map(Object::toString)
+                    .orElseThrow( () -> new InvalidRestEntityException("AWX response does not contain an id"));
+
+            projectComponent.setDeletionWorkflowJobId(deletionWorkflowJobId);
+
+            provisionService.notifyProvisioningStatusUpdate(
+                    projectKey,
+                    ProvisioningStatus.DELETING,
+                    entitiesMapper.asClientProvisioningStatusUpdateRequest(projectComponent),
+                    accessToken
+            );
+        }
 
         log.debug("AWX response: {}", awxResponse);
         return awxResponse;

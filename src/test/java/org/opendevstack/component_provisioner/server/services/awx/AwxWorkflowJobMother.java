@@ -1,6 +1,4 @@
-package org.opendevstack.component_provisioner.server.model;
-
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
+package org.opendevstack.component_provisioner.server.services.awx;
 
 public class AwxWorkflowJobMother {
 

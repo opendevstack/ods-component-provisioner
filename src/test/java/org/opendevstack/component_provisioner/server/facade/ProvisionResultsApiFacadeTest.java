@@ -16,6 +16,9 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobMother;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -585,7 +588,8 @@ class ProvisionResultsApiFacadeTest {
         var componentId = "CID";
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
-        var job = new AwxWorkflowJob();
+        var job = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
@@ -603,7 +607,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
         when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
-        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(new ProvisionActionResponse());
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(provisionActionResponse);
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
@@ -622,7 +626,8 @@ class ProvisionResultsApiFacadeTest {
         var deletionWorkflow = "DELETION_WF";
         var action = CreateIncidentActionMother.of();
         var launch = new AwxWorkflowJobLaunch();
-        var job = new AwxWorkflowJob();
+        var job = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
@@ -641,7 +646,7 @@ class ProvisionResultsApiFacadeTest {
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
         when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
         when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(job)));
-        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(new ProvisionActionResponse());
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(provisionActionResponse);
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
@@ -657,6 +662,9 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = "PRJ";
         var componentId = "CID";
         var action = CreateIncidentActionMother.of();
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
@@ -678,9 +686,10 @@ class ProvisionResultsApiFacadeTest {
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
 
-        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(new AwxWorkflowJobLaunch());
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(awxWorkflowJobLaunch);
         when(awxService.triggerWorkflowJob(any(), any()))
-                .thenReturn(Pair.of(HttpStatus.OK, Optional.empty()));
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(provisionActionResponse);
 
         var result = facade.requestDeletion(projectKey, componentId, action);
 
@@ -787,7 +796,8 @@ class ProvisionResultsApiFacadeTest {
         var projectKey = "PRJ";
         var componentId = "CID";
         var action = CreateIncidentActionMother.of();
-        var launch = new AwxWorkflowJobLaunch();
+        var launch = AwxWorkflowJobLaunchMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
 
         var pc = ProjectComponentExtendedInfo.builder()
                 .componentId(componentId)
@@ -805,6 +815,7 @@ class ProvisionResultsApiFacadeTest {
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
         when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
         when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.INTERNAL_SERVER_ERROR, Optional.empty()));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(provisionActionResponse);
 
         // when
         var result = facade.requestDeletion(projectKey, componentId, action);
