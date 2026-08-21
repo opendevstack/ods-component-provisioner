@@ -12,6 +12,7 @@ import org.mockito.quality.Strictness;
 import org.opendevstack.component_catalog.client.projects_info_service.v1_0_0.model.ProjectInfo;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
@@ -560,15 +561,16 @@ class ProvisionResultsApiFacadeTest {
         var componentId = "CID";
         var action = CreateIncidentActionMother.of();
 
-        var pc = ProjectComponentExtendedInfo.builder()
-                .componentId(componentId)
-                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.DELETING)
-                .build();
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.DELETING,
+                "",
+                "WF_NAME",
+                null
+        );
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
         when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfo);
@@ -591,15 +593,16 @@ class ProvisionResultsApiFacadeTest {
         var job = AwxWorkflowJobMother.of();
         var provisionActionResponse = ProvisionActionResponseMother.of();
 
-        var pc = ProjectComponentExtendedInfo.builder()
-                .componentId(componentId)
-                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
-                .build();
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                "WF_NAME",
+                null
+        );
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
         ProjectInfo projectInfo = new ProjectInfo();
@@ -629,16 +632,16 @@ class ProvisionResultsApiFacadeTest {
         var job = AwxWorkflowJobMother.of();
         var provisionActionResponse = ProvisionActionResponseMother.of();
 
-        var pc = ProjectComponentExtendedInfo.builder()
-                .componentId(componentId)
-                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
-                .build();
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                deletionWorkflow,
+                null,
+                null
+        );
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn(deletionWorkflow);
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn(null);
-        when(provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId)).thenReturn(null);
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
         projectInfo.setClusters(List.of("cluster"));
@@ -666,19 +669,18 @@ class ProvisionResultsApiFacadeTest {
         var awxWorkflowJob = AwxWorkflowJobMother.of();
         var provisionActionResponse = ProvisionActionResponseMother.of();
 
-        var pc = ProjectComponentExtendedInfo.builder()
-                .componentId(componentId)
-                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
-                .build();
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                "WF_NAME",
+                null
+        );
 
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
 
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-
-        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
-        when(provisionService.getDeletionWorkflowTimeoutSeconds(projectKey, componentId)).thenReturn(null);
 
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
 
@@ -799,15 +801,16 @@ class ProvisionResultsApiFacadeTest {
         var launch = AwxWorkflowJobLaunchMother.of();
         var provisionActionResponse = ProvisionActionResponseMother.of();
 
-        var pc = ProjectComponentExtendedInfo.builder()
-                .componentId(componentId)
-                .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
-                .build();
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                "WF_NAME",
+                null
+        );
         when(authenticationProvider.getAccessToken()).thenReturn("token");
         when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
         when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
-        when(provisionService.getDeletionWorkflowId(projectKey, componentId)).thenReturn("");
-        when(provisionService.getDeletionWorkflowName(projectKey, componentId)).thenReturn("WF_NAME");
         when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
         when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
         ProjectInfo projectInfo = new ProjectInfo();
@@ -863,6 +866,131 @@ class ProvisionResultsApiFacadeTest {
                 .toList();
 
         assertThat(dispatchedSet).containsAll(expectedParamNames);
+    }
+
+    @Test
+    void givenDeletionWorkflowConfigured_whenRequestDeletionSucceeds_thenPersistsDeletionWorkflowJobId() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        var launch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        var clientRequest = new org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest();
+
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                "WF_NAME",
+                null
+        );
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfoWithCluster());
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(provisionActionResponse);
+        when(entitiesMapper.asClientProvisioningStatusUpdateRequest(pc)).thenReturn(clientRequest);
+
+        // when
+        facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        assertThat(pc.getDeletionWorkflowJobId()).isEqualTo("1234");
+        verify(entitiesMapper).asClientProvisioningStatusUpdateRequest(pc);
+        verify(provisionService)
+                .notifyProvisioningStatusUpdate(projectKey, ProvisioningStatus.DELETING, clientRequest, "token");
+    }
+
+    @Test
+    void givenAwxSuccessWithoutId_whenRequestDeletion_thenThrowsInvalidRestEntityException() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        var launch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+
+        var pc = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                "WF_NAME",
+                null
+        );
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of());
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfoWithCluster());
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(launch);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+        when(entitiesMapper.asProvisionActionResponse(any())).thenReturn(new ProvisionActionResponse());
+
+        // when / then
+        assertThatThrownBy(() -> facade.requestDeletion(projectKey, componentId, action))
+                .isInstanceOf(InvalidRestEntityException.class)
+                .hasMessage("AWX response does not contain an id");
+    }
+
+    @Test
+    void givenProjectComponentParameters_whenDeletionWorkflowGettersAreCalled_thenReturnMatchingValues() {
+        // given
+        var projectComponent = buildProjectComponentWithDeletionConfiguration(
+                "CID",
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "WF_ID",
+                "WF_NAME",
+                "300"
+        );
+
+        // when / then
+        assertThat(facade.getDeletionWorkflowId(projectComponent)).isEqualTo("WF_ID");
+        assertThat(facade.getDeletionWorkflowName(projectComponent)).isEqualTo("WF_NAME");
+        assertThat(facade.getDeletionWorkflowTimeoutSeconds(projectComponent)).isEqualTo("300");
+    }
+
+    private static ProjectInfo projectInfoWithCluster() {
+        var projectInfo = new ProjectInfo();
+        projectInfo.setClusters(List.of("cluster"));
+        return projectInfo;
+    }
+
+    private static ProjectComponentExtendedInfo buildProjectComponentWithDeletionConfiguration(
+            String componentId,
+            org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus status,
+            String deletionWorkflowId,
+            String deletionWorkflowName,
+            String deletionWorkflowTimeoutSeconds) {
+        var parameters = new ArrayList<ProjectComponentParameter>();
+        addParameterIfPresent(parameters, "deletion_workflow", deletionWorkflowId);
+        addParameterIfPresent(parameters, "deletion_workflow_name", deletionWorkflowName);
+        addParameterIfPresent(parameters, "deletion_workflow_timeout_seconds", deletionWorkflowTimeoutSeconds);
+
+        return ProjectComponentExtendedInfo.builder()
+                .componentId(componentId)
+                .status(status)
+                .parameters(parameters)
+                .build();
+    }
+
+    private static void addParameterIfPresent(List<ProjectComponentParameter> parameters, String name, String value) {
+        if (value == null) {
+            return;
+        }
+
+        parameters.add(ProjectComponentParameter.builder()
+                .name(name)
+                .values(List.of(value))
+                .build());
     }
 
 
