@@ -9,6 +9,7 @@ logging:
     org.opendevstack.component_provisioner.server.services.org.opendevstack.component_provisioner.server.services.AWXService: DEBUG
     org.springframework.web.client : DEBUG
     org.opendevstack.component_provisioner.server.controllers.interceptors: DEBUG
+    org.modelmapper: DEBUG
 
 management:
   endpoints:

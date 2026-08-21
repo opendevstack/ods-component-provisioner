@@ -169,6 +169,8 @@ public class EntitiesMapper {
     }
 
     public AwxWorkflowJobLaunch asAwxWorkflowJobLaunch(CreateIncidentAction createIncidentAction) {
+        log.trace("Mapping CreateIncidentAction to AwxWorkflowJobLaunch: {}", createIncidentAction);
+
         return MAPPER.map(createIncidentAction, AwxWorkflowJobLaunch.class);
     }
 
