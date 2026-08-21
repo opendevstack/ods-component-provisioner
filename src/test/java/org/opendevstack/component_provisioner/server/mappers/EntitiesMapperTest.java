@@ -3,11 +3,14 @@ package org.opendevstack.component_provisioner.server.mappers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetailMother;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfoMother;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentProvisionStatus;
 
 import java.util.HashMap;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -153,6 +156,52 @@ class EntitiesMapperTest {
         assertThat(clientRequest.getComponentId()).isEqualTo("comp-2");
         assertThat(clientRequest.getCatalogItemId()).isEqualTo("cat-2");
         assertThat(clientRequest.getComponentUrl()).isEqualTo("http://example.org");
+    }
+
+    @Test
+    void givenProjectComponentExtendedInfo_whenAsClientProvisioningStatusUpdateRequest_thenMapsAllFields() {
+        // given
+        var source = ProjectComponentExtendedInfo.builder()
+                .componentId("comp-3")
+                .catalogItemId("cat-3")
+                .componentUrl("http://example.net")
+                .workflowJobId("wf-3")
+                .deletionWorkflowJobId("del-wf-3")
+                .parameters(List.of(ProjectComponentParameter.builder()
+                        .name("region")
+                        .values(List.of("eu", "us"))
+                        .build()))
+                .build();
+
+        // when
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(source);
+
+        // then
+        assertThat(clientRequest).isNotNull();
+        assertThat(clientRequest.getComponentId()).isEqualTo("comp-3");
+        assertThat(clientRequest.getCatalogItemId()).isEqualTo("cat-3");
+        assertThat(clientRequest.getComponentUrl()).isEqualTo("http://example.net");
+        assertThat(clientRequest.getWorkflowJobId()).isEqualTo("wf-3");
+        assertThat(clientRequest.getDeletionWorkflowJobId()).isEqualTo("del-wf-3");
+        assertThat(clientRequest.getParameters()).hasSize(1);
+        assertThat(clientRequest.getParameters().getFirst().getName()).isEqualTo("region");
+        assertThat(clientRequest.getParameters().getFirst().getValues()).isEqualTo(List.of("eu", "us"));
+    }
+
+    @Test
+    void givenProjectComponentWithNullParameters_whenAsClientProvisioningStatusUpdateRequest_thenReturnsEmptyList() {
+        // given
+        var source = new ProjectComponentExtendedInfo();
+        source.setComponentId("comp-4");
+        source.setCatalogItemId("cat-4");
+        source.setParameters(null);
+
+        // when
+        var clientRequest = entitiesMapper.asClientProvisioningStatusUpdateRequest(source);
+
+        // then
+        assertThat(clientRequest.getParameters()).isNotNull();
+        assertThat(clientRequest.getParameters()).isEmpty();
     }
 }
 

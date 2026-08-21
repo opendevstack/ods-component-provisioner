@@ -1,6 +1,6 @@
-package org.opendevstack.component_provisioner.server.model;
+package org.opendevstack.component_provisioner.server.controllers.model.awx;
 
-import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
 import org.springframework.http.HttpStatusCode;
 
 

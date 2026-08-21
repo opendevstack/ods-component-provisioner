@@ -169,6 +169,8 @@ public class EntitiesMapper {
     }
 
     public AwxWorkflowJobLaunch asAwxWorkflowJobLaunch(CreateIncidentAction createIncidentAction) {
+        log.trace("Mapping CreateIncidentAction to AwxWorkflowJobLaunch: {}", createIncidentAction);
+
         return MAPPER.map(createIncidentAction, AwxWorkflowJobLaunch.class);
     }
 
@@ -246,5 +248,25 @@ public class EntitiesMapper {
 
     public org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus asProvisioningStatus(org.opendevstack.component_provisioner.server.model.ProvisioningStatus status) {
         return org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.valueOf(status.name());
+    }
+
+    public ProvisioningStatusUpdateRequest asClientProvisioningStatusUpdateRequest(ProjectComponentExtendedInfo projectComponent) {
+        var parameters = Optional.ofNullable(projectComponent.getParameters())
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(param -> ProvisioningStatusUpdateRequestParametersInner.builder()
+                        .name(param.getName())
+                        .values(param.getValues())
+                        .build())
+                .toList();
+
+        return ProvisioningStatusUpdateRequest.builder()
+                .componentId(projectComponent.getComponentId())
+                .catalogItemId(projectComponent.getCatalogItemId())
+                .componentUrl(projectComponent.getComponentUrl())
+                .workflowJobId(projectComponent.getWorkflowJobId())
+                .deletionWorkflowJobId(projectComponent.getDeletionWorkflowJobId())
+                .parameters(parameters)
+                .build();
     }
 }
