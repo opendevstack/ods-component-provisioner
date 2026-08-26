@@ -122,7 +122,7 @@ public class ProvisionerActionsApiFacade {
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
         var notificationsGroupIdWrapper = addNotificationsGroupIdToAction(bearerTokenWrapper);
-        var componentUrlWrapper = addComponentUrlToAction(notificationsGroupIdWrapper);
+        var componentUrlWrapper = addEmptyComponentUrlToAction(notificationsGroupIdWrapper);
 
         log.debug("Added system parameters to provision action: '{}'", componentUrlWrapper);
 
@@ -214,7 +214,7 @@ public class ProvisionerActionsApiFacade {
         return provisionActionWrapper.cloneWithParameters(notificationsGroupIdParameter);
     }
 
-    private ProvisionActionWrapper addComponentUrlToAction(ProvisionActionWrapper provisionActionWrapper) {
+    private ProvisionActionWrapper addEmptyComponentUrlToAction(ProvisionActionWrapper provisionActionWrapper) {
         var componentUrlParameter = ProvisionActionParameter.builder()
                 .name("component_url")
                 .type(ParameterType.STRING.getValue())
