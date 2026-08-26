@@ -3,6 +3,7 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
@@ -121,10 +122,11 @@ public class ProvisionerActionsApiFacade {
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
         var notificationsGroupIdWrapper = addNotificationsGroupIdToAction(bearerTokenWrapper);
+        var componentUrlWrapper = addComponentUrlToAction(notificationsGroupIdWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", notificationsGroupIdWrapper);
+        log.debug("Added system parameters to provision action: '{}'", componentUrlWrapper);
 
-        return notificationsGroupIdWrapper;
+        return componentUrlWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
@@ -210,6 +212,16 @@ public class ProvisionerActionsApiFacade {
                 .build();
 
         return provisionActionWrapper.cloneWithParameters(notificationsGroupIdParameter);
+    }
+
+    private ProvisionActionWrapper addComponentUrlToAction(ProvisionActionWrapper provisionActionWrapper) {
+        var componentUrlParameter = ProvisionActionParameter.builder()
+                .name("component_url")
+                .type(ParameterType.STRING.getValue())
+                .value(Strings.EMPTY)
+                .build();
+
+        return provisionActionWrapper.cloneWithParameters(componentUrlParameter);
     }
 
     private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {

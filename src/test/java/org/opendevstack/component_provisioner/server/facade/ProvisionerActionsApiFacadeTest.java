@@ -160,7 +160,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void givenValidClusters_whenAddSystemParametersToAction_thenAddsClusterLocationCallerAndAccessToken() {
+    void givenValidClusters_whenAddSystemParametersToAction_thenAddsClusterLocationCallerAndAccessTokenAndNotificationsGroupIdAndComponentUrl() {
         // given
         var accessToken = "BEARER-TOKEN";
 
@@ -182,7 +182,7 @@ class ProvisionerActionsApiFacadeTest {
         var paramNames = resultingAction.getParametersMap().values().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
-        assertThat(paramNames).contains("cluster_location", "caller", "access_token");
+        assertThat(paramNames).contains("cluster_location", "caller", "access_token", "notifications_group_id", "component_url");
 
         var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
@@ -201,6 +201,18 @@ class ProvisionerActionsApiFacadeTest {
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(bearerToken).isEqualTo(accessToken);
+
+        var notificationsGroupId = resultingAction.getParametersMap().values().stream()
+                .filter(p -> "notifications_group_id".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(notificationsGroupId).isEqualTo("PRJ");
+
+        var componentUrl = resultingAction.getParametersMap().values().stream()
+                .filter(p -> "component_url".equals(p.getName()))
+                .map(p -> p.getValue().toString())
+                .findFirst().orElseThrow();
+        assertThat(componentUrl).isEqualTo("");
     }
 
     @Test
