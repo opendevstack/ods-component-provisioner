@@ -69,11 +69,15 @@ public class ProvisionService {
     }
 
     public void deleteProvisioningStatus(String projectKey,
-                                         String componentId) {
+                                         String componentId,
+                                         List<org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequestParametersInner> parameters) {
         log.info("Deleting provisioning status. Project Key: {}, componentId: {}", projectKey, componentId);
 
         var deleteRequest = ProvisioningDeleteRequest.builder()
                 .componentId(componentId)
+                .parameters(parameters.stream()
+                        .map(entitiesMapper::asProvisioningDeleteRequestParametersInner)
+                        .toList())
                 .build();
 
         catalogProvisionerActionsBasicAuthApi()

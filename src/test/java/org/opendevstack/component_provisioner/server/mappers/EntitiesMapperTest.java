@@ -203,5 +203,19 @@ class EntitiesMapperTest {
         assertThat(clientRequest.getParameters()).isNotNull();
         assertThat(clientRequest.getParameters()).isEmpty();
     }
+
+    @Test
+    void givenValidInput_whenAsProvisioningDeleteRequestParametersInner_thenMapsProperly() {
+        // given
+        var input = new org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequestParametersInner();
+
+        // when
+        var output = entitiesMapper.asProvisioningDeleteRequestParametersInner(input);
+
+        // then
+        assertThat(output).isNotNull();
+        assertThat(output.getName()).isEqualTo(input.getName());
+        assertThat(output.getValues()).isEqualTo(input.getValues());
+    }
 }
 

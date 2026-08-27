@@ -71,7 +71,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
 
 
         provisionResultsApiFacade.deleteProvisioningStatus(projectKey,
-                provisioningDeleteRequest.getComponentId());
+                provisioningDeleteRequest.getComponentId(), provisioningDeleteRequest.getParameters());
 
         return ResponseEntity.noContent().build();
     }

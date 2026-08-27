@@ -269,4 +269,11 @@ public class EntitiesMapper {
                 .parameters(parameters)
                 .build();
     }
+
+    public org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequestParametersInner asProvisioningDeleteRequestParametersInner(ProvisioningDeleteRequestParametersInner provisioningDeleteRequestParametersInner) {
+        return org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequestParametersInner.builder()
+                .name(provisioningDeleteRequestParametersInner.getName())
+                .values(provisioningDeleteRequestParametersInner.getValues())
+                .build();
+    }
 }

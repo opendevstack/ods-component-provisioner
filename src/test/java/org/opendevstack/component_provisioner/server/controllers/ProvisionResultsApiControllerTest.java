@@ -98,7 +98,7 @@ class ProvisionResultsApiControllerTest {
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId);
+        verify(provisionResultsApiFacade).deleteProvisioningStatus(projectKey, componentId, provisioningDeleteRequest.getParameters());
     }
 
     @Test
