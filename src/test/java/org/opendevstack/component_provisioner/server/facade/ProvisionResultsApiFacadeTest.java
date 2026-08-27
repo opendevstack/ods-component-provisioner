@@ -17,17 +17,9 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
+import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobMother;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentActionMother;
-import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
-import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
 import org.opendevstack.component_provisioner.server.services.ApplicationAuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.AwxService;
@@ -503,12 +495,13 @@ class ProvisionResultsApiFacadeTest {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
+        var provisioningDeleteRequestParameters = Collections.<ProvisioningDeleteRequestParametersInner>emptyList();
 
         // when
-        facade.deleteProvisioningStatus(projectKey, componentId);
+        facade.deleteProvisioningStatus(projectKey, componentId, provisioningDeleteRequestParameters);
 
         // then
-        verify(provisionService).deleteProvisioningStatus(projectKey, componentId);
+        verify(provisionService).deleteProvisioningStatus(projectKey, componentId, provisioningDeleteRequestParameters);
     }
 
     @Test

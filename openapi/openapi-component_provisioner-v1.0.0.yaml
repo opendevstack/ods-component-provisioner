@@ -587,6 +587,28 @@ components:
           description: The componentId set by the user.
           example: "any-component-id-from-backend"
 
+        parameters:
+          type: array
+          description: List of name/value string parameters.
+          items:
+            type: object
+            required:
+              - name
+              - value
+            properties:
+              name:
+                type: string
+                description: Parameter name
+                example: "deletion_requester"
+              values:
+                type: array
+                description: Parameter values
+                items:
+                  type: string
+                example:
+                  - "any-user@example.com"
+                  - "ignored-parameter"
+
     CreateIncidentParameter:
       properties:
         name:

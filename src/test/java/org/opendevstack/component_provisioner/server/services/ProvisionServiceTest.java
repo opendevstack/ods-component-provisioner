@@ -20,8 +20,10 @@ import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParam
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProjectComponentExtendedInfoMother;
+import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequestParametersInner;
 
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -339,9 +341,10 @@ class ProvisionServiceTest {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
+        var parameters = Collections.<ProvisioningDeleteRequestParametersInner>emptyList();
 
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId);
+        provisionService.deleteProvisioningStatus(projectKey, componentId, parameters);
 
         // then
         var expectedRequest = ProvisioningDeleteRequest.builder()

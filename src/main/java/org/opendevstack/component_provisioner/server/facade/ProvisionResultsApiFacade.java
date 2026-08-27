@@ -16,6 +16,7 @@ import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequestParametersInner;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
@@ -33,6 +34,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -207,8 +209,8 @@ public class ProvisionResultsApiFacade {
         return resolvedCatalogItemId;
     }
 
-    public void deleteProvisioningStatus(String projectKey, String componentId) {
-        provisionService.deleteProvisioningStatus(projectKey, componentId);
+    public void deleteProvisioningStatus(String projectKey, String componentId, List<ProvisioningDeleteRequestParametersInner> parameters) {
+        provisionService.deleteProvisioningStatus(projectKey, componentId, parameters);
     }
 
     public void validate(String projectKey, ProvisioningStatus status, String catalogItemId, String catalogItemSlug) {

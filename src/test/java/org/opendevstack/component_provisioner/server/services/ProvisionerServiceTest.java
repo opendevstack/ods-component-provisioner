@@ -2,6 +2,7 @@ package org.opendevstack.component_provisioner.server.services;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
+import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteRequestParametersInner;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -81,9 +83,10 @@ class ProvisionerServiceTest {
         // given
         var projectKey = "projectKey";
         var componentId = "componentId";
+        var parameters = Collections.<ProvisioningDeleteRequestParametersInner>emptyList();
 
         // when
-        provisionService.deleteProvisioningStatus(projectKey, componentId);
+        provisionService.deleteProvisioningStatus(projectKey, componentId, parameters);
 
         // then
         var expectedRequest = ProvisioningDeleteRequest.builder()
