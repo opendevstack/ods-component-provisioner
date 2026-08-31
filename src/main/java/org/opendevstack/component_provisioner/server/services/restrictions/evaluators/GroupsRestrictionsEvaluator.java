@@ -26,14 +26,21 @@ public class GroupsRestrictionsEvaluator implements RestrictionsEvaluator {
                 && params.getUserGroups() != null
                 && restrictions.getGroups().getPrefix() != null
                 && restrictions.getGroups().getSuffix() != null
+                && restrictions.getGroups().getWhitelistedRoles() != null
                 && params.getProjectKey() != null;
     }
 
     private boolean evaluateConditions(UserActionEntityRestrictions restrictions, RestrictionsParams params) {
-        return params.getUserGroups().stream().anyMatch(group ->
+        var defaultUserGroupsMatch = params.getUserGroups().stream().anyMatch(group ->
                 restrictions.getGroups().getPrefix().stream().anyMatch(group::startsWith) &&
                 restrictions.getGroups().getSuffix().stream().anyMatch(group::endsWith) &&
                 group.contains(params.getProjectKey())
         );
+
+        var customUserGroupsMatch = params.getUserGroups().stream().anyMatch(group ->
+                restrictions.getGroups().getWhitelistedRoles().stream().anyMatch(group::equals)
+        );
+
+        return defaultUserGroupsMatch || customUserGroupsMatch;
     }
 }

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.services.WhitelistedRolesService;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
@@ -41,22 +41,23 @@ public class ProvisionerActionsApiValidator {
     private final ComponentCatalogService componentCatalogService;
     private final AuthenticationProvider authenticationProvider;
     private final GroupsRestrictionsEvaluator groupsRestrictionsEvaluator;
-    private final ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
     private final ProjectsInfoService projectsInfoService;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
+    private final WhitelistedRolesService whitelistedRolesService;
 
     public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
 
         var projectKey = getProjectKey(provisionAction);
         var componentId = getComponentId(provisionAction);
+        var catalogItemId = getCatalogItemId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
 
         validateInputParams(projectKey, accessToken, componentId);
 
         validateComponentIsNotProvisioned(projectKey, componentId);
 
-        validateUserHasPermissionsToProvision(projectKey, accessToken);
+        validateUserHasPermissionsToProvision(projectKey, catalogItemId, accessToken);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
@@ -94,13 +95,27 @@ public class ProvisionerActionsApiValidator {
         mandatoryFieldsValidator.validate(provisionAction, catalogItem);
     }
 
-    private void validateUserHasPermissionsToProvision(String projectKey, String accessToken) {
+    public void validateWorkflowPresence(ProvisionAction provisionAction) {
+        var workflow = getWorkflow(provisionAction);
+        var workflowName = getWorkflowName(provisionAction);
+        var deletionWorkflow = getDeletionWorkflow(provisionAction);
+        var deletionWorkflowName = getDeletionWorkflowName(provisionAction);
+
+        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
+
+        var workflowIsNotPresent = StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName);
+        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow) && StringUtils.isBlank(deletionWorkflowName);
+
+        if (workflowIsNotPresent || deletionWorkflowIsNotPresent) {
+            throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
+        }
+    }
+
+    private void validateUserHasPermissionsToProvision(String projectKey, String catalogItemId, String accessToken) {
         log.debug("Validating user has permissions to provision. projectKey: {}", projectKey);
 
-        CatalogItemUserActionGroupsRestriction catalogItemUserActionGroupsRestriction = CatalogItemUserActionGroupsRestriction.builder()
-                .prefix(catalogItemUserActionGroupsRestrictionProps.getPrefix())
-                .suffix(catalogItemUserActionGroupsRestrictionProps.getSuffix())
-                .build();
+        CatalogItemUserActionGroupsRestriction catalogItemUserActionGroupsRestriction = whitelistedRolesService
+                .getCatalogItemUserActionGroupsRestriction(catalogItemId, accessToken);
         UserActionEntityRestrictions userActionEntityRestrictions = UserActionEntityRestrictions.builder()
                 .groups(catalogItemUserActionGroupsRestriction)
                 .build();
@@ -147,20 +162,5 @@ public class ProvisionerActionsApiValidator {
         }
     }
 
-    public void validateWorkflowPresence(ProvisionAction provisionAction) {
-        var workflow = getWorkflow(provisionAction);
-        var workflowName = getWorkflowName(provisionAction);
-        var deletionWorkflow = getDeletionWorkflow(provisionAction);
-        var deletionWorkflowName = getDeletionWorkflowName(provisionAction);
-
-        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
-
-        var workflowIsNotPresent = StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName);
-        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow) && StringUtils.isBlank(deletionWorkflowName);
-
-        if (workflowIsNotPresent || deletionWorkflowIsNotPresent) {
-            throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
-        }
-    }
 
 }

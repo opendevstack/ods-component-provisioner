@@ -39,6 +39,7 @@ If the project conventions change, update this document first so future edits st
 - Keep DTOs and domain/service models separated when contracts diverge.
 - Isolate external system details behind dedicated client/service classes.
 - Reuse existing error-handling patterns (exception types, mappers, and status translation).
+- Classes should follow public, protected, package-private, private visibility order. If you are refactoring a class, consider whether the visibility of existing methods can be reduced.
 
 ## API rules
 - Treat OpenAPI contracts as source of truth for public API behavior.

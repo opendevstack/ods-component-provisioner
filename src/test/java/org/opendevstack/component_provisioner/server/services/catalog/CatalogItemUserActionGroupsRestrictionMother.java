@@ -10,6 +10,7 @@ public class CatalogItemUserActionGroupsRestrictionMother {
         return CatalogItemUserActionGroupsRestriction.builder()
                 .prefix(List.of("prefix-1", "prefix-2"))
                 .suffix(List.of("suffix-1", "suffix-2"))
+                .whitelistedRoles(List.of())
                 .build();
     }
 }

@@ -12,7 +12,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
+import org.opendevstack.component_provisioner.server.services.WhitelistedRolesService;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
@@ -23,6 +23,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionParame
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.CatalogItemUserActionGroupsRestriction;
 import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.GroupsRestrictionsEvaluator;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ class ProvisionerActionsApiValidatorTest {
     private ProjectsInfoService projectsInfoService;
 
     @Mock
-    private ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
+    private WhitelistedRolesService whitelistedRolesService;
 
     @Mock
     private MandatoryFieldsValidator mandatoryFieldsValidator;
@@ -125,8 +126,8 @@ class ProvisionerActionsApiValidatorTest {
                 .thenReturn(List.of("group1"));
 
         // Configure restriction prefix/suffix
-        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
-        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
+        when(whitelistedRolesService.getCatalogItemUserActionGroupsRestriction("111", accessToken))
+                .thenReturn(givenGroupsRestriction());
 
         // Simulate evaluator result -> forbidden
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
@@ -163,8 +164,8 @@ class ProvisionerActionsApiValidatorTest {
                 .thenReturn(List.of("allowed-group"));
 
         // Configure restriction prefix/suffix
-        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
-        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
+        when(whitelistedRolesService.getCatalogItemUserActionGroupsRestriction("111", accessToken))
+                .thenReturn(givenGroupsRestriction());
 
         // Simulate evaluator result -> allowed
         when(groupsRestrictionsEvaluator.evaluate(any(), any()))
@@ -228,13 +229,14 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("catalog_item_id", "catid"),
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
+        var catalogItem = new CatalogItem();
 
         doThrow(new InvalidRestEntityException("Mandatory field missing"))
                 .when(mandatoryFieldsValidator)
                 .validate(any(), any());
 
         // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()))
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, catalogItem))
                 .isInstanceOf(InvalidRestEntityException.class);
     }
 
@@ -286,23 +288,6 @@ class ProvisionerActionsApiValidatorTest {
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
                 .isInstanceOf(RuntimeException.class);
-    }
-
-    private ProvisionAction givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(String missingParamName) {
-        // given
-        var params = new ArrayList<ProvisionActionParameter>();
-        // when
-        if (!"project_key".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
-        if (!"component_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
-        if (!"catalog_item_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
-        if (!"access_token".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
-
-        // then
-        return ProvisionActionMother.of(params);
     }
 
     @Test
@@ -662,5 +647,30 @@ class ProvisionerActionsApiValidatorTest {
 
         // when / then
         assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
+    }
+
+    private ProvisionAction givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(String missingParamName) {
+        // given
+        var params = new ArrayList<ProvisionActionParameter>();
+        // when
+        if (!"project_key".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
+        if (!"component_id".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
+        if (!"catalog_item_id".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
+        if (!"access_token".equals(missingParamName))
+            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
+
+        // then
+        return ProvisionActionMother.of(params);
+    }
+
+    private CatalogItemUserActionGroupsRestriction givenGroupsRestriction() {
+        return CatalogItemUserActionGroupsRestriction.builder()
+                .prefix(List.of("prefix-"))
+                .suffix(List.of("-suffix"))
+                .whitelistedRoles(List.of())
+                .build();
     }
 }

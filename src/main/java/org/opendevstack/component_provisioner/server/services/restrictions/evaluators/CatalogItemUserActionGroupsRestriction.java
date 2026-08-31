@@ -14,4 +14,5 @@ import java.util.List;
 public class CatalogItemUserActionGroupsRestriction {
     private List<String> prefix;
     private List<String> suffix;
+    private List<String> whitelistedRoles;
 }
