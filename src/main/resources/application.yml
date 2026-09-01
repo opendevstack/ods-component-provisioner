@@ -33,15 +33,6 @@ management:
       exposure:
         include: health
 
-catalog:
-  user-action:
-    groups-restriction:
-      prefix:
-        - BI-AS-ATLASSIAN
-      suffix:
-        - MANAGER
-        - TEAM
-
 catalog-collection:
   id: ${CATALOG_COLLECTION_ID}
 user-actions:

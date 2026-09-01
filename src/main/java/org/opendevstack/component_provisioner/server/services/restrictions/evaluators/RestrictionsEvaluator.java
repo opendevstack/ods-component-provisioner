@@ -1,8 +1,0 @@
-package org.opendevstack.component_provisioner.server.services.restrictions.evaluators;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-public interface RestrictionsEvaluator {
-
-    Pair<Boolean, String> evaluate(EvaluationRestrictions restrictions, RestrictionsParams params);
-}

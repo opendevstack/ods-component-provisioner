@@ -11,7 +11,6 @@ import org.springframework.util.unit.DataSize;
 import java.net.URL;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 @Configuration
 public class ApplicationPropertiesConfiguration {
@@ -38,12 +37,6 @@ public class ApplicationPropertiesConfiguration {
     @ConfigurationProperties(prefix = "component-provisioner.parameters")
     public ComponentProvisionerParametersProps componentProvisionerParametersProps() {
         return ComponentProvisionerParametersProps.builder().build();
-    }
-
-    @Bean("catalogItemGroupsRestrictionConfig")
-    @ConfigurationProperties(prefix = "catalog.user-action.groups-restriction")
-    public CatalogItemUserActionGroupsRestrictionProps catalogItemGroupsRestrictionConfig() {
-        return CatalogItemUserActionGroupsRestrictionProps.builder().build();
     }
 
     @Bean("projectsInfoServiceCacheConfig")
@@ -115,10 +108,4 @@ public class ApplicationPropertiesConfiguration {
         private String[] blacklist;
     }
 
-    @Builder
-    @Data
-    public static class CatalogItemUserActionGroupsRestrictionProps {
-        private List<String> prefix;
-        private List<String> suffix;
-    }
 }

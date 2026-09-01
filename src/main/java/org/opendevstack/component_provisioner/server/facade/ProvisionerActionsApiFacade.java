@@ -56,6 +56,7 @@ public class ProvisionerActionsApiFacade {
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
+        provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem);
         provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
 
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
