@@ -33,11 +33,6 @@ management:
       exposure:
         include: health
 
-catalog-collection:
-  id: ${CATALOG_COLLECTION_ID}
-user-actions:
-  id: ${USER_ACTIONS_ID}
-
 component-provisioner:
   azure:
     token:
