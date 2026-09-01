@@ -15,6 +15,7 @@ import org.opendevstack.component_provisioner.server.services.AuthenticationProv
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -87,11 +88,11 @@ public class ProvisionerActionsApiValidator {
 
         boolean provisionIsRequestable = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
-                .map(userActions -> userActions.stream()
-                        .filter(userAction -> ActionType.PROVISION.getValue().equals(userAction.getId()))
-                        .findFirst()
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(action -> ActionType.PROVISION.getValue().equals(action.getId()))
+                .findFirst()
                 .map(CatalogItemUserAction::getRequestable)
-                .orElse(false))
                 .orElse(false);
 
         if (!provisionIsRequestable) {
