@@ -1,6 +1,5 @@
 package org.opendevstack.component_provisioner.server.controllers.validators;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,18 +11,16 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
+import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.GroupsRestrictionsEvaluator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,15 +40,6 @@ class ProvisionerActionsApiValidatorTest {
 
     @Mock
     private AuthenticationProvider authenticationProvider;
-
-    @Mock
-    private GroupsRestrictionsEvaluator groupsRestrictionsEvaluator;
-
-    @Mock
-    private ProjectsInfoService projectsInfoService;
-
-    @Mock
-    private ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
 
     @Mock
     private MandatoryFieldsValidator mandatoryFieldsValidator;
@@ -100,78 +88,34 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenUserWithoutPermissions_whenValidating_thenThrowsUserNotAllowedException() {
+    void givenProvisionActionNotRequestable_whenValidatingUserPermission_thenThrowsUserNotAllowedException() {
         // given
-        var projectKey = "pkey";
-        var componentId = "cid";
-        var accessToken = "accessToken";
-
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", projectKey),
-                ProvisionActionParameterMother.of("component_id", componentId),
-                ProvisionActionParameterMother.of("catalog_item_id", "111"),
-                ProvisionActionParameterMother.of("access_token", accessToken),
-                ProvisionActionParameterMother.of("workflow", "123")
-        ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
-        // Component catalog empty -> no conflict
-        when(componentCatalogService.getProjectComponents(any(), any()))
-                .thenReturn(List.of());
-
-        // User groups
-        when(projectsInfoService.getProjectGroups(accessToken))
-                .thenReturn(List.of("group1"));
-
-        // Configure restriction prefix/suffix
-        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
-        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
-
-        // Simulate evaluator result -> forbidden
-        when(groupsRestrictionsEvaluator.evaluate(any(), any()))
-                .thenReturn(Pair.of(false, "User is not allowed"));
+        var provisionAction = CatalogItemUserAction.builder()
+                .id(ActionType.PROVISION.getValue())
+                .requestable(false)
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(provisionAction))
+                .build();
 
         // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
+        assertThatThrownBy(() -> provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem))
                 .isInstanceOf(UserNotAllowedException.class);
     }
 
     @Test
-    void givenUserWithPermissions_whenValidating_thenDoesNotThrow() {
+    void givenProvisionActionRequestable_whenValidatingUserPermission_thenDoesNotThrow() {
         // given
-        var projectKey = "pkey";
-        var componentId = "cid";
-        var accessToken = "accessToken";
-
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", projectKey),
-                ProvisionActionParameterMother.of("component_id", componentId),
-                ProvisionActionParameterMother.of("catalog_item_id", "111"),
-                ProvisionActionParameterMother.of("access_token", accessToken),
-                ProvisionActionParameterMother.of("workflow", "123")
-        ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
-        // Component does NOT exist
-        when(componentCatalogService.getProjectComponents(any(), any()))
-                .thenReturn(List.of());
-
-        // User groups
-        when(projectsInfoService.getProjectGroups(accessToken))
-                .thenReturn(List.of("allowed-group"));
-
-        // Configure restriction prefix/suffix
-        when(catalogItemUserActionGroupsRestrictionProps.getPrefix()).thenReturn(List.of("prefix-"));
-        when(catalogItemUserActionGroupsRestrictionProps.getSuffix()).thenReturn(List.of("-suffix"));
-
-        // Simulate evaluator result -> allowed
-        when(groupsRestrictionsEvaluator.evaluate(any(), any()))
-                .thenReturn(Pair.of(true, ""));
+        var provisionAction = CatalogItemUserAction.builder()
+                .id(ActionType.PROVISION.getValue())
+                .requestable(true)
+                .build();
+        var catalogItem = CatalogItem.builder()
+                .userActions(List.of(provisionAction))
+                .build();
 
         // when / then
-        provisionerActionsApiValidator.validate(action);
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem));
     }
 
     @Test
@@ -256,37 +200,6 @@ class ProvisionerActionsApiValidatorTest {
                 .isInstanceOf(RuntimeException.class);
     }
 
-    @Test
-    void givenProjectsInfoServiceThrows_whenValidating_thenThrowsRuntimeException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
-                .isInstanceOf(RuntimeException.class);
-    }
-
-    @Test
-    void givenGroupsRestrictionsEvaluatorThrows_whenValidating_thenThrowsRuntimeException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
-                .isInstanceOf(RuntimeException.class);
-    }
 
     private ProvisionAction givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(String missingParamName) {
         // given

@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
@@ -13,16 +13,10 @@ import org.opendevstack.component_provisioner.server.controllers.model.ActionTyp
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.CatalogItemUserActionGroupsRestriction;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.EvaluationRestrictions;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.GroupsRestrictionsEvaluator;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.RestrictionsParams;
-import org.opendevstack.component_provisioner.server.services.restrictions.evaluators.UserActionEntityRestrictions;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -40,9 +34,6 @@ public class ProvisionerActionsApiValidator {
 
     private final ComponentCatalogService componentCatalogService;
     private final AuthenticationProvider authenticationProvider;
-    private final GroupsRestrictionsEvaluator groupsRestrictionsEvaluator;
-    private final ApplicationPropertiesConfiguration.CatalogItemUserActionGroupsRestrictionProps catalogItemUserActionGroupsRestrictionProps;
-    private final ProjectsInfoService projectsInfoService;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
 
     public void validate(ProvisionAction provisionAction) {
@@ -55,8 +46,6 @@ public class ProvisionerActionsApiValidator {
         validateInputParams(projectKey, accessToken, componentId);
 
         validateComponentIsNotProvisioned(projectKey, componentId);
-
-        validateUserHasPermissionsToProvision(projectKey, accessToken);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
@@ -94,32 +83,20 @@ public class ProvisionerActionsApiValidator {
         mandatoryFieldsValidator.validate(provisionAction, catalogItem);
     }
 
-    private void validateUserHasPermissionsToProvision(String projectKey, String accessToken) {
-        log.debug("Validating user has permissions to provision. projectKey: {}", projectKey);
+    public void validateUserHasPermissionsToProvision(CatalogItem catalogItem) {
+        log.debug("Validating user has permissions to provision. CatalogItem: {}", catalogItem);
 
-        CatalogItemUserActionGroupsRestriction catalogItemUserActionGroupsRestriction = CatalogItemUserActionGroupsRestriction.builder()
-                .prefix(catalogItemUserActionGroupsRestrictionProps.getPrefix())
-                .suffix(catalogItemUserActionGroupsRestrictionProps.getSuffix())
-                .build();
-        UserActionEntityRestrictions userActionEntityRestrictions = UserActionEntityRestrictions.builder()
-                .groups(catalogItemUserActionGroupsRestriction)
-                .build();
-        EvaluationRestrictions restrictions = new EvaluationRestrictions(projectKey, userActionEntityRestrictions);
+        boolean provisionIsRequestable = Optional.ofNullable(catalogItem)
+                .map(CatalogItem::getUserActions)
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(action -> ActionType.PROVISION.getValue().equals(action.getId()))
+                .findFirst()
+                .map(CatalogItemUserAction::getRequestable)
+                .orElse(false);
 
-        List<String> userGroups = projectsInfoService.getProjectGroups(accessToken);
-        RestrictionsParams params = RestrictionsParams.builder()
-                .projectKey(projectKey)
-                .userGroups(userGroups)
-                .build();
-
-        var groupsEvaluationResult = groupsRestrictionsEvaluator.evaluate(restrictions, params);
-
-        if (groupsEvaluationResult == null || Boolean.FALSE.equals(groupsEvaluationResult.getLeft())) {
+        if (!provisionIsRequestable) {
             String message = "User does not have permissions to provision this component.";
-
-            if (groupsEvaluationResult != null && groupsEvaluationResult.getRight() != null) {
-                message = groupsEvaluationResult.getRight();
-            }
 
             throw new UserNotAllowedException(message);
         }
