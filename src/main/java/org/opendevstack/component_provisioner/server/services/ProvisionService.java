@@ -96,7 +96,7 @@ public class ProvisionService {
 
         var apiClient = apiClientsBuilder.componentCatalogApiClient(authenticationProvider.getAccessToken(), componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
-        var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId);
+        var catalogItem = catalogItemsApi.getCatalogItemById(catalogItemId, null);
 
         return extractDeletionParameters(catalogItem, projectComponent, ActionType.PROVISION.getValue());
     }

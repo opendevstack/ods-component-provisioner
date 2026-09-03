@@ -37,6 +37,8 @@ component-provisioner:
   azure:
     token:
       url: ${AZURE_TOKEN_URL}
+  security:
+    shared-secret: ${SECURITY_SHARED_SECRET}
   caching:
     projects-info-services-cache:
       enabled: true

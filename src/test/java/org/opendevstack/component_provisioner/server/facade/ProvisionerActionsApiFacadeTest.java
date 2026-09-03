@@ -18,25 +18,14 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
-import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
-import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.AwxService;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
-import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
-import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
-import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
+import org.opendevstack.component_provisioner.server.model.*;
+import org.opendevstack.component_provisioner.server.services.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
+import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobMother;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClientException;
@@ -48,15 +37,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiFacadeTest {
@@ -83,9 +65,6 @@ class ProvisionerActionsApiFacadeTest {
     private ReplaceParametersService replaceParametersService;
 
     @Mock
-    private MandatoryFieldsValidator mandatoryFieldsValidator;
-
-    @Mock
     private ProjectsInfoService projectsInfoService;
 
     @Spy
@@ -100,7 +79,7 @@ class ProvisionerActionsApiFacadeTest {
                 .when(facade)
                 .addMandatoryCatalogItemParamsIfMissing(any(), any());
         lenient()
-                .when(componentCatalogService.getCatalogItem(any(), any(), any()))
+                .when(componentCatalogService.getCatalogItem(any(), any(), any(), anyBoolean()))
                 .thenReturn(new CatalogItem());
     }
 
@@ -939,7 +918,7 @@ class ProvisionerActionsApiFacadeTest {
         var provisionActionResponse = ProvisionActionResponseMother.of();
         provisionActionResponse.setId(123);
 
-        when(componentCatalogService.getCatalogItem("token", "CAT", "PRJ")).thenReturn(catalogItem);
+        when(componentCatalogService.getCatalogItem("token", "CAT", "PRJ", true)).thenReturn(catalogItem);
         when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
 
         ArgumentCaptor<ProvisionActionWrapper> wrapperCaptor = ArgumentCaptor.forClass(ProvisionActionWrapper.class);

@@ -44,15 +44,19 @@ public class ComponentCatalogService {
 
     private final ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
 
+    private final ApplicationPropertiesConfiguration.SecurityProps securityProps;
+
     public ComponentCatalogService(
             CatalogItemUserActionMessageDefinitionsApi itemUserActionMessagesDefinitionsApi,
             ApiClientsBuilder apiClientsBuilder,
             ApplicationPropertiesConfiguration.ComponentCatalogServiceProps componentCatalogServiceProps,
-            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps) {
+            @Qualifier("componentProvisionerParametersConfig") ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps,
+            ApplicationPropertiesConfiguration.SecurityProps securityProps) {
         this.itemUserActionMessagesDefinitionsApi = itemUserActionMessagesDefinitionsApi;
         this.apiClientsBuilder = apiClientsBuilder;
         this.componentCatalogServiceProps = componentCatalogServiceProps;
         this.parametersProps = parametersProps;
+        this.securityProps = securityProps;
     }
 
     public Pair<HttpStatusCode, Optional<CatalogItemUserActionMessageDefinition>> getCatalogItemUserActionMessageDefinition(
@@ -150,11 +154,12 @@ public class ComponentCatalogService {
         return componentsApi.getProjectComponents(projectKey);
     }
 
-    public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey) {
+    public CatalogItem getCatalogItem(String accessToken, String catalogItemId, String projectKey, boolean ignoreItemVisibilityRestrictions) {
         var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
         var catalogItemsApi = apiClientsBuilder.catalogItemsApi(apiClient);
+        var sharedSecret = ignoreItemVisibilityRestrictions ? securityProps.getSharedSecret() : null;
 
-        var catalogItem = catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey);
+        var catalogItem = catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey, sharedSecret);
 
         log.debug("Retrieved catalog item with id {} for project key {}: {}", catalogItemId, projectKey, catalogItem);
 
