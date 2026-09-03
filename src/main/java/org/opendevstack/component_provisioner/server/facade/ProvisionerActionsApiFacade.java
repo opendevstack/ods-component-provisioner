@@ -385,7 +385,7 @@ public class ProvisionerActionsApiFacade {
 
     private CatalogItem fetchCatalogItem(ProvisionActionWrapper wrapper) {
         var accessToken = authenticationProvider.getAccessToken();
-        return componentCatalogService.getCatalogItem(accessToken, wrapper.getCatalogItemId(), wrapper.getProjectKey());
+        return componentCatalogService.getCatalogItem(accessToken, wrapper.getCatalogItemId(), wrapper.getProjectKey(), true);
     }
 
     private void applyDefaultValue(

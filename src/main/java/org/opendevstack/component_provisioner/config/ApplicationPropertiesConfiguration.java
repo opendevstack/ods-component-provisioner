@@ -15,6 +15,12 @@ import java.time.temporal.ChronoUnit;
 @Configuration
 public class ApplicationPropertiesConfiguration {
 
+    @Bean("securityProps")
+    @ConfigurationProperties(prefix = "component-provisioner.security")
+    public SecurityProps securityProps() {
+        return SecurityProps.builder().build();
+    }
+
     @Bean("awxServiceConfig")
     @ConfigurationProperties(prefix = "component-provisioner.awx.service")
     public AWXServiceProps awxServiceProps() {
@@ -55,6 +61,12 @@ public class ApplicationPropertiesConfiguration {
     @ConfigurationProperties(prefix = "component-provisioner.azure.token")
     public AzureAdTokenServiceProps azureAdTokenServiceProps() {
         return AzureAdTokenServiceProps.builder().build();
+    }
+
+    @Builder // useful for unit testing
+    @Data
+    public static class SecurityProps {
+        private String sharedSecret;
     }
 
     @Builder // useful for unit testing

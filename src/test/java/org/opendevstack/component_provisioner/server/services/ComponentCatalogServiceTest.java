@@ -75,6 +75,9 @@ class ComponentCatalogServiceTest {
     @Mock
     private ApplicationPropertiesConfiguration.ComponentProvisionerParametersProps parametersProps;
 
+        @Mock
+        private ApplicationPropertiesConfiguration.SecurityProps securityProps;
+
     @InjectMocks
     private ComponentCatalogService componentCatalogService;
 
@@ -334,6 +337,7 @@ class ComponentCatalogServiceTest {
         String accessToken = "access-token";
         String catalogItemId = "CAT-123";
         String projectKey = "PRJ-1";
+        boolean ignoreItemVisibilityRestrictions = false;
 
         URL baseUrl = URI.create("http://component-catalog").toURL();
 
@@ -345,12 +349,12 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient))
                 .thenReturn(catalogItemsApi);
         when(catalogItemsApi.getCatalogItemByIdForProjectKey(
-                catalogItemId, projectKey))
+                catalogItemId, projectKey, null))
                 .thenReturn(expectedCatalogItem);
 
         // when
         CatalogItem result = componentCatalogService.getCatalogItem(
-                accessToken, catalogItemId, projectKey);
+                accessToken, catalogItemId, projectKey, ignoreItemVisibilityRestrictions);
 
         // then
         assertThat(result).isSameAs(expectedCatalogItem);
@@ -360,7 +364,7 @@ class ComponentCatalogServiceTest {
         verify(apiClientsBuilder)
                 .catalogItemsApi(componentCatalogApiClient);
         verify(catalogItemsApi)
-                .getCatalogItemByIdForProjectKey(catalogItemId, projectKey);
+                .getCatalogItemByIdForProjectKey(catalogItemId, projectKey, null);
 
         verifyNoMoreInteractions(catalogItemsApi);
         verifyNoInteractions(
@@ -368,6 +372,32 @@ class ComponentCatalogServiceTest {
                 provisionerActionsApi,
                 projectComponentsApi
         );
+    }
+
+    @Test
+    void givenIgnoredVisibilityRestrictions_whenGetCatalogItemIsCalled_thenSharedSecretIsForwarded() throws MalformedURLException {
+        // given
+        var accessToken = "access-token";
+        var catalogItemId = "CAT-123";
+        var projectKey = "PRJ-1";
+        var sharedSecret = "test-shared-secret";
+        var baseUrl = URI.create("http://component-catalog").toURL();
+        var expectedCatalogItem = new CatalogItem();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.catalogItemsApi(componentCatalogApiClient)).thenReturn(catalogItemsApi);
+        when(securityProps.getSharedSecret()).thenReturn(sharedSecret);
+        when(catalogItemsApi.getCatalogItemByIdForProjectKey(catalogItemId, projectKey, sharedSecret))
+                .thenReturn(expectedCatalogItem);
+
+        // when
+        var result = componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey, true);
+
+        // then
+        assertThat(result).isSameAs(expectedCatalogItem);
+        verify(catalogItemsApi).getCatalogItemByIdForProjectKey(catalogItemId, projectKey, sharedSecret);
     }
 
     @Test

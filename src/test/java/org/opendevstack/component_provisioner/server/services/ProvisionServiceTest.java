@@ -8,13 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.ApiClient;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.CatalogItemsApi;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.api.ProvisionerActionsApi;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningDeleteRequest;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatusUpdateRequest;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.*;
 import org.opendevstack.component_provisioner.config.ApplicationPropertiesConfiguration;
 import org.opendevstack.component_provisioner.server.mappers.CreateIncidentParameterMapper;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
@@ -28,6 +22,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -147,7 +142,7 @@ class ProvisionServiceTest {
                 .id("PROVISION")
                 .parameters(List.of(actionParam))
                 .build()));
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         var projectParam = ProjectComponentParameter.builder()
                 .name("param1")
@@ -187,7 +182,7 @@ class ProvisionServiceTest {
 
         CatalogItem catalogItem = new CatalogItem();
         catalogItem.setUserActions(null);
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         // when
         var result = provisionService.getDeletionParameters(projectKey, componentId);
@@ -218,7 +213,7 @@ class ProvisionServiceTest {
         catalogItem.setUserActions(List.of(CatalogItemUserAction.builder()
                 .parameters(null)
                 .build()));
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         // when
         var result = provisionService.getDeletionParameters(projectKey, componentId);
@@ -252,7 +247,7 @@ class ProvisionServiceTest {
                         .sendOnDeletion(false)
                         .build()))
                 .build()));
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         // when
         var result = provisionService.getDeletionParameters(projectKey, componentId);
@@ -287,7 +282,7 @@ class ProvisionServiceTest {
                         .sendOnDeletion(true)
                         .build()))
                 .build()));
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         // when
         var result = provisionService.getDeletionParameters(projectKey, componentId);
@@ -321,7 +316,7 @@ class ProvisionServiceTest {
                         .sendOnDeletion(true)
                         .build()))
                 .build()));
-        when(catalogItemsApi.getCatalogItemById(any())).thenReturn(catalogItem);
+        when(catalogItemsApi.getCatalogItemById(any(), isNull())).thenReturn(catalogItem);
 
         var projectParam = ProjectComponentParameter.builder()
                 .name("param1")
