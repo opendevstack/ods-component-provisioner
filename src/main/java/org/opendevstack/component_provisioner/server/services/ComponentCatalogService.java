@@ -128,11 +128,13 @@ public class ComponentCatalogService {
 
     public void setWorkflowJobId(String projectKey,
                                  String componentId,
+                                 String catalogItemId,
                                  String workflowJobId,
                                  String accessToken) {
 
         var provisionStatusUpdateRequest = ProvisioningStatusUpdateRequest.builder()
                 .componentId(componentId)
+                .catalogItemId(catalogItemId)
                 .workflowJobId(workflowJobId)
                 .build();
 

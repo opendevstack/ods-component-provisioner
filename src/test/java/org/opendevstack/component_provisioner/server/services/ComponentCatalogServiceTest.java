@@ -450,6 +450,7 @@ class ComponentCatalogServiceTest {
         // given
         String projectKey = "PRJ-KEY";
         String componentId = "CMP-001";
+        String catalogItemId = "CAT-001";
         String workflowJobId = "WFJ-123";
         String accessToken = "secret";
 
@@ -462,7 +463,7 @@ class ComponentCatalogServiceTest {
                 ArgumentCaptor.forClass(ProvisioningStatusUpdateRequest.class);
 
         // when
-        componentCatalogService.setWorkflowJobId(projectKey, componentId, workflowJobId, accessToken);
+        componentCatalogService.setWorkflowJobId(projectKey, componentId, catalogItemId, workflowJobId, accessToken);
 
         // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(
@@ -476,6 +477,7 @@ class ComponentCatalogServiceTest {
 
         ProvisioningStatusUpdateRequest captured = requestCaptor.getValue();
         assertThat(captured.getComponentId()).isEqualTo(componentId);
+        assertThat(captured.getCatalogItemId()).isEqualTo(catalogItemId);
         assertThat(captured.getWorkflowJobId()).isEqualTo(workflowJobId);
     }
 
@@ -536,6 +538,7 @@ class ComponentCatalogServiceTest {
         // given
         var projectKey = "PRJ";
         var componentId = "CID";
+        var catalogItemId = "CAT";
         var workflowJobId = "WFJ123";
         var accessToken = "TOKEN";
 
@@ -543,7 +546,7 @@ class ComponentCatalogServiceTest {
         when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://catalog")).thenReturn(provisionerActionsApi);
 
         // when
-        componentCatalogService.setWorkflowJobId(projectKey, componentId, workflowJobId, accessToken);
+        componentCatalogService.setWorkflowJobId(projectKey, componentId, catalogItemId, workflowJobId, accessToken);
 
         // then
         verify(provisionerActionsApi).notifyProvisioningStatusUpdatePartially(eq(projectKey), eq(ProvisioningStatus.CREATING), any(ProvisioningStatusUpdateRequest.class));

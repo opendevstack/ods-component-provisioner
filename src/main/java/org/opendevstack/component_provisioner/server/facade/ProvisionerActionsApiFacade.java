@@ -140,9 +140,10 @@ public class ProvisionerActionsApiFacade {
 
             var projectKey = provisionActionWrapper.getProjectKey();
             var componentId = provisionActionWrapper.getComponentId();
+            var catalogItemId = provisionActionWrapper.getCatalogItemId();
             var accessToken = authenticationProvider.getAccessToken();
 
-            componentCatalogService.setWorkflowJobId(projectKey, componentId, awxJobId, accessToken);
+            componentCatalogService.setWorkflowJobId(projectKey, componentId, catalogItemId, awxJobId, accessToken);
         } else {
             log.warn("Not updating project components with AWX job id since the AWX request was not successful. HTTP status code: {}", awxResponse.httpStatusCode());
         }
