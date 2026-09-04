@@ -123,11 +123,10 @@ public class ProvisionerActionsApiFacade {
         var callerProvisionWrapper = addCallerToAction(locationProvisionWrapper);
         var bearerTokenWrapper = addBearerTokenToActions(callerProvisionWrapper);
         var notificationsGroupIdWrapper = addNotificationsGroupIdToAction(bearerTokenWrapper);
-        var componentUrlWrapper = addEmptyComponentUrlToAction(notificationsGroupIdWrapper);
 
-        log.debug("Added system parameters to provision action: '{}'", componentUrlWrapper);
+        log.debug("Added system parameters to provision action: '{}'", notificationsGroupIdWrapper);
 
-        return componentUrlWrapper;
+        return notificationsGroupIdWrapper;
     }
 
     private void updateAwxJobIdIntoProjectComponents(ProvisionActionWrapper provisionActionWrapper, AwxResponse awxResponse) {
@@ -214,16 +213,6 @@ public class ProvisionerActionsApiFacade {
                 .build();
 
         return provisionActionWrapper.cloneWithParameters(notificationsGroupIdParameter);
-    }
-
-    private ProvisionActionWrapper addEmptyComponentUrlToAction(ProvisionActionWrapper provisionActionWrapper) {
-        var componentUrlParameter = ProvisionActionParameter.builder()
-                .name("component_url")
-                .type(ParameterType.STRING.getValue())
-                .value(Strings.EMPTY)
-                .build();
-
-        return provisionActionWrapper.cloneWithParameters(componentUrlParameter);
     }
 
     private ProvisionActionWrapper addProvisionWorkflowWrapper(ProvisionActionWrapper provisionActionWrapper) {
