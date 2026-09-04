@@ -161,7 +161,7 @@ class ProvisionerActionsApiFacadeTest {
         var paramNames = resultingAction.getParametersMap().values().stream()
                 .map(ProvisionActionParameter::getName)
                 .toList();
-        assertThat(paramNames).contains("cluster_location", "caller", "access_token", "notifications_group_id", "component_url");
+        assertThat(paramNames).contains("cluster_location", "caller", "access_token", "notifications_group_id");
 
         var clusterLocation = resultingAction.getParametersMap().values().stream()
                 .filter(p -> "cluster_location".equals(p.getName()))
@@ -186,12 +186,6 @@ class ProvisionerActionsApiFacadeTest {
                 .map(p -> p.getValue().toString())
                 .findFirst().orElseThrow();
         assertThat(notificationsGroupId).isEqualTo("PRJ");
-
-        var componentUrl = resultingAction.getParametersMap().values().stream()
-                .filter(p -> "component_url".equals(p.getName()))
-                .map(p -> p.getValue().toString())
-                .findFirst().orElseThrow();
-        assertThat(componentUrl).isEqualTo("");
     }
 
     @Test
