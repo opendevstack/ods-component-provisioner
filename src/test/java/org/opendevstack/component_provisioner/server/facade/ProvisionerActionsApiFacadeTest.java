@@ -19,6 +19,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Proj
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.*;
@@ -66,6 +67,9 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private ProjectsInfoService projectsInfoService;
+
+    @Mock
+    private WorkflowsValidator workflowsValidator;
 
     @Spy
     @InjectMocks
@@ -842,8 +846,7 @@ class ProvisionerActionsApiFacadeTest {
         facade.triggerProvisionAction(action);
 
         // then
-        verify(provisionerActionsApiValidator)
-                .validateWorkflowPresence(any());
+        verify(workflowsValidator).validate(any());
     }
 
     @Test
@@ -874,9 +877,9 @@ class ProvisionerActionsApiFacadeTest {
         facade.triggerProvisionAction(action);
 
         // then
-        var order = inOrder(provisionerActionsApiValidator, placeholderPostProcessor);
+        var order = inOrder(provisionerActionsApiValidator, placeholderPostProcessor, workflowsValidator);
 
-        order.verify(provisionerActionsApiValidator).validateWorkflowPresence(any());
+        order.verify(workflowsValidator).validate(any());
         order.verify(placeholderPostProcessor).process(any());
     }
 

@@ -3,7 +3,6 @@ package org.opendevstack.component_provisioner.server.facade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
@@ -15,6 +14,7 @@ import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxRe
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
@@ -43,6 +43,7 @@ public class ProvisionerActionsApiFacade {
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final WorkflowsValidator workflowsValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
 
@@ -62,7 +63,7 @@ public class ProvisionerActionsApiFacade {
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
         var requiredCatalogItemParamsAction = requiredCatalogItemParamsWrapper.toProvisionAction();
-        provisionerActionsApiValidator.validateWorkflowPresence(requiredCatalogItemParamsAction);
+        workflowsValidator.validate(requiredCatalogItemParamsAction);
         provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsAction, catalogItem);
 
         var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);

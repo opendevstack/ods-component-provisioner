@@ -11,7 +11,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
@@ -20,6 +19,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 
 import java.util.ArrayList;
@@ -457,123 +457,5 @@ class ProvisionerActionsApiValidatorTest {
         // when / then
         assertThatNoException().isThrownBy(
                 () -> provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(action, catalogItem));
-    }
-
-    @Test
-    void givenMissingWorkflowAndWorkflowName_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenMissingDeletionNamesAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenNoExceptionThrown() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow", "wf-123")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenMissingDeletionNamesAndOnlyWorkflowName_whenValidatingWorkflow_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow_name", "wf-name")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenBlankDeletionWorkflow_whenValidatingWorkflowPresence_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow", "wf-123"),
-                ProvisionActionParameterMother.of("deletion_workflow", "   ")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenWorkflowProvidedByUser_whenValidatingWorkflowPresence_thenDoesNotThrow() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow", "wf-123"),
-                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
-    }
-
-    @Test
-    void givenDeletionWorkflowNameProvided_whenValidatingWorkflowPresence_thenDoesNotThrow() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow", "wf-123"),
-                ProvisionActionParameterMother.of("deletion_workflow_name", "del-wf-name")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
-    }
-
-    @Test
-    void givenWorkflowNameProvidedByUser_whenValidatingWorkflowPresence_thenDoesNotThrow() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
-                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
-    }
-
-    @Test
-    void givenWorkflowAndWorkflowNameProvided_whenValidatingWorkflowPresence_thenDoesNotThrow() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("workflow", "wf-123"),
-                ProvisionActionParameterMother.of("workflow_name", "wf-name"),
-                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
-    }
-
-    @Test
-    void givenWorkflowFromHiddenCatalogItemParam_whenValidatingWorkflowPresence_thenDoesNotThrow() {
-        // given
-        // Workflow was not provided by the user but was injected from the catalog item's
-        // hidden (non-visible) mandatory parameter before this validation is invoked
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("workflow", "wf-from-hidden-param"),
-                ProvisionActionParameterMother.of("deletion_workflow", "del-wf-from-hidden-param")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateWorkflowPresence(action));
     }
 }

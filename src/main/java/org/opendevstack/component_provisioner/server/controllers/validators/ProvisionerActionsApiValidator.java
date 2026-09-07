@@ -23,7 +23,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.*;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
 
 @Service
 @AllArgsConstructor
@@ -121,22 +122,6 @@ public class ProvisionerActionsApiValidator {
 
         if (StringUtils.isBlank(projectKey) || StringUtils.isBlank(accessToken) || StringUtils.isBlank(componentId)) {
             throw new InvalidRestEntityException("project_key, access_token, component_id are required.");
-        }
-    }
-
-    public void validateWorkflowPresence(ProvisionAction provisionAction) {
-        var workflow = getWorkflow(provisionAction);
-        var workflowName = getWorkflowName(provisionAction);
-        var deletionWorkflow = getDeletionWorkflow(provisionAction);
-        var deletionWorkflowName = getDeletionWorkflowName(provisionAction);
-
-        log.debug("Validating presence of workflow or workflow_name. Workflow: {}, Workflow name: {}", workflow, workflowName);
-
-        var workflowIsNotPresent = StringUtils.isBlank(workflow) && StringUtils.isBlank(workflowName);
-        var deletionWorkflowIsNotPresent = StringUtils.isBlank(deletionWorkflow) && StringUtils.isBlank(deletionWorkflowName);
-
-        if (workflowIsNotPresent || deletionWorkflowIsNotPresent) {
-            throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
         }
     }
 
