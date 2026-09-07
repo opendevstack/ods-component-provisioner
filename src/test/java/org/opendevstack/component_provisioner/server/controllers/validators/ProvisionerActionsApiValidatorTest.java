@@ -2,8 +2,6 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,19 +40,11 @@ class ProvisionerActionsApiValidatorTest {
     @Mock
     private ComponentsValidator componentsValidator;
 
+    @Mock
+    private InputParamsValidator inputParamsValidator;
+
     @InjectMocks
     private ProvisionerActionsApiValidator provisionerActionsApiValidator;
-
-    @ParameterizedTest
-    @ValueSource(strings = { "project_key", "component_id", "access_token"})
-    void givenRequiredParameterMissing_whenValidating_thenThrowsInvalidRestEntityException(String missingParam) {
-        // given
-        var action = givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(missingParam);
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
 
     @Test
     void givenAlreadyProvisionedComponent_whenValidating_thenThrowsProjectComponentAlreadyProvisionedException() {
@@ -114,44 +104,24 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenBlankProjectKey_whenValidating_thenThrowsInvalidRestEntityException() {
+    void givenInvalidInputParams_whenValidating_thenThrowsInvalidRestEntityException() {
         // given
+        var projectKey = "";
+        var accessToken = "accessToken";
+        var componentId = "cid";
+
         var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", ""),
-                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("project_key", projectKey),
+                ProvisionActionParameterMother.of("component_id", componentId),
                 ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
+                ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
 
-    @Test
-    void givenBlankComponentId_whenValidating_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", ""),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenBlankAccessToken_whenValidating_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "")
-        ));
+        doThrow(new InvalidRestEntityException("project_key, access_token, component_id are required."))
+                .when(inputParamsValidator)
+                .validateInputParams(projectKey, accessToken, componentId);
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))

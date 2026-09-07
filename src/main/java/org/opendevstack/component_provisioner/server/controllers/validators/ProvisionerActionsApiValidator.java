@@ -2,7 +2,6 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
@@ -34,6 +33,7 @@ public class ProvisionerActionsApiValidator {
     private final AuthenticationProvider authenticationProvider;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
     private final ComponentsValidator componentsValidator;
+    private final InputParamsValidator inputParamsValidator;
 
     public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
@@ -42,8 +42,7 @@ public class ProvisionerActionsApiValidator {
         var componentId = getComponentId(provisionAction);
         var accessToken = authenticationProvider.getAccessToken();
 
-        validateInputParams(projectKey, accessToken, componentId);
-
+        inputParamsValidator.validateInputParams(projectKey, accessToken, componentId);
         componentsValidator.validate(projectKey, componentId);
     }
 
@@ -98,14 +97,6 @@ public class ProvisionerActionsApiValidator {
             String message = "User does not have permissions to provision this component.";
 
             throw new UserNotAllowedException(message);
-        }
-    }
-
-    private static void validateInputParams(String projectKey, String accessToken, String componentId) {
-        log.debug("Validating input params. projectKey: {}, accessToken: {}, componentId: {}", projectKey, accessToken, componentId);
-
-        if (StringUtils.isBlank(projectKey) || StringUtils.isBlank(accessToken) || StringUtils.isBlank(componentId)) {
-            throw new InvalidRestEntityException("project_key, access_token, component_id are required.");
         }
     }
 
