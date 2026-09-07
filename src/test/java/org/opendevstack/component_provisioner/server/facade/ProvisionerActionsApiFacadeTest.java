@@ -21,6 +21,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.VisibleParametersValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -78,6 +79,9 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private MandatoryFieldsValidator mandatoryFieldsValidator;
+
+    @Mock
+    private VisibleParametersValidator visibleParametersValidator;
 
     @Spy
     @InjectMocks
@@ -886,6 +890,54 @@ class ProvisionerActionsApiFacadeTest {
 
         // then
         verify(userPermissionsValidator).validate(any(CatalogItem.class));
+    }
+
+    @Test
+    void givenValidAction_whenTriggerProvisionAction_thenCallsVisibleParametersValidationBeforeSystemParameterEnrichment() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
+        ));
+        var catalogItem = CatalogItem.builder().title("My Catalog Item").build();
+
+        setupSystemParameterMocks();
+
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(componentCatalogService.getCatalogItem(any(), any(), any(), anyBoolean()))
+                .thenReturn(catalogItem);
+        when(placeholderPostProcessor.process(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(AwxWorkflowJobLaunchMother.of());
+        when(entitiesMapper.asProvisionActionResponse(any()))
+                .thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxWorkflowJobMother.of())));
+
+        var provisionActionCaptor = ArgumentCaptor.forClass(ProvisionAction.class);
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(visibleParametersValidator)
+                .validate(provisionActionCaptor.capture(), same(catalogItem));
+
+        var validatedAction = provisionActionCaptor.getValue();
+        assertThat(validatedAction.getParameters())
+                .extracting(ProvisionActionParameter::getName)
+                .containsExactlyInAnyOrder("project_key", "catalog_item_id");
+
+        var order = inOrder(userPermissionsValidator, visibleParametersValidator, workflowsValidator);
+        order.verify(userPermissionsValidator).validate(catalogItem);
+        order.verify(visibleParametersValidator)
+                .validate(any(ProvisionAction.class), same(catalogItem));
+        order.verify(workflowsValidator).validate(any());
     }
 
     @Test

@@ -16,6 +16,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Mand
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.VisibleParametersValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
@@ -48,6 +49,7 @@ public class ProvisionerActionsApiFacade {
     private final WorkflowsValidator workflowsValidator;
     private final UserPermissionsValidator userPermissionsValidator;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
+    private final VisibleParametersValidator visibleParametersValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
 
@@ -62,7 +64,7 @@ public class ProvisionerActionsApiFacade {
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
         userPermissionsValidator.validate(catalogItem);
-        provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
+        visibleParametersValidator.validate(resolvedActionWrapper.toProvisionAction(), catalogItem);
 
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
