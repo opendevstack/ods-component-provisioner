@@ -16,6 +16,9 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
@@ -43,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -72,6 +76,15 @@ class ProvisionResultsApiFacadeTest {
 
     @Mock
     private ProjectsInfoService projectsInfoService;
+
+    @Mock
+    private WorkflowsValidator workflowsValidator;
+
+    @Mock
+    private DeletionSentinelWorkflowValidator deletionSentinelWorkflowValidator;
+
+    @Mock
+    private InputParamsValidator inputParamsValidator;
 
     @InjectMocks
     private ProvisionResultsApiFacade facade;
@@ -173,9 +186,9 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAMissingMainParams_whenValidateIsCalled_thenThrowsInvalidRestEntityException() {
         // when / then
-        assertThatThrownBy(() -> facade.validate(null, "CID", "", ""))
+        assertThatThrownBy(() -> facade.validate(null, ProvisioningStatus.CREATED, "ID", ""))
                 .isInstanceOf(InvalidRestEntityException.class);
-        assertThatThrownBy(() -> facade.validate("PRJ", (String) null, "", ""))
+        assertThatThrownBy(() -> facade.validate("PRJ", null, "ID", ""))
                 .isInstanceOf(InvalidRestEntityException.class);
     }
 
@@ -227,7 +240,8 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAConfiguredDeletionWorkflow_whenValidateIsCalled_thenDoesNotValidateIncidentParameters() {
         // when / then
-        assertThatCode(() -> facade.validate("PRJ", "CID", "DELETE_WORKFLOW", "")).doesNotThrowAnyException();
+        assertThatCode(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "DELETE_WORKFLOW", ""))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -456,7 +470,8 @@ class ProvisionResultsApiFacadeTest {
     @Test
     void givenAProjectKeyAndAComponentIdWithWorkflowName_whenValidateIsCalled_thenDoesNotThrowIfValid() {
         // when / then
-        assertThatCode(() -> facade.validate("PRJ", "CID", "", "delete-workflow-name")).doesNotThrowAnyException();
+        assertThatCode(() -> facade.validate("PRJ", ProvisioningStatus.CREATED, "", "delete-workflow-name"))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -574,6 +589,39 @@ class ProvisionResultsApiFacadeTest {
         // then
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
         verify(awxService, never()).triggerWorkflowJob(any(), any());
+    }
+
+    @Test
+    void givenDeletionWorkflowNameMatchesSentinel_whenRequestDeletion_thenThrowsProjectConfigurationException() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        var sentinelWorkflowName = "NOT-IMPLEMENTED";
+
+        var projectComponent = buildProjectComponentWithDeletionConfiguration(
+                componentId,
+                org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+                "",
+                sentinelWorkflowName,
+                null
+        );
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(projectComponent);
+        doThrow(new ProjectConfigurationException(
+                "This project component is not meant to be deleted. Please contact your administrator if you believe this is an error."))
+                .when(deletionSentinelWorkflowValidator)
+                .validate(sentinelWorkflowName);
+
+        // when / then
+        assertThatThrownBy(() -> facade.requestDeletion(projectKey, componentId, action))
+                .isInstanceOf(ProjectConfigurationException.class)
+                .hasMessage("This project component is not meant to be deleted. Please contact your administrator if you believe this is an error.");
+
+        verify(workflowsValidator, never()).validate(anyString(), anyString());
+        verify(inputParamsValidator, never()).validate(anyString(), anyString());
+        verifyNoInteractions(awxService);
     }
 
     @Test

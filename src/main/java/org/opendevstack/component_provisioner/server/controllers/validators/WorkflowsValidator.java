@@ -30,4 +30,12 @@ public class WorkflowsValidator {
             throw new InvalidRestEntityException("Either workflow or workflow_name are required. Also deletion_workflow is required.");
         }
     }
+
+    public void validate(String deletionWorkflowId, String deletionWorkflowName) {
+        log.debug("Validating presence of deletion workflow or deletion workflow name. Deletion Workflow ID: {}, Deletion Workflow Name: {}", deletionWorkflowId, deletionWorkflowName);
+
+        if (StringUtils.isBlank(deletionWorkflowId) && StringUtils.isBlank(deletionWorkflowName)) {
+            throw new InvalidRestEntityException("The component has no deletion_workflow nor deletion_workflow_name configured, so params is_deployed, change_number and reason are required in the request.");
+        }
+    }
 }

@@ -11,7 +11,10 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Proj
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
+import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -59,6 +62,10 @@ public class ProvisionResultsApiFacade {
 
     private final ApplicationAuthenticationProvider applicationAuthenticationProvider;
 
+    private final WorkflowsValidator workflowsValidator;
+    private final DeletionSentinelWorkflowValidator deletionSentinelWorkflowValidator;
+    private final InputParamsValidator inputParamsValidator;
+
     @Value("${component-provisioner.awx.workflows.create-incident-workflow-id}")
     private String createIncidentWorkflowId;
 
@@ -78,7 +85,11 @@ public class ProvisionResultsApiFacade {
         String deletionWorkflowId = getDeletionWorkflowId(projectComponent);
         String deletionWorkflowName = getDeletionWorkflowName(projectComponent);
         String deletionWorkflowTimeoutSeconds = getDeletionWorkflowTimeoutSeconds(projectComponent);
-        validate(projectKey, componentId, deletionWorkflowId, deletionWorkflowName);
+
+        deletionSentinelWorkflowValidator.validate(deletionWorkflowName);
+        workflowsValidator.validate(deletionWorkflowId, deletionWorkflowName);
+        inputParamsValidator.validate(projectKey, componentId);
+
         addSystemParametersToAction(projectKey, createIncidentAction);
 
         if (isInDeletingState(projectComponent)) {
@@ -235,18 +246,6 @@ public class ProvisionResultsApiFacade {
         if (Arrays.stream(ProvisioningStatus.values())
                 .noneMatch(e -> e.name().equals(status.getValue()))) {
             throw new InvalidRestEntityException("Status is not valid. It can only be " + Arrays.toString(ProvisioningStatus.values()));
-        }
-    }
-
-    public void validate(String projectKey, String componentId, String deletionWorkflowId, String deletionWorkflowName) {
-        var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
-
-        if (mainParamsAreEmpty) {
-            throw new InvalidRestEntityException("project_key, component_id are required.");
-        }
-
-        if (StringUtils.isBlank(deletionWorkflowId) && StringUtils.isBlank(deletionWorkflowName)) {
-            throw new InvalidRestEntityException("The component has no deletion_workflow nor deletion_workflow_name configured, so params is_deployed, change_number and reason are required in the request.");
         }
     }
 

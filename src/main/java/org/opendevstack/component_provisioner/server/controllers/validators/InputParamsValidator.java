@@ -29,4 +29,12 @@ public class InputParamsValidator {
             throw new InvalidRestEntityException("project_key, access_token, component_id are required.");
         }
     }
+
+    public void validate(String projectKey, String componentId) {
+        var mainParamsAreEmpty = StringUtils.isBlank(projectKey) || StringUtils.isBlank(componentId);
+
+        if (mainParamsAreEmpty) {
+            throw new InvalidRestEntityException("project_key, component_id are required.");
+        }
+    }
 }
