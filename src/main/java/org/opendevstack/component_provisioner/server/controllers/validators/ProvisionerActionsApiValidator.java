@@ -7,12 +7,10 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -33,9 +31,9 @@ public class ProvisionerActionsApiValidator {
 
     private static final Set<String> INTERNAL_PROVISIONING_PARAMS = Set.of("catalog_item_id", "project_key");
 
-    private final ComponentCatalogService componentCatalogService;
     private final AuthenticationProvider authenticationProvider;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
+    private final ComponentsValidator componentsValidator;
 
     public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
@@ -46,7 +44,7 @@ public class ProvisionerActionsApiValidator {
 
         validateInputParams(projectKey, accessToken, componentId);
 
-        validateComponentIsNotProvisioned(projectKey, componentId);
+        componentsValidator.validate(projectKey, componentId);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {
@@ -100,20 +98,6 @@ public class ProvisionerActionsApiValidator {
             String message = "User does not have permissions to provision this component.";
 
             throw new UserNotAllowedException(message);
-        }
-    }
-
-    private void validateComponentIsNotProvisioned(String projectKey, String componentId) {
-        log.debug("Validating component is not provisioned. projectKey: {}, componentId: {}", projectKey, componentId);
-        var accessToken = authenticationProvider.getAccessToken();
-        var projectComponents = componentCatalogService.getProjectComponents(accessToken, projectKey);
-
-        var componentIdAlreadyProvisioned = projectComponents.stream()
-                .filter(projectComponent -> projectComponent.getComponentId() != null)
-                .anyMatch(projectComponent -> projectComponent.getComponentId().equals(componentId));
-
-        if (componentIdAlreadyProvisioned) {
-            throw new ProjectComponentAlreadyProvisionedException("This component name already exists, please choose another name.");
         }
     }
 

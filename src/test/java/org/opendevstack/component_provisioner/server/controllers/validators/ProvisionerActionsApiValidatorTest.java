@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
@@ -20,7 +19,6 @@ import org.opendevstack.component_provisioner.server.model.ProvisionActionMother
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
-import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,13 +34,13 @@ import static org.mockito.Mockito.when;
 class ProvisionerActionsApiValidatorTest {
 
     @Mock
-    private ComponentCatalogService componentCatalogService;
-
-    @Mock
     private AuthenticationProvider authenticationProvider;
 
     @Mock
     private MandatoryFieldsValidator mandatoryFieldsValidator;
+
+    @Mock
+    private ComponentsValidator componentsValidator;
 
     @InjectMocks
     private ProvisionerActionsApiValidator provisionerActionsApiValidator;
@@ -74,13 +72,10 @@ class ProvisionerActionsApiValidatorTest {
 
         var action = ProvisionActionMother.of(params);
 
-        var exists = new ProjectComponentInfo();
-        exists.setComponentId(componentId);
-
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
-        when(componentCatalogService.getProjectComponents(any(), any()))
-                .thenReturn(List.of(exists));
+        doThrow(new ProjectComponentAlreadyProvisionedException("This component name already exists, please choose another name."))
+                .when(componentsValidator)
+                .validate(projectKey, componentId);
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
@@ -183,7 +178,7 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenComponentCatalogServiceThrows_whenValidating_thenThrowsRuntimeException() {
+    void givenComponentsValidatorThrows_whenValidating_thenThrowsRuntimeException() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "pkey"),
@@ -193,7 +188,9 @@ class ProvisionerActionsApiValidatorTest {
         ));
 
         when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
-        when(componentCatalogService.getProjectComponents(any(), any())).thenThrow(new RuntimeException("Service error"));
+        doThrow(new RuntimeException("Service error"))
+                .when(componentsValidator)
+                .validate(any(), any());
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
