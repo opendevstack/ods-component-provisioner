@@ -19,6 +19,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Proj
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -70,6 +71,9 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private WorkflowsValidator workflowsValidator;
+
+    @Mock
+    private UserPermissionsValidator userPermissionsValidator;
 
     @Spy
     @InjectMocks
@@ -143,7 +147,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void givenValidClusters_whenAddSystemParametersToAction_thenAddsClusterLocationCallerAndAccessTokenAndNotificationsGroupIdAndComponentUrl() {
+    void givenValidClusters_whenAddSystemParametersToAction_thenAddsRequiredSystemParameters() {
         // given
         var accessToken = "BEARER-TOKEN";
 
@@ -193,7 +197,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void givenEmptyClusters_whenAddSystemParametersToAction_thenThrowsIllegalStateException() {
+    void givenEmptyClusters_whenAddSystemParametersToAction_thenThrowsProjectConfigurationException() {
         // given
         var bearerToken = "BEARER";
 
@@ -240,7 +244,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenNoCatalogItemIdNorSlug_thenThrowsBadRequestException() {
+    void givenNoCatalogItemIdNorSlug_whenTriggerProvisionAction_thenThrowsBadRequestException() {
         // given
         var action = ProvisionActionMother.of(List.of(ProvisionActionParameterMother.of("project_key", "PRJ")));
 
@@ -252,7 +256,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenBothCatalogItemIdAndSlug_thenThrowsBadRequestException() {
+    void givenBothCatalogItemIdAndSlug_whenTriggerProvisionAction_thenThrowsBadRequestException() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -268,7 +272,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenOnlyCatalogItemId_thenDoesNotCallGetCatalogItemBySlug() {
+    void givenOnlyCatalogItemId_whenTriggerProvisionAction_thenDoesNotCallGetCatalogItemBySlug() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -292,7 +296,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenOnlyCatalogItemSlug_thenResolvesCatalogItemIdAndRenamesParameter() {
+    void givenOnlyCatalogItemSlug_whenTriggerProvisionAction_thenResolvesCatalogItemIdAndRenamesParameter() {
         // given
         var catalogItemSlug = "my-catalog-slug";
         var resolvedCatalogItemId = "resolved-catalog-id";
@@ -329,7 +333,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void givenOnlyCatalogItemSlug_whenTriggerProvisionAction_thenAddMandatoryCatalogItemParamsReceivesResolvedId() {
+    void givenOnlyCatalogItemSlug_whenTriggerProvisionAction_thenAddsMandatoryCatalogItemParamsUsingResolvedId() {
         // given
         var catalogItemSlug = "my-catalog-slug";
         var resolvedCatalogItemId = "resolved-catalog-id";
@@ -365,7 +369,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_givenCatalogItemSlugNotFound_thenThrowsSlugNotFoundException() {
+    void givenCatalogItemSlugNotFound_whenTriggerProvisionAction_thenThrowsSlugNotFoundException() {
         // given
         var catalogItemSlug = "unknown-slug";
         var accessToken = "token";
@@ -385,7 +389,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_notifiesCatalogAfterReplaceParameters() {
+    void givenProvisionActionWithCatalogItem_whenTriggerProvisionAction_thenNotifiesCatalogAfterReplaceParameters() {
         // given
         var provisionAction = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -769,7 +773,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_addsProvisionWorkflowParameters() {
+    void givenCustomWorkflowName_whenTriggerProvisionAction_thenAddsProvisionWorkflowParameters() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -819,7 +823,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_callsValidateWorkflowPresence() {
+    void givenValidAction_whenTriggerProvisionAction_thenCallsValidateWorkflowPresence() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -850,7 +854,38 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_appliesWorkflowWrapper_beforePlaceholderProcessing() {
+    void givenValidAction_whenTriggerProvisionAction_thenCallsUserPermissionsValidation() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_id", "CAT")
+        ));
+
+        setupSystemParameterMocks();
+
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(placeholderPostProcessor.process(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any()))
+                .thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any()))
+                .thenReturn(AwxWorkflowJobLaunchMother.of());
+        when(entitiesMapper.asProvisionActionResponse(any()))
+                .thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any()))
+                .thenReturn(Pair.of(HttpStatus.OK, Optional.of(AwxWorkflowJobMother.of())));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(userPermissionsValidator).validate(any(CatalogItem.class));
+    }
+
+    @Test
+    void givenValidAction_whenTriggerProvisionAction_thenAppliesWorkflowWrapperBeforePlaceholderProcessing() {
         // given
         var action = ProvisionActionMother.of(List.of(
                 ProvisionActionParameterMother.of("project_key", "PRJ"),
@@ -884,7 +919,7 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
-    void triggerProvisionAction_validatesHiddenMandatoryWorkflowName_beforeWorkflowWrapperTransformation() {
+    void givenHiddenMandatoryWorkflowName_whenTriggerProvisionAction_thenValidatesBeforeWorkflowWrapperTransformation() {
         // given
         var workflowName = "hidden-required-workflow-name";
         var action = ProvisionActionMother.of(List.of(

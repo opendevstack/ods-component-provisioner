@@ -10,8 +10,6 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
-import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 
@@ -64,37 +62,6 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
-    void givenProvisionActionNotRequestable_whenValidatingUserPermission_thenThrowsUserNotAllowedException() {
-        // given
-        var provisionAction = CatalogItemUserAction.builder()
-                .id(ActionType.PROVISION.getValue())
-                .requestable(false)
-                .build();
-        var catalogItem = CatalogItem.builder()
-                .userActions(List.of(provisionAction))
-                .build();
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem))
-                .isInstanceOf(UserNotAllowedException.class);
-    }
-
-    @Test
-    void givenProvisionActionRequestable_whenValidatingUserPermission_thenDoesNotThrow() {
-        // given
-        var provisionAction = CatalogItemUserAction.builder()
-                .id(ActionType.PROVISION.getValue())
-                .requestable(true)
-                .build();
-        var catalogItem = CatalogItem.builder()
-                .userActions(List.of(provisionAction))
-                .build();
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem));
-    }
-
-    @Test
     void givenInvalidInputParams_whenValidating_thenThrowsInvalidRestEntityException() {
         // given
         var projectKey = "";
@@ -118,6 +85,20 @@ class ProvisionerActionsApiValidatorTest {
     }
 
     @Test
+    void givenValidInput_whenValidating_thenDoesNotThrow() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        // when / then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
+    }
+
+    @Test
     void givenMandatoryFieldsValidatorThrows_whenValidatingMandatoryFields_thenThrowsInvalidRestEntityException() {
         // given
         var action = ProvisionActionMother.of(List.of(
@@ -134,6 +115,20 @@ class ProvisionerActionsApiValidatorTest {
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()))
                 .isInstanceOf(InvalidRestEntityException.class);
+    }
+
+    @Test
+    void givenValidMandatoryFields_whenValidatingMandatoryFields_thenDoesNotThrow() {
+        // given
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "pkey"),
+                ProvisionActionParameterMother.of("component_id", "cid"),
+                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
+                ProvisionActionParameterMother.of("access_token", "accessToken")
+        ));
+
+        // when / then
+        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()));
     }
 
     @Test

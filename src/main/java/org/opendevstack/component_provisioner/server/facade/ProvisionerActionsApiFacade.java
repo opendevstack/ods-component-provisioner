@@ -14,6 +14,7 @@ import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxRe
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
@@ -44,6 +45,7 @@ public class ProvisionerActionsApiFacade {
     private final ProjectsInfoService projectsInfoService;
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final WorkflowsValidator workflowsValidator;
+    private final UserPermissionsValidator userPermissionsValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
 
@@ -57,7 +59,7 @@ public class ProvisionerActionsApiFacade {
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);
         var catalogItem = fetchCatalogItem(resolvedActionWrapper);
-        provisionerActionsApiValidator.validateUserHasPermissionsToProvision(catalogItem);
+        userPermissionsValidator.validate(catalogItem);
         provisionerActionsApiValidator.validateReceivesOnlyVisibleParameters(resolvedActionWrapper.toProvisionAction(), catalogItem);
 
         var systemParametersActionWrapper = addSystemParametersToAction(resolvedActionWrapper);

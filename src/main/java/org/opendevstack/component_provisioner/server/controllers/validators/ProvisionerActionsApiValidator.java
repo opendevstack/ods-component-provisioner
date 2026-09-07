@@ -3,15 +3,12 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
-import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserAction;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItemUserActionParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
-import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -70,25 +67,6 @@ public class ProvisionerActionsApiValidator {
 
     public void validateMandatoryFields(ProvisionAction provisionAction, CatalogItem catalogItem) {
         mandatoryFieldsValidator.validate(provisionAction, catalogItem);
-    }
-
-    public void validateUserHasPermissionsToProvision(CatalogItem catalogItem) {
-        log.debug("Validating user has permissions to provision. CatalogItem: {}", catalogItem);
-
-        boolean provisionIsRequestable = Optional.ofNullable(catalogItem)
-                .map(CatalogItem::getUserActions)
-                .stream()
-                .flatMap(Collection::stream)
-                .filter(action -> ActionType.PROVISION.getValue().equals(action.getId()))
-                .findFirst()
-                .map(CatalogItemUserAction::getRequestable)
-                .orElse(false);
-
-        if (!provisionIsRequestable) {
-            String message = "User does not have permissions to provision this component.";
-
-            throw new UserNotAllowedException(message);
-        }
     }
 
 }
