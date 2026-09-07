@@ -18,6 +18,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.BadR
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
@@ -74,6 +75,9 @@ class ProvisionerActionsApiFacadeTest {
 
     @Mock
     private UserPermissionsValidator userPermissionsValidator;
+
+    @Mock
+    private MandatoryFieldsValidator mandatoryFieldsValidator;
 
     @Spy
     @InjectMocks
@@ -972,14 +976,14 @@ class ProvisionerActionsApiFacadeTest {
                 throw new IllegalStateException("workflow_name should be present during mandatory fields validation");
             }
             return null;
-        }).when(provisionerActionsApiValidator).validateMandatoryFields(any(), eq(catalogItem));
+        }).when(mandatoryFieldsValidator).validate(any(), eq(catalogItem));
 
         // when
         facade.triggerProvisionAction(action);
 
         // then
         ArgumentCaptor<ProvisionAction> mandatoryValidationCaptor = ArgumentCaptor.forClass(ProvisionAction.class);
-        verify(provisionerActionsApiValidator).validateMandatoryFields(mandatoryValidationCaptor.capture(), eq(catalogItem));
+        verify(mandatoryFieldsValidator).validate(mandatoryValidationCaptor.capture(), eq(catalogItem));
         assertThat(mandatoryValidationCaptor.getValue().getParameters())
                 .anyMatch(param -> "workflow_name".equals(param.getName()) && workflowName.equals(param.getValue()));
 

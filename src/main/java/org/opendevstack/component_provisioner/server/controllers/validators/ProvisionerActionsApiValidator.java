@@ -65,8 +65,4 @@ public class ProvisionerActionsApiValidator {
                 });
     }
 
-    public void validateMandatoryFields(ProvisionAction provisionAction, CatalogItem catalogItem) {
-        mandatoryFieldsValidator.validate(provisionAction, catalogItem);
-    }
-
 }

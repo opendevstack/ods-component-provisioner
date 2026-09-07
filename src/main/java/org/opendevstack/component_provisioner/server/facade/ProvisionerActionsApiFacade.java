@@ -12,6 +12,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Rest
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
+import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
@@ -46,6 +47,7 @@ public class ProvisionerActionsApiFacade {
     private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
     private final WorkflowsValidator workflowsValidator;
     private final UserPermissionsValidator userPermissionsValidator;
+    private final MandatoryFieldsValidator mandatoryFieldsValidator;
     private final PlaceholderPostProcessor placeholderPostProcessor;
     private final ReplaceParametersService replaceParametersService;
 
@@ -66,7 +68,7 @@ public class ProvisionerActionsApiFacade {
         var requiredCatalogItemParamsWrapper = addMandatoryCatalogItemParamsIfMissing(systemParametersActionWrapper, catalogItem);
         var requiredCatalogItemParamsAction = requiredCatalogItemParamsWrapper.toProvisionAction();
         workflowsValidator.validate(requiredCatalogItemParamsAction);
-        provisionerActionsApiValidator.validateMandatoryFields(requiredCatalogItemParamsAction, catalogItem);
+        mandatoryFieldsValidator.validate(requiredCatalogItemParamsAction, catalogItem);
 
         var workflowWrapperParamsActionWrapper = addProvisionWorkflowWrapper(requiredCatalogItemParamsWrapper);
         var updateProvisionActionWithoutPlaceholdersWrapper = placeholderPostProcessor.process(workflowWrapperParamsActionWrapper);

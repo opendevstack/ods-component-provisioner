@@ -98,38 +98,6 @@ class ProvisionerActionsApiValidatorTest {
         assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validate(action));
     }
 
-    @Test
-    void givenMandatoryFieldsValidatorThrows_whenValidatingMandatoryFields_thenThrowsInvalidRestEntityException() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        doThrow(new InvalidRestEntityException("Mandatory field missing"))
-                .when(mandatoryFieldsValidator)
-                .validate(any(), any());
-
-        // when / then
-        assertThatThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()))
-                .isInstanceOf(InvalidRestEntityException.class);
-    }
-
-    @Test
-    void givenValidMandatoryFields_whenValidatingMandatoryFields_thenDoesNotThrow() {
-        // given
-        var action = ProvisionActionMother.of(List.of(
-                ProvisionActionParameterMother.of("project_key", "pkey"),
-                ProvisionActionParameterMother.of("component_id", "cid"),
-                ProvisionActionParameterMother.of("catalog_item_id", "catid"),
-                ProvisionActionParameterMother.of("access_token", "accessToken")
-        ));
-
-        // when / then
-        assertThatNoException().isThrownBy(() -> provisionerActionsApiValidator.validateMandatoryFields(action, new CatalogItem()));
-    }
 
     @Test
     void givenComponentsValidatorThrows_whenValidating_thenThrowsRuntimeException() {
