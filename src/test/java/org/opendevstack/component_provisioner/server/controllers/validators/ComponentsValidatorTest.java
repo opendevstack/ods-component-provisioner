@@ -7,6 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentInfo;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 
@@ -35,6 +38,7 @@ class ComponentsValidatorTest {
         var accessToken = "bearerToken";
         var projectKey = "PRJ";
         var componentId = "component-a";
+        var provisionAction = provisionAction(projectKey, componentId);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         when(componentCatalogService.getProjectComponents(accessToken, projectKey)).thenReturn(List.of(
@@ -43,7 +47,7 @@ class ComponentsValidatorTest {
         ));
 
         // when / then
-        assertThatThrownBy(() -> validator.validate(projectKey, componentId))
+        assertThatThrownBy(() -> validator.validate(provisionAction))
                 .isInstanceOf(ProjectComponentAlreadyProvisionedException.class)
                 .hasMessage("This component name already exists, please choose another name.");
     }
@@ -54,6 +58,7 @@ class ComponentsValidatorTest {
         var accessToken = "bearerToken";
         var projectKey = "PRJ";
         var componentId = "component-a";
+        var provisionAction = provisionAction(projectKey, componentId);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         when(componentCatalogService.getProjectComponents(accessToken, projectKey)).thenReturn(List.of(
@@ -62,7 +67,7 @@ class ComponentsValidatorTest {
         ));
 
         // when / then
-        assertThatNoException().isThrownBy(() -> validator.validate(projectKey, componentId));
+        assertThatNoException().isThrownBy(() -> validator.validate(provisionAction));
     }
 
     @Test
@@ -71,6 +76,7 @@ class ComponentsValidatorTest {
         var accessToken = "bearerToken";
         var projectKey = "PRJ";
         var componentId = "component-a";
+        var provisionAction = provisionAction(projectKey, componentId);
 
         when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         when(componentCatalogService.getProjectComponents(accessToken, projectKey)).thenReturn(List.of(
@@ -78,7 +84,7 @@ class ComponentsValidatorTest {
         ));
 
         // when
-        validator.validate(projectKey, componentId);
+        validator.validate(provisionAction);
 
         // then
         verify(authenticationProvider).getAccessToken();
@@ -89,6 +95,13 @@ class ComponentsValidatorTest {
         var projectComponentInfo = new ProjectComponentInfo();
         projectComponentInfo.setComponentId(componentId);
         return projectComponentInfo;
+    }
+
+    private ProvisionAction provisionAction(String projectKey, String componentId) {
+        return ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", projectKey),
+                ProvisionActionParameterMother.of("component_id", componentId)
+        ));
     }
 }
 

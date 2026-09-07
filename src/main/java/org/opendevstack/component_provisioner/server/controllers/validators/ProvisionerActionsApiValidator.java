@@ -9,7 +9,6 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -20,9 +19,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
-import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
-
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -30,7 +26,6 @@ public class ProvisionerActionsApiValidator {
 
     private static final Set<String> INTERNAL_PROVISIONING_PARAMS = Set.of("catalog_item_id", "project_key");
 
-    private final AuthenticationProvider authenticationProvider;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
     private final ComponentsValidator componentsValidator;
     private final InputParamsValidator inputParamsValidator;
@@ -38,12 +33,8 @@ public class ProvisionerActionsApiValidator {
     public void validate(ProvisionAction provisionAction) {
         log.debug("Start validation for provisionActions: {}", provisionAction);
 
-        var projectKey = getProjectKey(provisionAction);
-        var componentId = getComponentId(provisionAction);
-        var accessToken = authenticationProvider.getAccessToken();
-
-        inputParamsValidator.validateInputParams(projectKey, accessToken, componentId);
-        componentsValidator.validate(projectKey, componentId);
+        inputParamsValidator.validate(provisionAction);
+        componentsValidator.validate(provisionAction);
     }
 
     public void validateReceivesOnlyVisibleParameters(ProvisionAction provisionAction, CatalogItem catalogItem) {

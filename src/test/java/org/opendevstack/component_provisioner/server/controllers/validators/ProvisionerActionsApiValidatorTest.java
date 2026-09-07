@@ -12,13 +12,9 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Inva
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
-import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
-import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
-import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,13 +22,9 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProvisionerActionsApiValidatorTest {
-
-    @Mock
-    private AuthenticationProvider authenticationProvider;
 
     @Mock
     private MandatoryFieldsValidator mandatoryFieldsValidator;
@@ -62,10 +54,9 @@ class ProvisionerActionsApiValidatorTest {
 
         var action = ProvisionActionMother.of(params);
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
         doThrow(new ProjectComponentAlreadyProvisionedException("This component name already exists, please choose another name."))
                 .when(componentsValidator)
-                .validate(projectKey, componentId);
+                .validate(action);
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
@@ -117,11 +108,9 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", accessToken)
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
-
         doThrow(new InvalidRestEntityException("project_key, access_token, component_id are required."))
                 .when(inputParamsValidator)
-                .validateInputParams(projectKey, accessToken, componentId);
+                .validate(action);
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
@@ -157,32 +146,13 @@ class ProvisionerActionsApiValidatorTest {
                 ProvisionActionParameterMother.of("access_token", "accessToken")
         ));
 
-        when(authenticationProvider.getAccessToken()).thenReturn("bearerToken");
         doThrow(new RuntimeException("Service error"))
                 .when(componentsValidator)
-                .validate(any(), any());
+                .validate(any());
 
         // when / then
         assertThatThrownBy(() -> provisionerActionsApiValidator.validate(action))
                 .isInstanceOf(RuntimeException.class);
-    }
-
-
-    private ProvisionAction givenMissingParameterName_whenBuildingAction_thenReturnsActionWithoutMissingParameter(String missingParamName) {
-        // given
-        var params = new ArrayList<ProvisionActionParameter>();
-        // when
-        if (!"project_key".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("project_key", "pkey"));
-        if (!"component_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("component_id", "cid"));
-        if (!"catalog_item_id".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("catalog_item_id", "catid"));
-        if (!"access_token".equals(missingParamName))
-            params.add(ProvisionActionParameterMother.of("access_token", "accessToken"));
-
-        // then
-        return ProvisionActionMother.of(params);
     }
 
     @Test

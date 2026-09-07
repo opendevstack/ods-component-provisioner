@@ -3,9 +3,13 @@ package org.opendevstack.component_provisioner.server.controllers.validators;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectComponentAlreadyProvisionedException;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
 import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
 import org.springframework.stereotype.Service;
+
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
+import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
 
 @AllArgsConstructor
 @Service
@@ -15,7 +19,10 @@ public class ComponentsValidator {
     private final AuthenticationProvider authenticationProvider;
     private final ComponentCatalogService componentCatalogService;
 
-    public void validate(String projectKey, String componentId) {
+    public void validate(ProvisionAction provisionAction) {
+        var projectKey = getProjectKey(provisionAction);
+        var componentId = getComponentId(provisionAction);
+
         log.debug("Validating component is not provisioned. projectKey: {}, componentId: {}", projectKey, componentId);
         var accessToken = authenticationProvider.getAccessToken();
         var projectComponents = componentCatalogService.getProjectComponents(accessToken, projectKey);
