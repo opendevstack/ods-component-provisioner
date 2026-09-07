@@ -11,10 +11,11 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Proj
 import org.opendevstack.component_provisioner.server.controllers.exceptions.RestEntityNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
+import org.opendevstack.component_provisioner.server.controllers.validators.ComponentsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
-import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.VisibleParametersValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
@@ -22,7 +23,12 @@ import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.ProvisionAction;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
 import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
-import org.opendevstack.component_provisioner.server.services.*;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,7 +51,8 @@ public class ProvisionerActionsApiFacade {
     private final EntitiesMapper entitiesMapper;
     private final AuthenticationProvider authenticationProvider;
     private final ProjectsInfoService projectsInfoService;
-    private final ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private final ComponentsValidator componentsValidator;
+    private final InputParamsValidator inputParamsValidator;
     private final WorkflowsValidator workflowsValidator;
     private final UserPermissionsValidator userPermissionsValidator;
     private final MandatoryFieldsValidator mandatoryFieldsValidator;
@@ -58,7 +65,8 @@ public class ProvisionerActionsApiFacade {
 
     public AwxResponse triggerProvisionAction(ProvisionAction provisionAction) {
         log.info("Triggering provisioner action with id: '{}'", provisionAction.getId());
-        provisionerActionsApiValidator.validate(provisionAction);
+        inputParamsValidator.validate(provisionAction);
+        componentsValidator.validate(provisionAction);
 
         var provisionActionWrapper = new ProvisionActionWrapper(provisionAction);
         var resolvedActionWrapper = resolveCatalogItemIdentifier(provisionActionWrapper);

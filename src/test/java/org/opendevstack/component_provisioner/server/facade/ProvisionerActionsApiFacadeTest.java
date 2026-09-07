@@ -17,15 +17,26 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.BadRequestException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.validators.ComponentsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldType;
 import org.opendevstack.component_provisioner.server.controllers.validators.MandatoryFieldsValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.ProvisionerActionsApiValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.VisibleParametersValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
-import org.opendevstack.component_provisioner.server.model.*;
-import org.opendevstack.component_provisioner.server.services.*;
+import org.opendevstack.component_provisioner.server.model.ProvisionAction;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionParameter;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionParameterMother;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponse;
+import org.opendevstack.component_provisioner.server.model.ProvisionActionResponseMother;
+import org.opendevstack.component_provisioner.server.services.AuthenticationProvider;
+import org.opendevstack.component_provisioner.server.services.AwxService;
+import org.opendevstack.component_provisioner.server.services.ComponentCatalogService;
+import org.opendevstack.component_provisioner.server.services.PlaceholderPostProcessor;
+import org.opendevstack.component_provisioner.server.services.ProjectsInfoService;
+import org.opendevstack.component_provisioner.server.services.ReplaceParametersService;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunch;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
@@ -41,7 +52,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,7 +74,10 @@ class ProvisionerActionsApiFacadeTest {
     private AuthenticationProvider authenticationProvider;
 
     @Mock
-    private ProvisionerActionsApiValidator provisionerActionsApiValidator;
+    private ComponentsValidator componentsValidator;
+
+    @Mock
+    private InputParamsValidator inputParamsValidator;
 
     @Mock
     private PlaceholderPostProcessor placeholderPostProcessor;
@@ -968,8 +985,10 @@ class ProvisionerActionsApiFacadeTest {
         facade.triggerProvisionAction(action);
 
         // then
-        var order = inOrder(provisionerActionsApiValidator, placeholderPostProcessor, workflowsValidator);
+        var order = inOrder(componentsValidator, inputParamsValidator, placeholderPostProcessor, workflowsValidator);
 
+        order.verify(inputParamsValidator).validate(any());
+        order.verify(componentsValidator).validate(any());
         order.verify(workflowsValidator).validate(any());
         order.verify(placeholderPostProcessor).process(any());
     }
