@@ -17,7 +17,7 @@ import java.util.Optional;
 public class UserPermissionsValidator {
 
     public void validate(CatalogItem catalogItem) {
-        log.debug("Validating user has permissions to provision. CatalogItem: {}", catalogItem);
+        log.debug("Validating user has permissions to execute the provision action. CatalogItem: {}", catalogItem);
 
         boolean provisionIsRequestable = Optional.ofNullable(catalogItem)
                 .map(CatalogItem::getUserActions)
@@ -29,7 +29,7 @@ public class UserPermissionsValidator {
                 .orElse(false);
 
         if (!provisionIsRequestable) {
-            String message = "User does not have permissions to provision this component.";
+            String message = "User does not have permissions to execute the provision action on this catalog item.";
 
             throw new UserNotAllowedException(message);
         }
