@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getComponentId;
 import static org.opendevstack.component_provisioner.server.services.ProvisionerActionsParameterExtractor.getProjectKey;
 
+/**
+ * Validates that a component is not already provisioned for a given project.
+ */
 @AllArgsConstructor
 @Service
 @Slf4j

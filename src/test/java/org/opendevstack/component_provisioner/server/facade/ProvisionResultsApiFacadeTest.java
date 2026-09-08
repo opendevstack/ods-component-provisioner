@@ -786,9 +786,9 @@ class ProvisionResultsApiFacadeTest {
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("project_key");
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("cluster_location");
         assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("component_id");
-        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("is_deployed");
-        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("change_number");
-        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).contains("reason");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).doesNotContain("is_deployed");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).doesNotContain("change_number");
+        assertThat(facade.getParameterString(action, "dispatched_workflow_params")).doesNotContain("reason");
     }
 
     @Test
