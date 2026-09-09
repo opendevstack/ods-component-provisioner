@@ -10,7 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.Optional;
 
 @ControllerAdvice
 @Slf4j
@@ -81,6 +84,17 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(InvalidIdException.class)
     public ResponseEntity<RestErrorMessage> handleInvalidIdException(InvalidIdException ex) {
         return defaultErrResponse(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpStatusCodeException.class)
+    public ResponseEntity<RestErrorMessage> handleHttpStatusCodeException(HttpStatusCodeException ex) {
+        RestErrorMessage msg = Optional.ofNullable(ex.getResponseBodyAs(RestErrorMessage.class))
+                .orElse(new RestErrorMessage(ex.getResponseBodyAsString()));
+
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                .body(msg);
     }
 
     private static ResponseEntity<RestErrorMessage> defaultErrResponse(Exception ex, HttpStatus errStatus) {
