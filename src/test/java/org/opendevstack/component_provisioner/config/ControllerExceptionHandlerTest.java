@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -197,8 +198,29 @@ class ControllerExceptionHandlerTest {
 
         // then
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().value()).isEqualTo(400);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getMessage()).contains("Invalid id: some-id");
     }
+
+    @Test
+    void givenHttpStatusCodeException_whenHandleHttpStatusCodeExceptionIsCalled_thenReturnsTheSameErrorCodeAndMessage() {
+        // given
+        HttpClientErrorException ex = mock(HttpClientErrorException.class);
+
+        when(ex.getStatusCode()).thenReturn(HttpStatus.FORBIDDEN);
+        when(ex.getResponseBodyAs(RestErrorMessage.class))
+                .thenReturn(new RestErrorMessage("User not allowed to perform this action"));
+
+        // when
+        ResponseEntity<RestErrorMessage> response = controllerExceptionHandler.handleHttpStatusCodeException(ex);
+
+        // then
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_PROBLEM_JSON);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getMessage()).isEqualTo("User not allowed to perform this action");
+    }
+
 }
