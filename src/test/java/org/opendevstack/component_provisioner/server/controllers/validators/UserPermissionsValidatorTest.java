@@ -20,7 +20,7 @@ class UserPermissionsValidatorTest {
         // when / then
         assertThatThrownBy(() -> userPermissionsValidator.validate(null))
                 .isInstanceOf(UserNotAllowedException.class)
-                .hasMessage("User does not have permissions to provision this component.");
+                .hasMessage("User does not have permissions to execute the provision action on this catalog item.");
     }
 
     @Test
@@ -31,7 +31,7 @@ class UserPermissionsValidatorTest {
         // when / then
         assertThatThrownBy(() -> userPermissionsValidator.validate(catalogItem))
                 .isInstanceOf(UserNotAllowedException.class)
-                .hasMessage("User does not have permissions to provision this component.");
+                .hasMessage("User does not have permissions to execute the provision action on this catalog item.");
     }
 
     @Test
@@ -43,7 +43,7 @@ class UserPermissionsValidatorTest {
         // when / then
         assertThatThrownBy(() -> userPermissionsValidator.validate(catalogItem))
                 .isInstanceOf(UserNotAllowedException.class)
-                .hasMessage("User does not have permissions to provision this component.");
+                .hasMessage("User does not have permissions to execute the provision action on this catalog item.");
     }
 
     @Test
@@ -58,7 +58,7 @@ class UserPermissionsValidatorTest {
         // when / then
         assertThatThrownBy(() -> userPermissionsValidator.validate(catalogItem))
                 .isInstanceOf(UserNotAllowedException.class)
-                .hasMessage("User does not have permissions to provision this component.");
+                .hasMessage("User does not have permissions to execute the provision action on this catalog item.");
     }
 
     @Test
@@ -73,7 +73,7 @@ class UserPermissionsValidatorTest {
         // when / then
         assertThatThrownBy(() -> userPermissionsValidator.validate(catalogItem))
                 .isInstanceOf(UserNotAllowedException.class)
-                .hasMessage("User does not have permissions to provision this component.");
+                .hasMessage("User does not have permissions to execute the provision action on this catalog item.");
     }
 
     @Test

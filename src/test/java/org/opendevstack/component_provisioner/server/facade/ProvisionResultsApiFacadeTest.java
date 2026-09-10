@@ -16,8 +16,10 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
+import org.opendevstack.component_provisioner.server.controllers.exceptions.UserNotAllowedException;
 import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.UserPermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -46,11 +48,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -85,6 +83,9 @@ class ProvisionResultsApiFacadeTest {
 
     @Mock
     private InputParamsValidator inputParamsValidator;
+
+    @Mock
+    private UserPermissionsValidator userPermissionsValidator;
 
     @InjectMocks
     private ProvisionResultsApiFacade facade;
@@ -589,6 +590,42 @@ class ProvisionResultsApiFacadeTest {
         // then
         assertThat(result.httpStatusCode()).isEqualTo(HttpStatus.OK);
         verify(awxService, never()).triggerWorkflowJob(any(), any());
+    }
+
+    @Test
+    void givenUserWithoutProvisionPermission_whenRequestDeletion_thenRejectsBeforeTriggeringWorkflow() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var catalogItemId = "CATALOG_ID";
+        var action = CreateIncidentActionMother.of();
+        var projectComponent = buildProjectComponentWithDeletionConfiguration(
+            componentId,
+            org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+            "",
+            "WF_NAME",
+            null
+        );
+        projectComponent.getParameters().add(ProjectComponentParameter.builder()
+            .name("catalog_item_id")
+            .values(List.of(catalogItemId))
+            .build());
+        var catalogItem = new CatalogItem();
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId))
+            .thenReturn(projectComponent);
+        when(componentCatalogService.getCatalogItem("token", catalogItemId, projectKey, true))
+            .thenReturn(catalogItem);
+        doThrow(new UserNotAllowedException("User is not allowed"))
+            .when(userPermissionsValidator).validate(catalogItem);
+
+        // when / then
+        assertThatThrownBy(() -> facade.requestDeletion(projectKey, componentId, action))
+            .isInstanceOf(UserNotAllowedException.class)
+            .hasMessage("User is not allowed");
+        verify(userPermissionsValidator).validate(catalogItem);
+        verifyNoInteractions(awxService);
     }
 
     @Test

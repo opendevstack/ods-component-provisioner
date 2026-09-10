@@ -6,15 +6,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.CatalogItem;
 import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentExtendedInfo;
+import org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProjectComponentParameter;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.model.ActionType;
 import org.opendevstack.component_provisioner.server.controllers.model.awx.AwxResponse;
-import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
-import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.*;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -35,11 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opendevstack.component_provisioner.server.services.ProvisionService.getProjectComponentParameterMap;
@@ -65,6 +59,7 @@ public class ProvisionResultsApiFacade {
     private final WorkflowsValidator workflowsValidator;
     private final DeletionSentinelWorkflowValidator deletionSentinelWorkflowValidator;
     private final InputParamsValidator inputParamsValidator;
+    private final UserPermissionsValidator userPermissionsValidator;
 
     @Value("${component-provisioner.awx.workflows.create-incident-workflow-id}")
     private String createIncidentWorkflowId;
@@ -81,6 +76,9 @@ public class ProvisionResultsApiFacade {
 
         var accessToken = authenticationProvider.getAccessToken();
         var projectComponent = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
+        var catalogItem = fetchCatalogItem(accessToken, getCatalogItemId(projectComponent), projectKey);
+
+        userPermissionsValidator.validate(catalogItem);
 
         String deletionWorkflowId = getDeletionWorkflowId(projectComponent);
         String deletionWorkflowName = getDeletionWorkflowName(projectComponent);
@@ -480,5 +478,23 @@ public class ProvisionResultsApiFacade {
 
         log.debug("Workflow found for deletion. Triggering wrapper for custom deletion workflow");
         return triggerAwxDeletionWorkflow(projectKey, componentId, action);
+    }
+
+    private CatalogItem fetchCatalogItem(String accessToken, String catalogItemId, String projectKey) {
+        return componentCatalogService.getCatalogItem(accessToken, catalogItemId, projectKey, true);
+    }
+
+    private String getCatalogItemId(ProjectComponentExtendedInfo projectComponentExtendedInfo) {
+        return Optional.ofNullable(projectComponentExtendedInfo)
+                .map(ProjectComponentExtendedInfo::getParameters)
+                .stream()
+                .flatMap(Collection::stream)
+                .filter(param -> "catalog_item_id".equals(param.getName()))
+                .findAny()
+                .map(ProjectComponentParameter::getValues)
+                .orElse(List.of())
+                .stream()
+                .findFirst()
+                .orElse(null);
     }
 }
