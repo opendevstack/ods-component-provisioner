@@ -18,6 +18,7 @@ public final class ProjectComponentExtendedInfoMother {
                 .componentId("component-id")
                 .catalogItemId("aHR0cDovL2JpdGJ1Y2tldC10ZXN0LmNvbQ")
                 .catalogItemRef("L3JlZmVyZW5jZT9wYXJhbT0xMA")
+                .canBeDeleted(true)
                 .status(org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED)
                 .componentUrl("https://example.com/component")
                 .parameters(Collections.emptyList())
