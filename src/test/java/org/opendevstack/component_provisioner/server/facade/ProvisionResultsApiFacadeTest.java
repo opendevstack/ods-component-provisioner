@@ -18,6 +18,7 @@ import org.opendevstack.component_provisioner.server.controllers.exceptions.Proj
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
 import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProjectComponentDeletePermissionsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
@@ -85,6 +86,9 @@ class ProvisionResultsApiFacadeTest {
 
     @Mock
     private InputParamsValidator inputParamsValidator;
+
+    @Mock
+    private ProjectComponentDeletePermissionsValidator projectComponentDeletePermissionsValidator;
 
     @InjectMocks
     private ProvisionResultsApiFacade facade;
@@ -1020,6 +1024,7 @@ class ProvisionResultsApiFacadeTest {
                 .componentId(componentId)
                 .status(status)
                 .parameters(parameters)
+                .canBeDeleted(true)
                 .build();
     }
 

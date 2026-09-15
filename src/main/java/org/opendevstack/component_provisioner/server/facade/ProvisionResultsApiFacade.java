@@ -15,6 +15,7 @@ import org.opendevstack.component_provisioner.server.controllers.validators.Dele
 import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
 import org.opendevstack.component_provisioner.server.controllers.validators.ParameterType;
 import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.ProjectComponentDeletePermissionsValidator;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentAction;
 import org.opendevstack.component_provisioner.server.model.CreateIncidentParameter;
@@ -65,6 +66,7 @@ public class ProvisionResultsApiFacade {
     private final WorkflowsValidator workflowsValidator;
     private final DeletionSentinelWorkflowValidator deletionSentinelWorkflowValidator;
     private final InputParamsValidator inputParamsValidator;
+    private final ProjectComponentDeletePermissionsValidator projectComponentDeletePermissionsValidator;
 
     @Value("${component-provisioner.awx.workflows.create-incident-workflow-id}")
     private String createIncidentWorkflowId;
@@ -81,6 +83,8 @@ public class ProvisionResultsApiFacade {
 
         var accessToken = authenticationProvider.getAccessToken();
         var projectComponent = componentCatalogService.getProjectComponentById(accessToken, projectKey, componentId);
+
+        projectComponentDeletePermissionsValidator.validate(projectComponent);
 
         String deletionWorkflowId = getDeletionWorkflowId(projectComponent);
         String deletionWorkflowName = getDeletionWorkflowName(projectComponent);
