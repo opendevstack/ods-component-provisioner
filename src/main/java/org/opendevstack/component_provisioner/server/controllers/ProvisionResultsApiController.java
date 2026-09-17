@@ -11,6 +11,7 @@ import org.opendevstack.component_provisioner.server.model.ProvisioningDeleteReq
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatus;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusPartialUpdateRequest;
 import org.opendevstack.component_provisioner.server.model.ProvisioningStatusUpdateRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,7 +93,7 @@ public class ProvisionResultsApiController implements ProvisionResultsApi {
         );
 
         return ResponseEntity
-                .status(awxResponse.httpStatusCode())
+                .status(HttpStatus.ACCEPTED)
                 .body(awxResponse.awxResponseBody());
     }
 
