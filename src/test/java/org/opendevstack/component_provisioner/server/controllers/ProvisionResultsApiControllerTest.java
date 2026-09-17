@@ -117,7 +117,7 @@ class ProvisionResultsApiControllerTest {
         var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         assertThat(response.getBody()).isEqualTo(actionResponse);
         verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
@@ -156,7 +156,7 @@ class ProvisionResultsApiControllerTest {
         var response = provisionResultsApiController.requestDeletion(projectKey, componentId, createIncidentAction);
 
         // then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
         verify(provisionResultsApiFacade).requestDeletion(projectKey, componentId, createIncidentAction);
     }
 
