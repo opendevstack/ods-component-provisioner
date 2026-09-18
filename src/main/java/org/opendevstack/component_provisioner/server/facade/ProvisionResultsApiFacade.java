@@ -138,8 +138,10 @@ public class ProvisionResultsApiFacade {
     }
 
     public boolean isInDeletingState(ProjectComponentExtendedInfo projectComponent) {
-        if (projectComponent == null) return false;
-        return ProvisioningStatus.DELETING.getValue().equals(projectComponent.getStatus().getValue());
+        return Optional.ofNullable(projectComponent)
+                .map(ProjectComponentExtendedInfo::getStatus)
+                .map(status -> ProvisioningStatus.DELETING.getValue().equals(status.getValue()))
+                .orElse(false);
     }
 
     public AwxResponse triggerAwxIncidentWorkflow(String projectKey, String componentId, CreateIncidentAction createIncidentAction) {
@@ -316,7 +318,7 @@ public class ProvisionResultsApiFacade {
         }
         if (Strings.isNotBlank(customDeletionWorkflowName)) {
             action.addParametersItem(CreateIncidentParameter.builder()
-                    .name("deletion_workflow_name")
+                    .name(DELETION_WORKFLOW_NAME)
                     .value(customDeletionWorkflowName)
                     .type(ParameterType.STRING.getValue())
                     .build()
@@ -324,7 +326,7 @@ public class ProvisionResultsApiFacade {
         }
         if (Strings.isNotBlank(deletionWorkflowTimeoutSeconds)) {
             action.addParametersItem(CreateIncidentParameter.builder()
-                    .name("deletion_workflow_timeout_seconds")
+                    .name(DELETION_WORKFLOW_TIMEOUT)
                     .value(deletionWorkflowTimeoutSeconds)
                     .type(ParameterType.STRING.getValue())
                     .build()
