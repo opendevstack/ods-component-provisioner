@@ -25,7 +25,11 @@ import static org.ehcache.event.EventType.EVICTED;
 import static org.ehcache.event.EventType.EXPIRED;
 import static org.ehcache.event.EventType.REMOVED;
 
-// FIXME: So complex cache configuration, let's simplify it by using Spring Boot's auto-configuration for caching and just configure the cache properties in application.yaml. See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-caching-provider-ehcache2
+/* TBD: So complex cache configuration, let's simplify it by using Spring Boot's auto-configuration
+   for caching and just configure the cache properties in application.yaml.
+
+   See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#boot-features-caching-provider-ehcache2
+ */
 @Configuration
 @Slf4j
 public class CachingConfiguration implements CacheEventListener<Object, Object> {
