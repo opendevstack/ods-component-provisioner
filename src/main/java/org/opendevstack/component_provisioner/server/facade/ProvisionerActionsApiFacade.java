@@ -91,7 +91,7 @@ public class ProvisionerActionsApiFacade {
 
         log.debug("Triggered provisioner action with id: '{}'. Response : '{}'", provisionAction.getId(), awxResponse);
 
-        updateAwxJobIdIntoProjectComponents(provisionActionWrapper, awxResponse);
+        updateAwxJobIdIntoProjectComponents(updatedProvisionActionWithOdsApiParametersWrapper, awxResponse);
 
         return awxResponse;
     }

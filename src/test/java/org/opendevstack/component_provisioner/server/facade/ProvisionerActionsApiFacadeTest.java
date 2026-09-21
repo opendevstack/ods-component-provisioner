@@ -394,6 +394,45 @@ class ProvisionerActionsApiFacadeTest {
     }
 
     @Test
+    void givenOnlyCatalogItemSlug_whenTriggerProvisionAction_thenUpdatesProjectComponentUsingResolvedCatalogItemId() {
+        // given
+        var catalogItemSlug = "my-catalog-slug";
+        var resolvedCatalogItemId = "resolved-catalog-id";
+        var accessToken = "token";
+
+        var action = ProvisionActionMother.of(List.of(
+                ProvisionActionParameterMother.of("project_key", "PRJ"),
+                ProvisionActionParameterMother.of("catalog_item_slug", catalogItemSlug)
+        ));
+        setupSystemParameterMocks();
+        var catalogItem = new CatalogItem();
+        catalogItem.setId(resolvedCatalogItemId);
+        var awxWorkflowJobLaunch = AwxWorkflowJobLaunchMother.of();
+        var awxWorkflowJob = AwxWorkflowJobMother.of();
+        var provisionActionResponse = ProvisionActionResponseMother.of();
+        provisionActionResponse.setId(123);
+
+        when(componentCatalogService.getCatalogItemBySlug(accessToken, catalogItemSlug)).thenReturn(catalogItem);
+        when(placeholderPostProcessor.process(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(replaceParametersService.replaceProvisioningParametersFromOdsApi(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(entitiesMapper.asAwxWorkflowJobLaunch((ProvisionAction) any())).thenReturn(awxWorkflowJobLaunch);
+        when(entitiesMapper.asProvisionActionResponse(awxWorkflowJob)).thenReturn(provisionActionResponse);
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.OK, Optional.of(awxWorkflowJob)));
+
+        // when
+        facade.triggerProvisionAction(action);
+
+        // then
+        verify(componentCatalogService).setWorkflowJobId(
+                eq("PRJ"),
+                any(),
+                eq(resolvedCatalogItemId),
+                eq("123"),
+                eq(accessToken)
+        );
+    }
+
+    @Test
     void givenCatalogItemSlugNotFound_whenTriggerProvisionAction_thenThrowsSlugNotFoundException() {
         // given
         var catalogItemSlug = "unknown-slug";
