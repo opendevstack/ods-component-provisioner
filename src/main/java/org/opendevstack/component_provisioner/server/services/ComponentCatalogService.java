@@ -245,4 +245,11 @@ public class ComponentCatalogService {
         var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
         return componentsApi.getAllProjectComponents(page, size);
     }
+
+    public void updateProjectComponentParameters(String accessToken, String projectKey, String componentId, Map<String, List<String>> requestBody) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+
+        componentsApi.updateProjectComponentParameters(projectKey, componentId, requestBody);
+    }
 }

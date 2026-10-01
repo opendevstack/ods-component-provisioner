@@ -512,6 +512,36 @@ class ComponentCatalogServiceTest {
     }
 
     @Test
+    void givenProjectKeyComponentIdAndParameters_whenUpdateProjectComponentParameters_thenInvokesProjectComponentsApi() throws Exception {
+        // given
+        var accessToken = "token";
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        Map<String, List<String>> requestBody = Map.of("parameter", List.of("value"));
+
+        URL baseUrl = URI.create("http://component-catalog").toURL();
+
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
+        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
+                .thenReturn(componentCatalogApiClient);
+        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
+                .thenReturn(projectComponentsApi);
+
+        // when
+        componentCatalogService.updateProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
+
+        // then
+        verify(apiClientsBuilder)
+                .componentCatalogApiClient(accessToken, baseUrl.toString());
+        verify(apiClientsBuilder)
+                .projectComponentsApi(componentCatalogApiClient);
+        verify(projectComponentsApi)
+                .updateProjectComponentParameters(projectKey, componentId, requestBody);
+
+        verifyNoMoreInteractions(projectComponentsApi);
+    }
+
+    @Test
     void givenValidInput_whenGetProjectComponentByIdIsCalled_thenExtendedInfoIsReturned() throws Exception {
         // given
         String accessToken = "token";
@@ -520,7 +550,7 @@ class ComponentCatalogServiceTest {
         String baseUrl = "http://catalog.example.com";
         ProjectComponentExtendedInfo expected = new ProjectComponentExtendedInfo();
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL(baseUrl));
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create(baseUrl).toURL());
         when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl)).thenReturn(apiClient);
         when(apiClientsBuilder.projectComponentsApi(apiClient)).thenReturn(projectComponentsApi);
         when(projectComponentsApi.getProjectComponentById(projectKey, componentId)).thenReturn(expected);
@@ -543,8 +573,13 @@ class ComponentCatalogServiceTest {
                         "err1", "err2");
 
         // then
-        assertThat(result.getLeft()).isEqualTo(HttpStatus.OK);
-        assertThat(result.getRight()).isEmpty();
+        assertThat(result).isNotNull();
+
+        var left = result.getLeft();
+        var right = result.getRight();
+
+        assertThat(left).isEqualTo(HttpStatus.OK);
+        assertThat(right).isEmpty();
     }
 
     @Test
@@ -559,8 +594,13 @@ class ComponentCatalogServiceTest {
                         "err1", "err2");
 
         // then
-        assertThat(result.getLeft()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(result.getRight()).isEmpty();
+        assertThat(result).isNotNull();
+
+        var left = result.getLeft();
+        var right = result.getRight();
+
+        assertThat(left).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(right).isEmpty();
     }
 
     @Test
@@ -572,7 +612,7 @@ class ComponentCatalogServiceTest {
         var workflowJobId = "WFJ123";
         var accessToken = "TOKEN";
 
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(new URL("http://catalog"));
+        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(URI.create("http://catalog").toURL());
         when(apiClientsBuilder.provisionerActionsApi(accessToken, "http://catalog")).thenReturn(provisionerActionsApi);
 
         // when
