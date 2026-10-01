@@ -23,6 +23,9 @@ import org.opendevstack.component_provisioner.util.JwtUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.List;
+import java.util.Map;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -92,5 +95,11 @@ public class ProjectComponentsApiFacade {
     private boolean isATokenThatBelongsToOdsApiService(String accessToken) {
         var oid = JwtUtils.extractClaim(accessToken, "oid");
         return oid.map(odsApiServerServiceProps.getOid()::equals).orElse(false);
+    }
+
+    public void updateProjectComponentParameters(String projectKey, String componentId, Map<String, List<String>> requestBody) {
+        var accessToken = authenticationProvider.getAccessToken();
+
+        componentCatalogService.updateProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
     }
 }
