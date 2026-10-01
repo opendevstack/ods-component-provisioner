@@ -796,36 +796,6 @@ class ComponentCatalogServiceTest {
         ).isInstanceOf(RestClientException.class);
     }
 
-    @Test
-    void givenProjectKeyComponentIdAndParameterNames_whenDeleteProjectComponentParameters_thenInvokesProjectComponentsApi() throws Exception {
-        // given
-        var accessToken = "token";
-        var projectKey = "PRJ";
-        var componentId = "CID";
-        List<String> requestBody = List.of("param1", "param2");
-
-        URL baseUrl = URI.create("http://component-catalog").toURL();
-
-        when(componentCatalogServiceProps.getBaseRestUrl()).thenReturn(baseUrl);
-        when(apiClientsBuilder.componentCatalogApiClient(accessToken, baseUrl.toString()))
-                .thenReturn(componentCatalogApiClient);
-        when(apiClientsBuilder.projectComponentsApi(componentCatalogApiClient))
-                .thenReturn(projectComponentsApi);
-
-        // when
-        componentCatalogService.deleteProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
-
-        // then
-        verify(apiClientsBuilder)
-                .componentCatalogApiClient(accessToken, baseUrl.toString());
-        verify(apiClientsBuilder)
-                .projectComponentsApi(componentCatalogApiClient);
-        verify(projectComponentsApi)
-                .deleteProjectComponentParameters(projectKey, componentId, requestBody);
-
-        verifyNoMoreInteractions(projectComponentsApi);
-    }
-
 
 
 }

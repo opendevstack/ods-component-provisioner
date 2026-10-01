@@ -9,7 +9,6 @@ import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApi
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -54,36 +53,5 @@ class ProjectComponentsApiControllerTest {
         assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(result.getBody()).isNull();
         verify(projectComponentsApiFacade).updateProjectComponentParameters(projectKey, componentId, null);
-    }
-
-    @Test
-    void givenProjectKeyComponentIdAndParameterNames_whenDeleteProjectComponentParameters_thenDelegatesAndReturnsNoContent() {
-        // given
-        var projectKey = "TEST";
-        var componentId = "comp-123";
-        List<String> requestBody = Arrays.asList("param1", "param2");
-
-        // when
-        ResponseEntity<Void> result = controller.deleteProjectComponentParameters(projectKey, componentId, requestBody);
-
-        // then
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(result.getBody()).isNull();
-        verify(projectComponentsApiFacade).deleteProjectComponentParameters(projectKey, componentId, requestBody);
-    }
-
-    @Test
-    void givenNullRequestBodyForDelete_whenDeleteProjectComponentParameters_thenDelegatesNullBody() {
-        // given
-        var projectKey = "TEST";
-        var componentId = "comp-123";
-
-        // when
-        ResponseEntity<Void> result = controller.deleteProjectComponentParameters(projectKey, componentId, null);
-
-        // then
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-        assertThat(result.getBody()).isNull();
-        verify(projectComponentsApiFacade).deleteProjectComponentParameters(projectKey, componentId, null);
     }
 }

@@ -102,10 +102,4 @@ public class ProjectComponentsApiFacade {
 
         componentCatalogService.updateProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
     }
-
-    public void deleteProjectComponentParameters(String projectKey, String componentId, List<String> requestBody) {
-        var accessToken = authenticationProvider.getAccessToken();
-
-        componentCatalogService.deleteProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
-    }
 }

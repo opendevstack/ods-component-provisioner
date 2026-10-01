@@ -29,13 +29,4 @@ public class ProjectComponentsApiController implements ProjectComponentsApi {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-    @Override
-    public ResponseEntity<Void> deleteProjectComponentParameters(String projectKey, String componentId, List<String> requestBody) {
-        log.debug("deleteProjectComponentParameters called with projectKey: {}, componentId: {}, requestBody: {}", projectKey, componentId, requestBody);
-
-        projectComponentsApiFacade.deleteProjectComponentParameters(projectKey, componentId, requestBody);
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
 }
