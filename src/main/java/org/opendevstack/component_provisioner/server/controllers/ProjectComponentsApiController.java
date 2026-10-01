@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.opendevstack.component_provisioner.server.api.ProjectComponentsApi;
 import org.opendevstack.component_provisioner.server.facade.ProjectComponentsApiFacade;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,6 @@ public class ProjectComponentsApiController implements ProjectComponentsApi {
 
         projectComponentsApiFacade.updateProjectComponentParameters(projectKey, componentId, requestBody);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

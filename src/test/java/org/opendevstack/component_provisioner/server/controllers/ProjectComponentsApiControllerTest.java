@@ -35,7 +35,7 @@ class ProjectComponentsApiControllerTest {
         ResponseEntity<Void> result = controller.updateProjectComponentParameters(projectKey, componentId, requestBody);
 
         // then
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(result.getBody()).isNull();
         verify(projectComponentsApiFacade).updateProjectComponentParameters(projectKey, componentId, requestBody);
     }
@@ -50,7 +50,7 @@ class ProjectComponentsApiControllerTest {
         ResponseEntity<Void> result = controller.updateProjectComponentParameters(projectKey, componentId, null);
 
         // then
-        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(result.getBody()).isNull();
         verify(projectComponentsApiFacade).updateProjectComponentParameters(projectKey, componentId, null);
     }
