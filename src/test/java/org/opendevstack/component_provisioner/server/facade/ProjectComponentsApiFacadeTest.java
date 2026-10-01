@@ -264,4 +264,22 @@ class ProjectComponentsApiFacadeTest {
         verify(componentCatalogService).updateProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
     }
 
+    @Test
+    void givenProjectKeyComponentIdAndParameterNames_whenDeleteProjectComponentParameters_thenDelegatesToComponentCatalogService() {
+        // given
+        var projectKey = "test-project";
+        var componentId = "test-component-id";
+        var accessToken = "test-token";
+        List<String> requestBody = List.of("param1", "param2");
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        // when
+        projectComponentsApiFacade.deleteProjectComponentParameters(projectKey, componentId, requestBody);
+
+        // then
+        verify(authenticationProvider).getAccessToken();
+        verify(componentCatalogService).deleteProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
+    }
+
 }
