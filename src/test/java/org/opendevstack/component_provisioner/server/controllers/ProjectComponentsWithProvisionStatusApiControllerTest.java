@@ -18,13 +18,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProjectComponentsApiControllerTest {
+class ProjectComponentsWithProvisionStatusApiControllerTest {
 
     @Mock
     private ProjectComponentsApiFacade projectComponentsApiFacade;
 
     @InjectMocks
-    private ProjectComponentsApiController controller;
+    private ProjectComponentsWithProvisionStatusApiController controller;
 
     @Test
     void givenValidProjectKeyAndComponentId_whenGetProjectComponentProvisionStatusById_thenReturnsOkWithStatus() {

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("${openapi.componentProvisionerREST.base-path:/v1}")
 @AllArgsConstructor
 @Slf4j
-public class ProjectComponentsApiController implements ProjectComponentsWithProvisionStatusApi {
+public class ProjectComponentsWithProvisionStatusApiController implements ProjectComponentsWithProvisionStatusApi {
 
     private final ProjectComponentsApiFacade projectComponentsApiFacade;
 
