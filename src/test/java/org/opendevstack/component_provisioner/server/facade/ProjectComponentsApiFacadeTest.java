@@ -26,6 +26,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -242,6 +244,24 @@ class ProjectComponentsApiFacadeTest {
 
             verifyNoInteractions(projectComponentsMetricsMapper);
         }
+    }
+
+    @Test
+    void givenProjectKeyComponentIdAndParameters_whenUpdateProjectComponentParameters_thenDelegatesToComponentCatalogService() {
+        // given
+        var projectKey = "test-project";
+        var componentId = "test-component-id";
+        var accessToken = "test-token";
+        Map<String, List<String>> requestBody = Map.of("parameter", List.of("value"));
+
+        when(authenticationProvider.getAccessToken()).thenReturn(accessToken);
+
+        // when
+        projectComponentsApiFacade.updateProjectComponentParameters(projectKey, componentId, requestBody);
+
+        // then
+        verify(authenticationProvider).getAccessToken();
+        verify(componentCatalogService).updateProjectComponentParameters(accessToken, projectKey, componentId, requestBody);
     }
 
 }
