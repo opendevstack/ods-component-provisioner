@@ -252,4 +252,11 @@ public class ComponentCatalogService {
 
         componentsApi.updateProjectComponentParameters(projectKey, componentId, requestBody);
     }
+
+    public void deleteProjectComponentParameters(String accessToken, String projectKey, String componentId, List<String> requestBody) {
+        var apiClient = apiClientsBuilder.componentCatalogApiClient(accessToken, componentCatalogServiceProps.getBaseRestUrl().toString());
+        var componentsApi = apiClientsBuilder.projectComponentsApi(apiClient);
+
+        componentsApi.deleteProjectComponentParameters(projectKey, componentId, requestBody);
+    }
 }
