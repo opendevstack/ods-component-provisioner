@@ -16,10 +16,7 @@ import org.opendevstack.component_provisioner.client.component_catalog.v1.model.
 import org.opendevstack.component_provisioner.server.controllers.exceptions.InvalidRestEntityException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.ProjectConfigurationException;
 import org.opendevstack.component_provisioner.server.controllers.exceptions.SlugNotFoundException;
-import org.opendevstack.component_provisioner.server.controllers.validators.DeletionSentinelWorkflowValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.InputParamsValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.ProjectComponentDeletePermissionsValidator;
-import org.opendevstack.component_provisioner.server.controllers.validators.WorkflowsValidator;
+import org.opendevstack.component_provisioner.server.controllers.validators.*;
 import org.opendevstack.component_provisioner.server.mappers.EntitiesMapper;
 import org.opendevstack.component_provisioner.server.model.*;
 import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJobLaunchMother;
@@ -1001,6 +998,51 @@ class ProvisionResultsApiFacadeTest {
         assertThat(facade.getDeletionWorkflowId(projectComponent)).isEqualTo("WF_ID");
         assertThat(facade.getDeletionWorkflowName(projectComponent)).isEqualTo("WF_NAME");
         assertThat(facade.getDeletionWorkflowTimeoutSeconds(projectComponent)).isEqualTo("300");
+    }
+
+    @Test
+    void givenProjectComponentSendOnDeletionParameters_whenRequestDeletion_thenDispatchedWorkflowParamsIncludeSendOnDeletionParameters() {
+        // given
+        var projectKey = "PRJ";
+        var componentId = "CID";
+        var action = CreateIncidentActionMother.of();
+        action.setParameters(new ArrayList<>());
+        var sendOnDeletionParameter = CreateIncidentParameter.builder()
+            .name("send_on_deletion_parameter")
+            .value("value")
+            .type(ParameterType.STRING.getValue())
+            .build();
+
+        var pc = buildProjectComponentWithDeletionConfiguration(
+            componentId,
+            org.opendevstack.component_provisioner.client.component_catalog.v1.model.ProvisioningStatus.CREATED,
+            "",
+            "WF_NAME",
+            null
+        );
+
+        when(authenticationProvider.getAccessToken()).thenReturn("token");
+        when(authenticationProvider.getUserPrincipalName()).thenReturn("user");
+        when(componentCatalogService.getProjectComponentById("token", projectKey, componentId)).thenReturn(pc);
+        when(provisionService.composeCatalogItemId(pc)).thenReturn("catalogItemId");
+        when(provisionService.getDeletionParameters(projectKey, componentId)).thenReturn(List.of(sendOnDeletionParameter));
+        when(projectsInfoService.getProjectClusters(any(), any())).thenReturn(projectInfoWithCluster());
+        when(entitiesMapper.asAwxWorkflowJobLaunch(any(CreateIncidentAction.class))).thenReturn(new AwxWorkflowJobLaunch());
+        when(awxService.triggerWorkflowJob(any(), any())).thenReturn(Pair.of(HttpStatus.INTERNAL_SERVER_ERROR, Optional.empty()));
+
+        // when
+        facade.requestDeletion(projectKey, componentId, action);
+
+        // then
+        var dispatchedParam = action.getParameters().stream()
+            .filter(parameter -> "dispatched_workflow_params".equals(parameter.getName()))
+            .findFirst()
+            .orElseThrow();
+
+        @SuppressWarnings("unchecked")
+        var dispatchedParams = (java.util.Set<String>) dispatchedParam.getValue();
+
+        assertThat(dispatchedParams).contains("send_on_deletion_parameter");
     }
 
     private static ProjectInfo projectInfoWithCluster() {

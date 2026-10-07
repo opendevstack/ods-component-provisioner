@@ -112,6 +112,7 @@ public class ProvisionResultsApiFacade {
 
         var triggerDeletionWrapperWorkflow = Strings.isNotBlank(deletionWorkflowId) || Strings.isNotBlank(deletionWorkflowName);
         if (triggerDeletionWrapperWorkflow) {
+            addSendOnDeletionParameters(projectKey, componentId, createIncidentAction);
             addDeletionWrapperWorkflowParameters(catalogItemId, projectComponent.getComponentUrl(), deletionWorkflowId, deletionWorkflowName, deletionWorkflowTimeoutSeconds, createIncidentAction);
         }
 
@@ -429,7 +430,6 @@ public class ProvisionResultsApiFacade {
                                                                    CreateIncidentAction createIncidentAction) {
 
         addDefaultParameters(projectKey, componentId, deletionWrapperWorkflowId, createIncidentAction);
-        addSendOnDeletionParameters(projectKey, componentId, createIncidentAction);
 
         return entitiesMapper.asAwxWorkflowJobLaunch(createIncidentAction);
     }
