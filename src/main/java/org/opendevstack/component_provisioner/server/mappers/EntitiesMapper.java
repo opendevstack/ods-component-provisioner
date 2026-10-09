@@ -11,6 +11,7 @@ import org.modelmapper.config.Configuration;
 import org.modelmapper.convention.MatchingStrategies;
 import org.modelmapper.convention.NamingConventions;
 import org.modelmapper.internal.InheritingConfiguration;
+import org.modelmapper.spi.MappingContext;
 import org.opendevstack.component_provisioner.client.awx.v2.model.JobDetail;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJob;
 import org.opendevstack.component_provisioner.client.awx.v2.model.WorkflowJobLaunch;
@@ -28,6 +29,7 @@ import org.opendevstack.component_provisioner.server.services.model.AwxResultNam
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.opendevstack.component_provisioner.util.EitherUtils.uncheckedFrom;
 
@@ -35,11 +37,11 @@ import static org.opendevstack.component_provisioner.util.EitherUtils.uncheckedF
 public class EntitiesMapper {
     private static final ModelMapper MAPPER = new ModelMapper();
     public static final String WORKFLOW = "workflow";
-    private static Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateId; //NOSONAR
-    private static Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateExtraVars; //NOSONAR
+    private Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateId; //NOSONAR
+    private Converter<List<ProvisionActionParameter>, String> actionParamsToAwxWorkflowTemplateExtraVars; //NOSONAR
 
-    private static Converter<List<CreateIncidentParameter>, String> createIncidentParamsToAwxWorkflowTemplateId; //NOSONAR
-    private static Converter<List<CreateIncidentParameter>, String> createIncidentParamsToAwxWorkflowTemplateExtraVars; //NOSONAR
+    private Converter<List<CreateIncidentParameter>, String> createIncidentParamsToAwxWorkflowTemplateId; //NOSONAR
+    private Converter<List<CreateIncidentParameter>, String> createIncidentParamsToAwxWorkflowTemplateExtraVars; //NOSONAR
 
     private static Configuration strictConfig;
 
@@ -54,7 +56,7 @@ public class EntitiesMapper {
         // Initialize the static mappings and converters
         setupConfigs();
         setupAwxEntitiesTypeMaps();
-        setupActionParamsConverters(objectMapper);
+        setupActionParamsConverters();
         setupProvisionActionsTypeMaps();
         setupCreateIncidentTypeMaps();
         setupComponentCatalogTypeMaps();
@@ -74,43 +76,95 @@ public class EntitiesMapper {
                 .setSkipNullEnabled(true);
     }
 
-    private static void setupActionParamsConverters(ObjectMapper objectMapper) {
-        actionParamsToAwxWorkflowTemplateId = ctx ->
-                ctx.getSource().stream()
-                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String)
-                        .findFirst()
-                        .map(ProvisionActionParameter::getValue)
-                        .map(String::valueOf)
-                        .orElse(null);
+    private void setupActionParamsConverters() {
+        actionParamsToAwxWorkflowTemplateId = namedConverter(
+                "EntitiesMapper::actionParamsToAwxWorkflowTemplateId",
+                this::actionParamsToAwxWorkflowTemplateId);
 
-        createIncidentParamsToAwxWorkflowTemplateId = ctx ->
-                ctx.getSource().stream()
-                        .filter(p -> p.getName().equals(WORKFLOW) && p.getValue() instanceof String)
-                        .findFirst()
-                        .map(CreateIncidentParameter::getValue)
-                        .map(String::valueOf)
-                        .orElse(null);
+        createIncidentParamsToAwxWorkflowTemplateId = namedConverter(
+                "EntitiesMapper::createIncidentParamsToAwxWorkflowTemplateId",
+                this::createIncidentParamsToAwxWorkflowTemplateId);
 
-        // This converter transforms a list of ProvisionActionParameters into a JSON object embedded in a string
-        actionParamsToAwxWorkflowTemplateExtraVars = ctx -> {
-            // Turn into: "param1": "value1", "param2": "value2", ...
-            var extraParams = StreamEx.of(ctx.getSource())
-                    .filter(p -> !p.getName().equals(WORKFLOW))
-                    .mapToEntry(ProvisionActionParameter::getName, ProvisionActionParameter::getValue)
-                    .toMap();
+        actionParamsToAwxWorkflowTemplateExtraVars = namedConverter(
+                "EntitiesMapper::actionParamsToAwxWorkflowTemplateExtraVars",
+                this::actionParamsToAwxWorkflowTemplateExtraVars);
 
-            return uncheckedFrom(objectMapper::writeValueAsString).apply(extraParams);
-        };
+        createIncidentParamsToAwxWorkflowTemplateExtraVars = namedConverter(
+                "EntitiesMapper::createIncidentParamsToAwxWorkflowTemplateExtraVars",
+                this::createIncidentParamsToAwxWorkflowTemplateExtraVars);
+    }
 
-        createIncidentParamsToAwxWorkflowTemplateExtraVars = ctx -> {
-            // Turn into: "param1": "value1", "param2": "value2", ...
-            var extraParams = StreamEx.of(ctx.getSource())
-                    .filter(p -> !p.getName().equals(WORKFLOW))
-                    .mapToEntry(CreateIncidentParameter::getName, CreateIncidentParameter::getValue)
-                    .toMap();
+    private String actionParamsToAwxWorkflowTemplateId(MappingContext<List<ProvisionActionParameter>, String> context) {
+        return extractWorkflowTemplateId(
+                context.getSource(),
+                ProvisionActionParameter::getName,
+                ProvisionActionParameter::getValue);
+    }
 
-            return uncheckedFrom(objectMapper::writeValueAsString).apply(extraParams);
-        };
+    private String createIncidentParamsToAwxWorkflowTemplateId(
+            MappingContext<List<CreateIncidentParameter>, String> context) {
+        return extractWorkflowTemplateId(
+                context.getSource(),
+                CreateIncidentParameter::getName,
+                CreateIncidentParameter::getValue);
+    }
+
+    private String actionParamsToAwxWorkflowTemplateExtraVars(
+            MappingContext<List<ProvisionActionParameter>, String> context) {
+        return extractExtraVars(
+                context.getSource(),
+                ProvisionActionParameter::getName,
+                ProvisionActionParameter::getValue);
+    }
+
+    private String createIncidentParamsToAwxWorkflowTemplateExtraVars(
+            MappingContext<List<CreateIncidentParameter>, String> context) {
+        return extractExtraVars(
+                context.getSource(),
+                CreateIncidentParameter::getName,
+                CreateIncidentParameter::getValue);
+    }
+
+    private static <T> String extractWorkflowTemplateId(
+            List<T> parameters,
+            Function<T, String> nameExtractor,
+            Function<T, Object> valueExtractor) {
+        return parameters.stream()
+                .filter(parameter -> WORKFLOW.equals(nameExtractor.apply(parameter))
+                        && valueExtractor.apply(parameter) instanceof String)
+                .findFirst()
+                .map(valueExtractor)
+                .map(String::valueOf)
+                .orElse(null);
+    }
+
+    private <T> String extractExtraVars(
+            List<T> parameters,
+            Function<T, String> nameExtractor,
+            Function<T, Object> valueExtractor) {
+        var extraParams = StreamEx.of(parameters)
+                .filter(parameter -> !WORKFLOW.equals(nameExtractor.apply(parameter)))
+                .mapToEntry(nameExtractor, valueExtractor)
+                .toMap();
+
+        return uncheckedFrom(objectMapper::writeValueAsString).apply(extraParams);
+    }
+
+    private static <S, D> Converter<S, D> namedConverter(String converterName, Converter<S, D> delegate) {
+        return new NamedConverter<>(converterName, delegate);
+    }
+
+    private record NamedConverter<S, D>(String converterName, Converter<S, D> delegate) implements Converter<S, D> {
+
+        @Override
+        public D convert(MappingContext<S, D> context) {
+            return delegate.convert(context);
+        }
+
+        @Override
+        public String toString() {
+            return converterName;
+        }
     }
 
     private static void setupAwxEntitiesTypeMaps() {
@@ -120,7 +174,7 @@ public class EntitiesMapper {
         MAPPER.createTypeMap(WorkflowJobLaunch.class, AwxWorkflowJob.class, strictConfig);
     }
 
-    private static void setupProvisionActionsTypeMaps() {
+    private void setupProvisionActionsTypeMaps() {
         MAPPER.createTypeMap(ProvisionAction.class, AwxWorkflowJobLaunch.class, strictConfig)
                 .addMappings(mapper -> {
                     mapper
@@ -134,7 +188,7 @@ public class EntitiesMapper {
         MAPPER.createTypeMap(AwxWorkflowJob.class, ProvisionActionResponse.class, strictConfig);
     }
 
-    private static void setupCreateIncidentTypeMaps() {
+    private void setupCreateIncidentTypeMaps() {
         MAPPER.createTypeMap(CreateIncidentAction.class, AwxWorkflowJobLaunch.class, strictConfig)
                 .addMappings(mapper -> {
                     mapper
