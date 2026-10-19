@@ -3,7 +3,6 @@ package org.opendevstack.component_provisioner.server.mappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import one.util.streamex.StreamEx;
 import org.modelmapper.Conditions;
 import org.modelmapper.Converter;
 import org.modelmapper.ModelMapper;
@@ -27,7 +26,9 @@ import org.opendevstack.component_provisioner.server.services.awx.AwxWorkflowJob
 import org.opendevstack.component_provisioner.server.services.model.AwxResultNames;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -95,6 +96,11 @@ public class EntitiesMapper {
     }
 
     private String actionParamsToAwxWorkflowTemplateId(MappingContext<List<ProvisionActionParameter>, String> context) {
+        logParametersBeingMapped(
+                "Mapping provision action parameters to AWX workflow template id",
+                context.getSource(),
+                ProvisionActionParameter::getName);
+
         return extractWorkflowTemplateId(
                 context.getSource(),
                 ProvisionActionParameter::getName,
@@ -103,6 +109,11 @@ public class EntitiesMapper {
 
     private String createIncidentParamsToAwxWorkflowTemplateId(
             MappingContext<List<CreateIncidentParameter>, String> context) {
+        logParametersBeingMapped(
+                "Mapping create incident parameters to AWX workflow template id",
+                context.getSource(),
+                CreateIncidentParameter::getName);
+
         return extractWorkflowTemplateId(
                 context.getSource(),
                 CreateIncidentParameter::getName,
@@ -111,6 +122,11 @@ public class EntitiesMapper {
 
     private String actionParamsToAwxWorkflowTemplateExtraVars(
             MappingContext<List<ProvisionActionParameter>, String> context) {
+        logParametersBeingMapped(
+                "Mapping provision action parameters to AWX workflow template extra vars",
+                context.getSource(),
+                ProvisionActionParameter::getName);
+
         return extractExtraVars(
                 context.getSource(),
                 ProvisionActionParameter::getName,
@@ -119,6 +135,11 @@ public class EntitiesMapper {
 
     private String createIncidentParamsToAwxWorkflowTemplateExtraVars(
             MappingContext<List<CreateIncidentParameter>, String> context) {
+        logParametersBeingMapped(
+                "Mapping create incident parameters to AWX workflow template extra vars",
+                context.getSource(),
+                CreateIncidentParameter::getName);
+
         return extractExtraVars(
                 context.getSource(),
                 CreateIncidentParameter::getName,
@@ -142,12 +163,42 @@ public class EntitiesMapper {
             List<T> parameters,
             Function<T, String> nameExtractor,
             Function<T, Object> valueExtractor) {
-        var extraParams = StreamEx.of(parameters)
-                .filter(parameter -> !WORKFLOW.equals(nameExtractor.apply(parameter)))
-                .mapToEntry(nameExtractor, valueExtractor)
-                .toMap();
+        var extraParams = asExtraVarsMap(parameters, nameExtractor, valueExtractor);
 
         return uncheckedFrom(objectMapper::writeValueAsString).apply(extraParams);
+    }
+
+    private static <T> Map<String, Object> asExtraVarsMap(
+            List<T> parameters,
+            Function<T, String> nameExtractor,
+            Function<T, Object> valueExtractor) {
+        var extraParams = new LinkedHashMap<String, Object>();
+
+        for (var parameter : parameters) {
+            var parameterName = nameExtractor.apply(parameter);
+            if (!WORKFLOW.equals(parameterName)) {
+                extraParams.put(parameterName, valueExtractor.apply(parameter));
+            }
+        }
+
+        return extraParams;
+    }
+
+    private static <T> void logParametersBeingMapped(
+            String message,
+            List<T> parameters,
+            Function<T, String> nameExtractor) {
+        if (!log.isTraceEnabled()) {
+            return;
+        }
+
+        var parameterNames = Optional.ofNullable(parameters)
+                .orElseGet(Collections::emptyList)
+                .stream()
+                .map(nameExtractor)
+                .toList();
+
+        log.trace("{}. Parameter names: {}", message, parameterNames);
     }
 
     private static <S, D> Converter<S, D> namedConverter(String converterName, Converter<S, D> delegate) {
